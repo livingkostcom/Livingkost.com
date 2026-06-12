@@ -8,8 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Property extends Model
 {
-    use HasFactory;
-    protected $fillable = ['name', 'address', 'description', 'status'];
+    use HasFactory, \App\Models\Concerns\BelongsToOwner;
+    protected $fillable = ['owner_id', 'name', 'address', 'description', 'status'];
 
     public function roomTypes(): HasMany
     {

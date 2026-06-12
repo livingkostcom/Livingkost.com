@@ -17,6 +17,13 @@ class LeaseObserver
         if (Auth::check() && !$lease->created_by) {
             $lease->created_by = Auth::id();
         }
+
+        // Inherit owner from the parent room (works in console/scheduler too)
+        if (empty($lease->owner_id) && $lease->room_id) {
+            $lease->owner_id = Room::withoutGlobalScopes()
+                ->whereKey($lease->room_id)
+                ->value('owner_id');
+        }
     }
 
     /**

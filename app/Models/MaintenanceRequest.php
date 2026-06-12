@@ -8,8 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MaintenanceRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Models\Concerns\BelongsToOwner;
     protected $fillable = [
+        'owner_id',
         'tenant_id',
         'room_id',
         'title',

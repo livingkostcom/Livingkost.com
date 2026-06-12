@@ -17,6 +17,13 @@ class InvoiceObserver
         if (Auth::check() && !$invoice->created_by) {
             $invoice->created_by = Auth::id();
         }
+
+        // Inherit owner from the parent lease (works in console/scheduler too)
+        if (empty($invoice->owner_id) && $invoice->lease_id) {
+            $invoice->owner_id = \App\Models\Lease::withoutGlobalScopes()
+                ->whereKey($invoice->lease_id)
+                ->value('owner_id');
+        }
     }
 
     /**

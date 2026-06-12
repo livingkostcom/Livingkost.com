@@ -59,7 +59,11 @@ class SettingIndex extends Component
             'app_email' => 'nullable|email|max:255',
         ]);
 
-        $keys = ['app_name', 'app_tagline', 'app_address', 'app_phone', 'app_email'];
+        // Branding (app_name/app_tagline) is platform-wide — super-admin only.
+        $keys = ['app_address', 'app_phone', 'app_email'];
+        if (Auth::user()->isSuperAdmin()) {
+            $keys = array_merge(['app_name', 'app_tagline'], $keys);
+        }
         foreach ($keys as $key) {
             Setting::set($key, $this->$key, 'general');
         }

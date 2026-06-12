@@ -105,6 +105,11 @@ Route::middleware('auth')->group(function () {
         return view('admin.announcements.index');
     })->middleware(['auth'])->name('announcements.index');
 
+    // User Management Routes (Owner & Super Admin)
+    Route::get('/users', function () {
+        return view('admin.users.index');
+    })->middleware('can:manage-users')->name('users.index');
+
     // Settings Routes
     Route::get('/settings', function () {
         return view('admin.settings.index');

@@ -13,9 +13,9 @@ use Illuminate\Support\Facades\Mail;
 
 class Invoice extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\BelongsToOwner;
 
-    protected $fillable = ['lease_id', 'amount', 'month_year', 'status', 'reference_number', 'due_date', 'proof_of_payment', 'verified_at', 'created_by', 'verified_by'];
+    protected $fillable = ['owner_id', 'lease_id', 'amount', 'month_year', 'status', 'reference_number', 'due_date', 'proof_of_payment', 'verified_at', 'created_by', 'verified_by'];
 
     protected $casts = [
         'amount' => 'decimal:2',

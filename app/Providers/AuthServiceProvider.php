@@ -8,12 +8,14 @@ use App\Models\Property;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\Tenant;
+use App\Models\User;
 use App\Policies\InvoicePolicy;
 use App\Policies\LeasePolicy;
 use App\Policies\PropertyPolicy;
 use App\Policies\RoomPolicy;
 use App\Policies\RoomTypePolicy;
 use App\Policies\TenantPolicy;
+use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -31,6 +33,7 @@ class AuthServiceProvider extends ServiceProvider
         Room::class => RoomPolicy::class,
         RoomType::class => RoomTypePolicy::class,
         Tenant::class => TenantPolicy::class,
+        User::class => UserPolicy::class,
     ];
 
     /**

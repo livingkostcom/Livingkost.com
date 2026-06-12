@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RoomType extends Model
 {
-    use HasFactory;
-    protected $fillable = ['property_id', 'name', 'price', 'facilities'];
+    use HasFactory, \App\Models\Concerns\BelongsToOwner;
+    protected $fillable = ['owner_id', 'property_id', 'name', 'price', 'facilities'];
 
     protected $casts = [
         'facilities' => 'json',

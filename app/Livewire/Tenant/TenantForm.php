@@ -3,6 +3,9 @@
 namespace App\Livewire\Tenant;
 
 use App\Models\Tenant;
+use App\Models\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -91,12 +94,47 @@ class TenantForm extends Component
             $this->authorize('update', $tenant);
             $data['updated_by'] = auth()->user()->name;
             $tenant->update($data);
+
+            // Keep the linked login account's name in sync
+            if ($tenant->user_id && $tenant->user) {
+                $tenant->user->update(['name' => $this->name]);
+            }
+
             $message = 'Penyewa berhasil diperbarui!';
         } else {
             $this->authorize('create', Tenant::class);
             $data['created_by'] = auth()->user()->name;
+
+            // Create (or link) a login account for this tenant
+            $ownerId = auth()->user()->ownerId();
+            $plainPassword = null;
+            $user = User::where('email', $this->email)->first();
+
+            if (! $user) {
+                $plainPassword = Str::password(10, true, true, false);
+                $user = User::create([
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'password' => Hash::make($plainPassword),
+                    'owner_id' => $ownerId,
+                    'email_verified_at' => now(),
+                ]);
+            }
+
+            if (! $user->hasRole('tenant')) {
+                $user->assignRole('tenant');
+            }
+            if (is_null($user->owner_id)) {
+                $user->owner_id = $ownerId;
+                $user->save();
+            }
+
+            $data['user_id'] = $user->id;
             Tenant::create($data);
-            $message = 'Penyewa berhasil ditambahkan!';
+
+            $message = $plainPassword
+                ? "Penyewa & akun login dibuat — Email: {$this->email} · Password: {$plainPassword} (simpan & bagikan ke penyewa)"
+                : 'Penyewa ditambahkan & ditautkan ke akun login yang sudah ada.';
         }
 
         $this->dispatch('tenant-saved', message: $message);

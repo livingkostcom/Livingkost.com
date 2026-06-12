@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Room extends Model
 {
-    use HasFactory;
-    protected $fillable = ['room_type_id', 'room_number', 'floor', 'status'];
+    use HasFactory, \App\Models\Concerns\BelongsToOwner;
+    protected $fillable = ['owner_id', 'room_type_id', 'room_number', 'floor', 'status'];
 
     public function roomType(): BelongsTo
     {

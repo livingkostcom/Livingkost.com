@@ -86,9 +86,16 @@ class RoleAndPermissionSeeder extends Seeder
             Permission::firstOrCreate(['name' => $permission]);
         }
 
+        // Super Admin only permission (manage owner accounts)
+        Permission::firstOrCreate(['name' => 'manage-owners']);
+
         // Create roles and assign permissions
 
-        // Owner role - Full access
+        // Super Admin role - manages everything across all owners
+        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdminRole->syncPermissions(array_merge($permissions, ['manage-owners']));
+
+        // Owner role - Full access within their own data (excludes manage-owners)
         $ownerRole = Role::firstOrCreate(['name' => 'owner']);
         $ownerRole->syncPermissions($permissions);
 

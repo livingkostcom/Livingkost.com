@@ -9,9 +9,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Expense extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\BelongsToOwner;
 
     protected $fillable = [
+        'owner_id',
         'property_id',
         'title',
         'description',

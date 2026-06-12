@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Lease extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\BelongsToOwner;
 
-    protected $fillable = ['tenant_id', 'room_id', 'start_date', 'end_date', 'due_date_per_month', 'deposit_amount', 'status', 'created_by', 'updated_by'];
+    protected $fillable = ['owner_id', 'tenant_id', 'room_id', 'start_date', 'end_date', 'due_date_per_month', 'deposit_amount', 'status', 'created_by', 'updated_by'];
 
     protected $casts = [
         'start_date' => 'date',

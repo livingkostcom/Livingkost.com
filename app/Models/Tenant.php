@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Tenant extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Models\Concerns\BelongsToOwner;
 
-    protected $fillable = ['name', 'email', 'nik', 'phone', 'emergency_contact', 'avatar', 'ktp_photo', 'status', 'user_id', 'created_by', 'updated_by'];
+    protected $fillable = ['owner_id', 'name', 'email', 'nik', 'phone', 'emergency_contact', 'avatar', 'ktp_photo', 'status', 'user_id', 'created_by', 'updated_by'];
 
     protected $dates = ['deleted_at'];
 
