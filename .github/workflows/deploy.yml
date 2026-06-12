@@ -1,0 +1,38 @@
+name: Deploy to Rumahweb
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.SSH_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Rumahweb
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          cd ~/public_html
+          git pull origin main
+          echo "Deploy berhasil pada $(date)"
+          EOF
+
+      - name: Notify on Success
+        if: success()
+        run: echo "✅ Deploy berhasil! Kode sudah di-update di website."
+
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ Deploy gagal! Silakan cek log untuk detail."
