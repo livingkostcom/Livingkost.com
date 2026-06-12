@@ -157,14 +157,6 @@
         <div class="bg-white rounded-2xl shadow-2xl p-8 space-y-8 backdrop-blur-xl bg-opacity-95">
             <!-- Header -->
             <div class="text-center space-y-2">
-                <div
-                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-4 animate-pulse-glow stagger-1">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 21v-4a6 6 0 016-6h3a6 6 0 016 6v4M3 21h18M3 7a6 6 0 016-6h6a6 6 0 016 6v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7z">
-                        </path>
-                    </svg>
-                </div>
                 <h1 class="text-3xl font-extrabold text-orange-600 animate-slide-down stagger-2">
                     Living<span class="text-gray-900">Kost</span></h1>
                 <p class="text-gray-500 text-sm animate-slide-down stagger-3">
