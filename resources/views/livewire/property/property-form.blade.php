@@ -97,6 +97,35 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+
+                <!-- Galeri Foto (multi-foto untuk halaman detail) -->
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Galeri Foto (untuk halaman detail)</label>
+                    @if (count($existing_gallery) || count($gallery_uploads))
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            @foreach ($existing_gallery as $i => $img)
+                                <div class="relative">
+                                    <img src="/images/{{ $img }}" class="w-full h-20 object-cover rounded-lg">
+                                    <button type="button" wire:click="removeExistingImage({{ $i }})"
+                                        class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow">&times;</button>
+                                </div>
+                            @endforeach
+                            @foreach ($gallery_uploads as $i => $up)
+                                <div class="relative">
+                                    <img src="{{ $up->temporaryUrl() }}" class="w-full h-20 object-cover rounded-lg ring-2 ring-orange-400">
+                                    <button type="button" wire:click="removeUpload({{ $i }})"
+                                        class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow">&times;</button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <input type="file" wire:model="gallery_uploads" accept="image/*" multiple
+                        class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-600 file:text-white file:font-semibold hover:file:bg-orange-700">
+                    <div wire:loading wire:target="gallery_uploads" class="text-xs text-orange-600 mt-1">Mengunggah...</div>
+                    @error('gallery_uploads.*')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
         @endif
     </div>

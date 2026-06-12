@@ -30,7 +30,7 @@ if ($lk_id > 0 && is_readable($lk_envPath)) {
                 $lk_env['DB_PASSWORD'] ?? '',
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
             );
-            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, featured_image, owner_id
+            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, featured_image, gallery, owner_id
                                  FROM properties WHERE id = ? AND is_featured = 1 AND status = 'active' LIMIT 1");
             $st->execute([$lk_id]);
             $lk_kost = $st->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -124,9 +124,24 @@ foreach ($lk_roomtypes as $rt) {
     }
 }
 
-$lk_hero = !empty($lk_kost['featured_image'])
-    ? '/images/' . $lk_kost['featured_image']
-    : 'https://placehold.co/1200x700/f97316/ffffff?text=Living+Kost';
+// Gallery: cover (featured_image) first, then additional gallery photos
+$lk_gallery = [];
+if (!empty($lk_kost['featured_image'])) {
+    $lk_gallery[] = '/images/' . $lk_kost['featured_image'];
+}
+$lk_g = json_decode($lk_kost['gallery'] ?? '[]', true);
+if (is_array($lk_g)) {
+    foreach ($lk_g as $lk_gp) {
+        $lk_gp = trim((string) $lk_gp);
+        if ($lk_gp !== '') {
+            $lk_gallery[] = '/images/' . $lk_gp;
+        }
+    }
+}
+if (empty($lk_gallery)) {
+    $lk_gallery[] = 'https://placehold.co/1200x700/f97316/ffffff?text=Living+Kost';
+}
+$lk_hero = $lk_gallery[0];
 
 $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
 ?>
@@ -162,14 +177,37 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
             <span class="text-gray-900 font-semibold"><?= $e($lk_kost['name']) ?></span>
         </nav>
 
-        <!-- Hero image -->
+        <!-- Gallery -->
         <div class="max-w-7xl mx-auto mb-10">
-            <div class="relative h-[300px] md:h-[550px] overflow-hidden rounded-2xl shadow-sm bg-gray-100">
-                <img id="mainView" src="<?= $e($lk_hero) ?>"
-                     class="w-full h-full object-cover cursor-zoom-in transition-all duration-500"
-                     onclick="openGallery(this.src)" alt="<?= $e($lk_kost['name']) ?>">
+            <div class="flex flex-col lg:flex-row gap-4">
+                <div class="flex-1">
+                    <div class="relative h-[300px] md:h-[550px] overflow-hidden rounded-2xl shadow-sm bg-gray-100">
+                        <img id="mainView" src="<?= $e($lk_gallery[0]) ?>"
+                             class="w-full h-full object-cover cursor-zoom-in transition-all duration-500"
+                             onclick="openGallery(this.src)" alt="<?= $e($lk_kost['name']) ?>">
+                        <?php if (count($lk_gallery) > 1): ?>
+                            <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs">
+                                <span id="currentImgIdx">1</span> / <?= count($lk_gallery) ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <?php if (count($lk_gallery) > 1): ?>
+                    <div class="flex lg:flex-col overflow-x-auto lg:overflow-y-auto gap-3 no-scrollbar lg:w-32 lg:h-[550px] py-1">
+                        <?php foreach ($lk_gallery as $idx => $img): ?>
+                            <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 thumb-item shrink-0 transition <?= $idx === 0 ? 'border-orange-600 opacity-100' : 'border-transparent opacity-60 hover:opacity-100' ?>"
+                                 onclick="changeImage(this, '<?= $e($img) ?>', <?= $idx + 1 ?>)">
+                                <img src="<?= $e($img) ?>" class="w-full h-full object-cover">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
             </div>
         </div>
+        <style>
+            .no-scrollbar::-webkit-scrollbar { display: none; }
+            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        </style>
 
         <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/90 items-center justify-center p-4 backdrop-blur-sm" style="display:none;">
             <button onclick="closeGallery()" class="absolute top-6 right-6 text-white text-4xl hover:text-orange-500 transition">&times;</button>
@@ -358,6 +396,21 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
         updateContent();
     </script>
     <script>
+        function changeImage(element, src, idx) {
+            const mainImg = document.getElementById('mainView');
+            mainImg.style.opacity = '0.5';
+            setTimeout(() => { mainImg.src = src; mainImg.style.opacity = '1'; }, 150);
+            document.querySelectorAll('.thumb-item').forEach(t => {
+                t.classList.remove('border-orange-600', 'opacity-100');
+                t.classList.add('border-transparent', 'opacity-60');
+            });
+            element.classList.remove('border-transparent', 'opacity-60');
+            element.classList.add('border-orange-600', 'opacity-100');
+            const c = document.getElementById('currentImgIdx');
+            if (c) c.innerText = idx;
+            element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+
         function openGallery(src) {
             const modal = document.getElementById('galleryModal');
             document.getElementById('modalImage').src = src;

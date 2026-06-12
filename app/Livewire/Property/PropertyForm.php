@@ -38,6 +38,12 @@ class PropertyForm extends Component
     #[\Livewire\Attributes\Validate('nullable|string|max:50')]
     public string $badge_text = '';
 
+    /** @var array<int,\Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
+    public array $gallery_uploads = [];
+
+    /** @var array<int,string> already-saved gallery paths */
+    public array $existing_gallery = [];
+
     public function mount(?int $propertyId = null)
     {
         $this->propertyId = $propertyId;
@@ -53,12 +59,33 @@ class PropertyForm extends Component
             $this->existing_featured_image = $property->featured_image;
             $this->location_label = $property->location_label ?? '';
             $this->badge_text = $property->badge_text ?? '';
+            $this->existing_gallery = is_array($property->gallery) ? $property->gallery : [];
+        }
+    }
+
+    public function removeExistingImage(int $index): void
+    {
+        if (isset($this->existing_gallery[$index])) {
+            unset($this->existing_gallery[$index]);
+            $this->existing_gallery = array_values($this->existing_gallery);
+        }
+    }
+
+    public function removeUpload(int $index): void
+    {
+        if (isset($this->gallery_uploads[$index])) {
+            unset($this->gallery_uploads[$index]);
+            $this->gallery_uploads = array_values($this->gallery_uploads);
         }
     }
 
     public function save()
     {
         $this->validate();
+
+        if (!empty($this->gallery_uploads)) {
+            $this->validate(['gallery_uploads.*' => 'image|max:2048']);
+        }
 
         $data = [
             'name' => $this->name,
@@ -76,6 +103,17 @@ class PropertyForm extends Component
             $this->featured_image->storeAs('featured', $filename, 'landing');
             $data['featured_image'] = 'featured/' . $filename;
         }
+
+        // Gallery: keep remaining existing images + append newly uploaded ones
+        $gallery = $this->existing_gallery;
+        foreach ($this->gallery_uploads as $upload) {
+            if ($upload instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                $gname = 'kost-' . uniqid() . '.' . $upload->getClientOriginalExtension();
+                $upload->storeAs('gallery', $gname, 'landing');
+                $gallery[] = 'gallery/' . $gname;
+            }
+        }
+        $data['gallery'] = !empty($gallery) ? array_values($gallery) : null;
 
         if ($this->propertyId) {
             $property = Property::findOrFail($this->propertyId);
