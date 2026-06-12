@@ -5,7 +5,7 @@
             Penyewa <span class="text-red-600">*</span>
         </label>
         <select wire:model.live="tenant_id" id="tenantSelect"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('tenant_id') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('tenant_id') border-red-500 @enderror">
             <option value="">-- Pilih Penyewa --</option>
             @foreach ($tenants as $tenant)
                 <option value="{{ $tenant->id }}">{{ $tenant->display_name }} ({{ $tenant->nik }})</option>
@@ -22,7 +22,7 @@
             Properti <span class="text-red-600">*</span>
         </label>
         <select wire:model.live="property_id" id="propertySelect"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
             <option value="">-- Pilih Properti --</option>
             @foreach ($properties as $property)
                 <option value="{{ $property->id }}">{{ $property->name }}</option>
@@ -41,7 +41,7 @@
             </div>
         @else
             <select wire:model.live="room_id" id="roomSelect"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('room_id') border-red-500 @enderror">
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('room_id') border-red-500 @enderror">
                 <option value="">-- Pilih Ruangan --</option>
                 @forelse ($rooms as $room)
                     <option value="{{ $room->id }}">{{ $room->room_number }} - {{ $room->roomType->name ?? 'N/A' }}
@@ -64,7 +64,7 @@
             Tanggal Mulai <span class="text-red-600">*</span>
         </label>
         <input wire:model="start_date" type="date" id="start_date"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('start_date') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('start_date') border-red-500 @enderror">
         @error('start_date')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -76,7 +76,7 @@
             Tanggal Selesai <span class="text-red-600">*</span>
         </label>
         <input wire:model="end_date" type="date" id="end_date"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('end_date') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('end_date') border-red-500 @enderror">
         @error('end_date')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -88,7 +88,7 @@
             Tanggal Jatuh Tempo (Setiap Bulan) <span class="text-red-600">*</span>
         </label>
         <input wire:model="due_date_per_month" type="number" id="due_date_per_month" min="1" max="31"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('due_date_per_month') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('due_date_per_month') border-red-500 @enderror">
         @error('due_date_per_month')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -100,7 +100,7 @@
             Jumlah Deposit <span class="text-red-600">*</span>
         </label>
         <input wire:model="deposit_amount" type="number" id="deposit_amount" step="0.01" min="0"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('deposit_amount') border-red-500 @enderror"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('deposit_amount') border-red-500 @enderror"
             placeholder="Contoh: 1000000">
         @error('deposit_amount')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -113,7 +113,7 @@
             Status <span class="text-red-600">*</span>
         </label>
         <select wire:model="status" id="status"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('status') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('status') border-red-500 @enderror">
             <option value="pending">Tertunda</option>
             <option value="active">Aktif</option>
             <option value="completed">Selesai</option>
@@ -132,7 +132,7 @@
             Batal
         </button>
         <button type="submit"
-            class="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+            class="flex-1 px-4 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition flex items-center justify-center"
             wire:loading.attr="disabled" wire:loading.class="opacity-50">
             <span wire:loading.remove>
                 {{ $leaseId ? 'Perbarui' : 'Simpan' }}

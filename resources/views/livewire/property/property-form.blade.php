@@ -5,7 +5,7 @@
             Nama Property <span class="text-red-600">*</span>
         </label>
         <input wire:model="name" type="text" id="name" placeholder="Contoh: Griya Nyaman"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('name') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('name') border-red-500 @enderror">
         @error('name')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -17,7 +17,7 @@
             Alamat <span class="text-red-600">*</span>
         </label>
         <input wire:model="address" type="text" id="address" placeholder="Contoh: Jl. Sudirman No. 123"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('address') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('address') border-red-500 @enderror">
         @error('address')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -29,7 +29,7 @@
             Deskripsi
         </label>
         <textarea wire:model="description" id="description" rows="3" placeholder="Deskripsi property (opsional)"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition resize-none @error('description') border-red-500 @enderror"></textarea>
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition resize-none @error('description') border-red-500 @enderror"></textarea>
         @error('description')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -41,7 +41,7 @@
             Status <span class="text-red-600">*</span>
         </label>
         <select wire:model="status" id="status"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('status') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('status') border-red-500 @enderror">
             <option value="">-- Pilih Status --</option>
             <option value="active">Aktif</option>
             <option value="inactive">Non-Aktif</option>
@@ -58,7 +58,7 @@
             Batal
         </button>
         <button type="submit"
-            class="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+            class="flex-1 px-4 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition flex items-center justify-center"
             wire:loading.attr="disabled" wire:loading.class="opacity-50">
             <span wire:loading.remove>
                 {{ $propertyId ? 'Perbarui' : 'Simpan' }}

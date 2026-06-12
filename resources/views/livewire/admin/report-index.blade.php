@@ -4,7 +4,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Laporan
                 </h1>
                 <p class="mt-2 text-gray-600">Ringkasan data properti, pembayaran, dan penyewa</p>
@@ -40,7 +40,7 @@
             @endphp
             @foreach ($tabs as $key => $t)
                 <button wire:click="setTab('{{ $key }}')"
-                    class="flex items-center gap-2 px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors {{ $tab === $key ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    class="flex items-center gap-2 px-5 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors {{ $tab === $key ? 'border-orange-600 text-orange-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $t['icon'] }}">
                         </path>
@@ -58,7 +58,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
                     <input type="month" wire:model.live="monthYear"
-                        class="rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="rounded-lg border-gray-300 text-sm focus:ring-orange-500 focus:border-orange-500">
                 </div>
             @endif
 
@@ -66,7 +66,7 @@
                 <div>
                     <label class="block text-xs font-medium text-gray-600 mb-1">Properti</label>
                     <select wire:model.live="propertyFilter"
-                        class="rounded-lg border-gray-300 text-sm focus:ring-blue-500 focus:border-blue-500">
+                        class="rounded-lg border-gray-300 text-sm focus:ring-orange-500 focus:border-orange-500">
                         <option value="">Semua Properti</option>
                         @foreach ($properties as $property)
                             <option value="{{ $property->id }}">{{ $property->name }}</option>
@@ -221,9 +221,9 @@
                     <p class="text-xs text-gray-500 font-medium">Total Kamar</p>
                     <p class="text-2xl font-bold text-gray-800 mt-1">{{ $occupancyReport['total_rooms'] }}</p>
                 </div>
-                <div class="bg-white rounded-xl shadow-sm border border-blue-200 p-4">
-                    <p class="text-xs text-blue-600 font-medium">Terisi</p>
-                    <p class="text-2xl font-bold text-blue-600 mt-1">{{ $occupancyReport['total_occupied'] }}</p>
+                <div class="bg-white rounded-xl shadow-sm border border-orange-200 p-4">
+                    <p class="text-xs text-orange-600 font-medium">Terisi</p>
+                    <p class="text-2xl font-bold text-orange-600 mt-1">{{ $occupancyReport['total_occupied'] }}</p>
                 </div>
                 <div class="bg-white rounded-xl shadow-sm border border-green-200 p-4">
                     <p class="text-xs text-green-600 font-medium">Tersedia</p>
@@ -239,10 +239,10 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
                 <div class="flex items-center justify-between mb-2">
                     <span class="text-sm font-medium text-gray-700">Tingkat Hunian Keseluruhan</span>
-                    <span class="text-sm font-bold text-blue-600">{{ $occupancyReport['overall_rate'] }}%</span>
+                    <span class="text-sm font-bold text-orange-600">{{ $occupancyReport['overall_rate'] }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-3">
-                    <div class="bg-blue-500 h-3 rounded-full transition-all duration-500"
+                    <div class="bg-orange-500 h-3 rounded-full transition-all duration-500"
                         style="width: {{ $occupancyReport['overall_rate'] }}%"></div>
                 </div>
             </div>
@@ -267,7 +267,7 @@
                         </div>
                         <div class="flex gap-4 text-xs text-gray-500">
                             <span>Total: <strong class="text-gray-700">{{ $item['total_rooms'] }}</strong></span>
-                            <span>Terisi: <strong class="text-blue-600">{{ $item['occupied'] }}</strong></span>
+                            <span>Terisi: <strong class="text-orange-600">{{ $item['occupied'] }}</strong></span>
                             <span>Tersedia: <strong class="text-green-600">{{ $item['available'] }}</strong></span>
                             <span>Maintenance: <strong
                                     class="text-orange-600">{{ $item['maintenance'] }}</strong></span>

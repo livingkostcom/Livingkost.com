@@ -64,7 +64,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kos <span
                             class="text-red-500">*</span></label>
                     <input wire:model="app_name" type="text" placeholder="Nama kos Anda..."
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                     @error('app_name')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -72,7 +72,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tagline</label>
                     <input wire:model="app_tagline" type="text" placeholder="Sistem Manajemen Kos"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                     @error('app_tagline')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -80,7 +80,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
                     <textarea wire:model="app_address" rows="2" placeholder="Alamat lengkap kos..."
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"></textarea>
                     @error('app_address')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -89,7 +89,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">No. Telepon</label>
                         <input wire:model="app_phone" type="text" placeholder="08xx-xxxx-xxxx"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                         @error('app_phone')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -97,7 +97,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <input wire:model="app_email" type="email" placeholder="info@kos.com"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                         @error('app_email')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -106,7 +106,7 @@
             </div>
             <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
                 <button wire:click="saveGeneral"
-                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
+                    class="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
                     Simpan Pengaturan Umum
                 </button>
             </div>
@@ -125,7 +125,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nama Bank</label>
                         <input wire:model="bank_name" type="text" placeholder="BCA, BNI, Mandiri, dll"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                         @error('bank_name')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -133,7 +133,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">No. Rekening</label>
                         <input wire:model="bank_account_number" type="text" placeholder="1234567890"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                         @error('bank_account_number')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -142,7 +142,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Atas Nama</label>
                     <input wire:model="bank_account_holder" type="text" placeholder="Nama pemilik rekening"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                     @error('bank_account_holder')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -151,7 +151,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Instruksi Pembayaran</label>
                     <textarea wire:model="payment_instructions" rows="4"
                         placeholder="Cara pembayaran, catatan penting untuk penyewa..."
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition"></textarea>
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"></textarea>
                     @error('payment_instructions')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -159,17 +159,17 @@
 
                 {{-- Preview Card --}}
                 @if ($bank_name || $bank_account_number)
-                    <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-5 text-white">
-                        <p class="text-sm text-blue-200 mb-1">Preview Informasi Pembayaran</p>
+                    <div class="bg-gradient-to-r from-orange-600 to-orange-700 rounded-xl p-5 text-white">
+                        <p class="text-sm text-orange-200 mb-1">Preview Informasi Pembayaran</p>
                         <p class="text-lg font-bold">{{ $bank_name ?: '-' }}</p>
                         <p class="text-2xl font-mono tracking-wider mt-1">{{ $bank_account_number ?: '-' }}</p>
-                        <p class="text-sm text-blue-200 mt-2">a.n. {{ $bank_account_holder ?: '-' }}</p>
+                        <p class="text-sm text-orange-200 mt-2">a.n. {{ $bank_account_holder ?: '-' }}</p>
                     </div>
                 @endif
             </div>
             <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
                 <button wire:click="savePayment"
-                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
+                    class="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
                     Simpan Pengaturan Pembayaran
                 </button>
             </div>
@@ -203,7 +203,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Denda</label>
                             <select wire:model.live="late_fee_type"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                                 <option value="fixed">Nominal Tetap (Rp)</option>
                                 <option value="percentage">Persentase (%)</option>
                             </select>
@@ -215,7 +215,7 @@
                             <input wire:model="late_fee_amount" type="number" min="0"
                                 step="{{ $late_fee_type === 'percentage' ? '0.1' : '1000' }}"
                                 placeholder="{{ $late_fee_type === 'percentage' ? '5' : '50000' }}"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                             @error('late_fee_amount')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -225,7 +225,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Masa Tenggang (hari)</label>
                         <input wire:model="late_fee_grace_days" type="number" min="0" max="30"
                             placeholder="3"
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition sm:max-w-xs">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition sm:max-w-xs">
                         <p class="text-xs text-gray-400 mt-1">Jumlah hari setelah jatuh tempo sebelum denda mulai
                             berlaku</p>
                         @error('late_fee_grace_days')
@@ -255,7 +255,7 @@
             </div>
             <div class="p-6 border-t border-gray-100 bg-gray-50 flex justify-end">
                 <button wire:click="saveLateFee"
-                    class="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
+                    class="px-6 py-2.5 bg-gradient-to-r from-orange-600 to-orange-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
                     Simpan Pengaturan Denda
                 </button>
             </div>

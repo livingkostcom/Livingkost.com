@@ -12,7 +12,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Invoice</h1>
                 <p class="mt-2 text-gray-600">Kelola daftar invoice penghuni</p>
             </div>
@@ -39,7 +39,7 @@
                     Generate Bulanan
                 </button>
                 <a href="{{ route('invoices.create') }}"
-                    class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold rounded-xl transition duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl whitespace-nowrap">
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-600 hover:from-orange-700 hover:to-orange-700 text-white font-semibold rounded-xl transition duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl whitespace-nowrap">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -100,19 +100,19 @@
     <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Search -->
         <div class="relative group">
-            <svg class="absolute left-4 top-3.5 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition"
+            <svg class="absolute left-4 top-3.5 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition"
                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
             <input wire:model.live="search" type="text"
                 placeholder="Cari nama penghuni, email, atau nomor referensi..."
-                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
+                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
         </div>
 
         <!-- Filter by Status -->
         <select wire:model.live="filterStatus"
-            class="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
+            class="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
             <option value="">-- Semua Status --</option>
             <option value="unpaid">Belum Bayar</option>
             <option value="pending">Pending</option>
@@ -151,14 +151,14 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse($invoices as $invoice)
-                        <tr class="hover:bg-blue-50 transition duration-200">
+                        <tr class="hover:bg-orange-50 transition duration-200">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-gray-900 font-semibold">{{ $invoice->reference_number }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-semibold text-blue-600 shadow-sm">
+                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-100 flex items-center justify-center font-semibold text-orange-600 shadow-sm">
                                         {{ substr($invoice->lease->tenant->display_name, 0, 1) }}
                                     </div>
                                     <div>
@@ -202,7 +202,7 @@
                             </td>
                             <td class="px-6 py-4 text-sm space-x-2 flex">
                                 <button wire:click="openDetailModal({{ $invoice->id }})"
-                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition font-medium">
+                                    class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
                                     Detail
                                 </button>
                                 @if ($invoice->verified_at)
@@ -213,7 +213,7 @@
                                     </button>
                                 @else
                                     <a href="{{ route('invoices.edit', $invoice->id) }}"
-                                        class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition font-medium">
+                                        class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
                                         Edit
                                     </a>
                                 @endif
@@ -365,9 +365,9 @@
                     </div>
 
                     <!-- Amount -->
-                    <div class="border-t border-gray-200 pt-4 bg-indigo-50 p-4 rounded-lg">
+                    <div class="border-t border-gray-200 pt-4 bg-orange-50 p-4 rounded-lg">
                         <label class="block text-xs text-gray-600 mb-1">Jumlah Tagihan</label>
-                        <p class="text-2xl font-bold text-indigo-600">Rp
+                        <p class="text-2xl font-bold text-orange-600">Rp
                             {{ number_format($detailingInvoice->amount, 0, ',', '.') }}</p>
                     </div>
 
@@ -469,7 +469,7 @@
                                 class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent" />
                         </div>
                         <button wire:click="previewGenerate" wire:loading.attr="disabled"
-                            class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium flex items-center gap-2 disabled:opacity-50">
+                            class="px-6 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition font-medium flex items-center gap-2 disabled:opacity-50">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

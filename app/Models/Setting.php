@@ -50,7 +50,7 @@ class Setting extends Model
     {
         return [
             // General
-            'app_name' => 'Fluty Kos',
+            'app_name' => 'Living Kost',
             'app_tagline' => 'Sistem Manajemen Kos',
             'app_address' => '',
             'app_phone' => '',

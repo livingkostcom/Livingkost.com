@@ -4,7 +4,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Selamat Datang, {{ Auth::user()->name }}!</h1>
                 <p class="mt-2 text-gray-600">Ringkasan manajemen KOS Anda hari ini</p>
             </div>
@@ -22,8 +22,8 @@
             <!-- Total Kamar -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
                 <div class="flex items-center justify-between mb-3">
-                    <div class="p-2.5 bg-blue-100 rounded-xl">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="p-2.5 bg-orange-100 rounded-xl">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 12l2-2m0 0l7-4 7 4M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
                             </path>
@@ -100,8 +100,8 @@
         <!-- Secondary Stats Row -->
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
             <div class="bg-white rounded-xl border border-gray-100 px-5 py-4 flex items-center gap-4">
-                <div class="p-2 bg-indigo-100 rounded-lg">
-                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2 bg-orange-100 rounded-lg">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
                     </svg>
@@ -189,14 +189,14 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-800">Perbaikan Terbaru</h2>
                     <a href="{{ route('maintenance.index') }}" wire:navigate
-                        class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lihat Semua</a>
+                        class="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua</a>
                 </div>
                 <div class="space-y-3">
                     @forelse ($recentMaintenance as $req)
                         <div class="flex items-start gap-3 p-3 rounded-xl bg-gray-50 hover:bg-gray-100 transition">
                             <div
                                 class="mt-0.5 p-1.5 rounded-lg
-                                {{ $req->status === 'pending' ? 'bg-amber-100' : ($req->status === 'in_progress' ? 'bg-blue-100' : ($req->status === 'completed' ? 'bg-green-100' : 'bg-red-100')) }}">
+                                {{ $req->status === 'pending' ? 'bg-amber-100' : ($req->status === 'in_progress' ? 'bg-orange-100' : ($req->status === 'completed' ? 'bg-green-100' : 'bg-red-100')) }}">
                                 @if ($req->status === 'pending')
                                     <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
@@ -204,7 +204,7 @@
                                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                 @elseif($req->status === 'in_progress')
-                                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor"
+                                    <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15">
@@ -258,7 +258,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-800">Invoice Terbaru</h2>
                     <a href="{{ route('invoices.index') }}" wire:navigate
-                        class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lihat Semua</a>
+                        class="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua</a>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
@@ -317,7 +317,7 @@
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-800">Kontrak Akan Berakhir</h2>
                     <a href="{{ route('leases.index') }}" wire:navigate
-                        class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lihat Semua</a>
+                        class="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua</a>
                 </div>
                 <div class="space-y-3">
                     @forelse ($expiringLeases as $lease)
@@ -365,9 +365,9 @@
             <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                 @if ($isOwner)
                     <a href="{{ route('properties.index') }}" wire:navigate
-                        class="group flex flex-col items-center gap-2 px-4 py-5 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
-                        <div class="p-2.5 bg-blue-200 group-hover:bg-blue-300 rounded-xl transition">
-                            <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor"
+                        class="group flex flex-col items-center gap-2 px-4 py-5 bg-orange-50 hover:bg-orange-100 rounded-xl transition">
+                        <div class="p-2.5 bg-orange-200 group-hover:bg-orange-300 rounded-xl transition">
+                            <svg class="w-5 h-5 text-orange-700" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"></path>
@@ -377,9 +377,9 @@
                     </a>
                 @endif
                 <a href="{{ route('rooms.index') }}" wire:navigate
-                    class="group flex flex-col items-center gap-2 px-4 py-5 bg-indigo-50 hover:bg-indigo-100 rounded-xl transition">
-                    <div class="p-2.5 bg-indigo-200 group-hover:bg-indigo-300 rounded-xl transition">
-                        <svg class="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor"
+                    class="group flex flex-col items-center gap-2 px-4 py-5 bg-orange-50 hover:bg-orange-100 rounded-xl transition">
+                    <div class="p-2.5 bg-orange-200 group-hover:bg-orange-300 rounded-xl transition">
+                        <svg class="w-5 h-5 text-orange-700" fill="none" stroke="currentColor"
                             viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 12l2-2m0 0l7-4 7 4M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
@@ -443,8 +443,8 @@
                 <!-- Kontrak Period -->
                 <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
                     <div class="flex items-center justify-between mb-3">
-                        <div class="p-2.5 bg-blue-100 rounded-xl">
-                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                        <div class="p-2.5 bg-orange-100 rounded-xl">
+                            <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
@@ -486,10 +486,10 @@
                     <h2 class="text-lg font-bold text-gray-800 mb-4">Pembayaran Berikutnya</h2>
                     @if ($tenant['next_invoice'])
                         <div
-                            class="p-4 rounded-xl {{ $tenant['next_invoice']->due_date < now() ? 'bg-red-50 border border-red-100' : 'bg-blue-50 border border-blue-100' }}">
+                            class="p-4 rounded-xl {{ $tenant['next_invoice']->due_date < now() ? 'bg-red-50 border border-red-100' : 'bg-orange-50 border border-orange-100' }}">
                             <div class="flex items-center justify-between mb-3">
                                 <span
-                                    class="text-xs font-semibold px-2 py-1 rounded-full {{ $tenant['next_invoice']->due_date < now() ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700' }}">
+                                    class="text-xs font-semibold px-2 py-1 rounded-full {{ $tenant['next_invoice']->due_date < now() ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700' }}">
                                     {{ $tenant['next_invoice']->due_date < now() ? 'Terlambat' : 'Menunggu' }}
                                 </span>
                                 <p class="text-xs text-gray-500">Jatuh tempo:
@@ -518,7 +518,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-lg font-bold text-gray-800">Permintaan Perbaikan</h2>
                         <a href="{{ route('maintenance.index') }}" wire:navigate
-                            class="text-sm text-blue-600 hover:text-blue-700 font-medium">Lihat Semua</a>
+                            class="text-sm text-orange-600 hover:text-orange-700 font-medium">Lihat Semua</a>
                     </div>
                     <div class="space-y-3">
                         @forelse ($tenant['maintenance'] as $req)
@@ -575,9 +575,9 @@
             <h2 class="text-lg font-bold text-gray-800 mb-4">Aksi Cepat</h2>
             <div class="grid grid-cols-2 gap-3">
                 <a href="{{ route('tenant.invoices.index') }}" wire:navigate
-                    class="group flex flex-col items-center gap-2 px-4 py-5 bg-blue-50 hover:bg-blue-100 rounded-xl transition">
-                    <div class="p-2.5 bg-blue-200 group-hover:bg-blue-300 rounded-xl transition">
-                        <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    class="group flex flex-col items-center gap-2 px-4 py-5 bg-orange-50 hover:bg-orange-100 rounded-xl transition">
+                    <div class="p-2.5 bg-orange-200 group-hover:bg-orange-300 rounded-xl transition">
+                        <svg class="w-5 h-5 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
                             </path>
@@ -618,8 +618,8 @@
                             datasets: [{
                                 label: 'Pendapatan (Rp)',
                                 data: chartData.data,
-                                backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                                borderColor: 'rgba(59, 130, 246, 1)',
+                                backgroundColor: 'rgba(249, 115, 22, 0.7)',
+                                borderColor: 'rgba(249, 115, 22, 1)',
                                 borderWidth: 1,
                                 borderRadius: 8,
                                 barPercentage: 0.6,

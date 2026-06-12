@@ -4,7 +4,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Verifikasi Pembayaran
                 </h1>
                 <p class="mt-2 text-gray-600">Kelola dan verifikasi pembayaran dari penghuni</p>
@@ -65,12 +65,12 @@
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cari Invoice / Tenant</label>
                 <input type="text" wire:model.live="search" placeholder="Nomor invoice, nama tenant, email..."
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Filter Status</label>
                 <select wire:model.live="filterStatus"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
                     <option value="">Semua Status</option>
                     <option value="pending">Menunggu Verifikasi</option>
                     <option value="paid">Sudah Terverifikasi</option>
@@ -106,7 +106,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse ($invoices as $invoice)
-                        <tr class="hover:bg-blue-50 transition duration-200">
+                        <tr class="hover:bg-orange-50 transition duration-200">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-gray-900 font-semibold">
                                     {{ $invoice->reference_number ?? 'INV-' . str_pad($invoice->id, 5, '0', STR_PAD_LEFT) }}
@@ -116,7 +116,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-3">
                                     <div
-                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center font-semibold text-blue-600 shadow-sm">
+                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-100 flex items-center justify-center font-semibold text-orange-600 shadow-sm">
                                         @if ($invoice->lease && $invoice->lease->tenant)
                                             {{ substr($invoice->lease->tenant->display_name, 0, 1) }}
                                         @else
@@ -174,7 +174,7 @@
                             </td>
                             <td class="px-6 py-4 text-sm space-x-2 flex">
                                 <button wire:click="openDetailModal({{ $invoice->id }})"
-                                    class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition font-medium">
+                                    class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
                                     Detail
                                 </button>
                                 @if ($invoice->status === 'pending')
@@ -188,7 +188,7 @@
                                     </button>
                                 @elseif ($invoice->status === 'paid' && $invoice->receipt)
                                     <a href="{{ route('receipts.download', $invoice->receipt->id) }}" target="_blank"
-                                        class="inline-flex items-center px-3 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200 transition font-medium">
+                                        class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
                                         Download Receipt
                                     </a>
                                 @endif
@@ -254,7 +254,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-xs text-gray-600 mb-1">Jumlah</label>
-                                    <p class="text-sm font-bold text-blue-600">
+                                    <p class="text-sm font-bold text-orange-600">
                                         Rp{{ number_format($detailInvoice->amount, 0, ',', '.') }}</p>
                                 </div>
                                 <div>
@@ -326,7 +326,7 @@
                                         <img src="{{ $fileUrl }}" alt="Bukti Pembayaran"
                                             class="max-h-60 rounded-lg mx-auto">
                                         <a href="{{ $fileUrl }}" target="_blank"
-                                            class="mt-2 inline-block text-blue-600 hover:text-blue-800 text-sm">
+                                            class="mt-2 inline-block text-orange-600 hover:text-orange-800 text-sm">
                                             Buka di tab baru
                                         </a>
                                     @else
@@ -341,7 +341,7 @@
                                                 <p class="font-semibold text-gray-900">{{ strtoupper($extension) }}
                                                     File</p>
                                                 <a href="{{ $fileUrl }}" target="_blank"
-                                                    class="text-blue-600 hover:text-blue-800 text-sm">
+                                                    class="text-orange-600 hover:text-orange-800 text-sm">
                                                     Download
                                                 </a>
                                             </div>
@@ -392,7 +392,7 @@
                         $approvingInvoice = \App\Models\Invoice::find($approvingInvoiceId);
                     @endphp
                     @if ($approvingInvoice)
-                        <div class="bg-blue-50 p-4 rounded-lg space-y-2">
+                        <div class="bg-orange-50 p-4 rounded-lg space-y-2">
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <p class="text-xs text-gray-600">Invoice</p>

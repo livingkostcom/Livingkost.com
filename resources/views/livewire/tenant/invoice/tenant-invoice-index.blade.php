@@ -12,7 +12,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Invoices Saya
                 </h1>
                 <p class="mt-2 text-gray-600">Lihat dan bayar tagihan bulan ini</p>
@@ -71,18 +71,18 @@
     <div class="mb-6 grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Search -->
         <div class="relative group">
-            <svg class="absolute left-4 top-3.5 w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition"
+            <svg class="absolute left-4 top-3.5 w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition"
                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
             <input wire:model.live="search" type="text" placeholder="Cari nomor invoice atau bulan..."
-                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
+                class="w-full pl-12 pr-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
         </div>
 
         <!-- Filter by Status -->
         <select wire:model.live="filterStatus"
-            class="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
+            class="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
             <option value="">-- Semua Status --</option>
             <option value="unpaid">Belum Bayar</option>
             <option value="pending">Menunggu Verifikasi</option>
@@ -117,7 +117,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-200">
                     @forelse($invoices as $invoice)
-                        <tr class="hover:bg-blue-50 transition duration-200">
+                        <tr class="hover:bg-orange-50 transition duration-200">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <p class="text-gray-900 font-semibold">{{ $invoice->reference_number }}</p>
                             </td>
@@ -155,7 +155,7 @@
                             <td class="px-6 py-4 text-sm flex gap-2">
                                 @if ($invoice->status === 'unpaid')
                                     <button wire:click="openUploadModal({{ $invoice->id }})"
-                                        class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200 transition font-medium">
+                                        class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
                                         Upload Bukti
                                     </button>
                                 @elseif ($invoice->status === 'pending')
@@ -197,9 +197,9 @@
     @if ($showUploadModal)
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
             <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
-                <div class="bg-blue-600 px-6 py-4 flex justify-between items-center">
+                <div class="bg-orange-600 px-6 py-4 flex justify-between items-center">
                     <h3 class="text-lg font-bold text-white">Upload Bukti Pembayaran</h3>
-                    <button wire:click="closeUploadModal" class="text-white hover:text-blue-100">
+                    <button wire:click="closeUploadModal" class="text-white hover:text-orange-100">
                         <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                 d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
@@ -214,9 +214,9 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih File</label>
                         <div class="relative">
                             <input type="file" wire:model="proofFile" accept=".pdf,.jpg,.jpeg,.png"
-                                class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 file:hidden cursor-pointer"
-                                @dragover="$el.classList.add('border-blue-500')"
-                                @dragleave="$el.classList.remove('border-blue-500')">
+                                class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl focus:outline-none focus:border-orange-500 file:hidden cursor-pointer"
+                                @dragover="$el.classList.add('border-orange-500')"
+                                @dragleave="$el.classList.remove('border-orange-500')">
                             <p class="text-xs text-gray-500 mt-2">PDF, JPG, PNG • Max 5MB</p>
                         </div>
                         @error('proofFile')
@@ -245,7 +245,7 @@
                             Batal
                         </button>
                         <button type="submit"
-                            class="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition">
+                            class="flex-1 px-4 py-3 bg-orange-600 hover:bg-orange-700 text-white font-semibold rounded-xl transition">
                             Upload
                         </button>
                     </div>

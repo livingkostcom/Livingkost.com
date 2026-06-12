@@ -1,4 +1,4 @@
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center p-4">
+<div class="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50 flex items-center justify-center p-4">
     <style>
         @keyframes float-up {
             0% {
@@ -28,11 +28,11 @@
 
             0%,
             100% {
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
+                box-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
             }
 
             50% {
-                box-shadow: 0 0 40px rgba(79, 70, 229, 0.8);
+                box-shadow: 0 0 40px rgba(234, 88, 12, 0.8);
             }
         }
 
@@ -82,15 +82,15 @@
 
         @keyframes input-focus-glow {
             0% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.1);
+                box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.1);
             }
 
             70% {
-                box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 10px rgba(249, 115, 22, 0);
             }
 
             100% {
-                box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+                box-shadow: 0 0 0 0 rgba(249, 115, 22, 0);
             }
         }
 
@@ -146,10 +146,10 @@
 
     <!-- Decorative Elements -->
     <div
-        class="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-float-blob-1">
+        class="absolute top-0 left-0 w-96 h-96 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-float-blob-1">
     </div>
     <div
-        class="absolute bottom-0 right-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-float-blob-2">
+        class="absolute bottom-0 right-0 w-96 h-96 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-float-blob-2">
     </div>
 
     <div class="w-full max-w-md animate-float-up">
@@ -158,16 +158,15 @@
             <!-- Header -->
             <div class="text-center space-y-2">
                 <div
-                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full mb-4 animate-pulse-glow stagger-1">
+                    class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-500 to-orange-600 rounded-full mb-4 animate-pulse-glow stagger-1">
                     <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M3 21v-4a6 6 0 016-6h3a6 6 0 016 6v4M3 21h18M3 7a6 6 0 016-6h6a6 6 0 016 6v12a2 2 0 01-2 2H5a2 2 0 01-2-2V7z">
                         </path>
                     </svg>
                 </div>
-                <h1
-                    class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent animate-slide-down stagger-2">
-                    {{ $appName ?? 'Fluty Kos' }}</h1>
+                <h1 class="text-3xl font-extrabold text-orange-600 animate-slide-down stagger-2">
+                    Living<span class="text-gray-900">Kost</span></h1>
                 <p class="text-gray-500 text-sm animate-slide-down stagger-3">
                     {{ $appTagline ?? 'Sistem Manajemen Kos' }}</p>
             </div>
@@ -181,7 +180,7 @@
                     </label>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition"
+                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
@@ -189,7 +188,7 @@
                             </svg>
                         </div>
                         <input wire:model="email" id="email" type="email"
-                            class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition duration-300 input-glow @error('email') border-red-500 bg-red-50 @enderror"
+                            class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent focus:bg-white transition duration-300 input-glow @error('email') border-red-500 bg-red-50 @enderror"
                             placeholder="your@email.com" />
                     </div>
                     @error('email')
@@ -212,7 +211,7 @@
                     </label>
                     <div class="relative group">
                         <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-blue-500 transition"
+                            <svg class="w-5 h-5 text-gray-400 group-focus-within:text-orange-500 transition"
                                 fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z">
@@ -220,7 +219,7 @@
                             </svg>
                         </div>
                         <input wire:model="password" id="password" type="password"
-                            class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:bg-white transition duration-300 input-glow @error('password') border-red-500 bg-red-50 @enderror"
+                            class="w-full pl-11 pr-4 py-3 bg-gray-50 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent focus:bg-white transition duration-300 input-glow @error('password') border-red-500 bg-red-50 @enderror"
                             placeholder="••••••••" />
                     </div>
                     @error('password')
@@ -240,7 +239,7 @@
                 <div class="flex items-center justify-between animate-slide-down stagger-3">
                     <label for="remember" class="flex items-center gap-3 cursor-pointer group">
                         <input wire:model="remember" id="remember" type="checkbox"
-                            class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 cursor-pointer transition" />
+                            class="w-5 h-5 text-orange-600 bg-gray-100 border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 cursor-pointer transition" />
                         <span class="text-sm text-gray-600 group-hover:text-gray-900 transition">
                             Ingat saya
                         </span>
@@ -249,7 +248,7 @@
 
                 <!-- Submit Button -->
                 <button type="submit" wire:loading.attr="disabled"
-                    class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl animate-slide-down stagger-4">
+                    class="w-full bg-gradient-to-r from-orange-600 to-orange-600 hover:from-orange-700 hover:to-orange-700 text-white font-semibold py-3 px-4 rounded-xl transition duration-300 transform hover:scale-105 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl animate-slide-down stagger-4">
                     <span wire:loading.remove>
                         <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -270,8 +269,8 @@
             </form>
 
             <!-- Demo Credentials -->
-            <div class="mt-2 border border-blue-200 rounded-xl bg-blue-50/50 p-4 animate-slide-down stagger-5">
-                <p class="text-xs font-semibold text-blue-700 mb-3 flex items-center gap-1.5">
+            <div class="mt-2 border border-orange-200 rounded-xl bg-orange-50/50 p-4 animate-slide-down stagger-5">
+                <p class="text-xs font-semibold text-orange-700 mb-3 flex items-center gap-1.5">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -279,25 +278,25 @@
                     Demo Login
                 </p>
                 <div class="space-y-2">
-                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-blue-100 cursor-pointer hover:border-blue-300 transition"
-                        wire:click="$set('email', 'owner@fluty.com'); $set('password', 'password')">
+                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-orange-100 cursor-pointer hover:border-orange-300 transition"
+                        wire:click="$set('email', 'owner@livingkost.com'); $set('password', 'password')">
                         <div>
                             <span class="font-medium text-gray-700">Owner</span>
-                            <span class="text-gray-400 ml-1">— owner@fluty.com</span>
+                            <span class="text-gray-400 ml-1">— owner@livingkost.com</span>
                         </div>
-                        <span class="text-blue-500 font-medium text-[10px] bg-blue-100 px-2 py-0.5 rounded-full">Full
+                        <span class="text-orange-500 font-medium text-[10px] bg-orange-100 px-2 py-0.5 rounded-full">Full
                             Access</span>
                     </div>
-                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-blue-100 cursor-pointer hover:border-blue-300 transition"
-                        wire:click="$set('email', 'manager@fluty.com'); $set('password', 'password')">
+                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-orange-100 cursor-pointer hover:border-orange-300 transition"
+                        wire:click="$set('email', 'manager@livingkost.com'); $set('password', 'password')">
                         <div>
                             <span class="font-medium text-gray-700">Manager</span>
-                            <span class="text-gray-400 ml-1">— manager@fluty.com</span>
+                            <span class="text-gray-400 ml-1">— manager@livingkost.com</span>
                         </div>
                         <span
-                            class="text-indigo-500 font-medium text-[10px] bg-indigo-100 px-2 py-0.5 rounded-full">Operasional</span>
+                            class="text-orange-500 font-medium text-[10px] bg-orange-100 px-2 py-0.5 rounded-full">Operasional</span>
                     </div>
-                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-blue-100 cursor-pointer hover:border-blue-300 transition"
+                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-orange-100 cursor-pointer hover:border-orange-300 transition"
                         wire:click="$set('email', 'ahmad@example.com'); $set('password', 'password123')">
                         <div>
                             <span class="font-medium text-gray-700">Tenant</span>
@@ -320,7 +319,7 @@
         <!-- Extra Info -->
         <div class="mt-8 text-center animate-float-up">
             <p class="text-xs text-gray-500">
-                © 2026 {{ $appName ?? 'Fluty Kos' }}. All rights reserved.
+                © 2026 {{ $appName ?? 'Living Kost' }}. All rights reserved.
             </p>
         </div>
     </div>

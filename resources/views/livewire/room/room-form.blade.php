@@ -5,7 +5,7 @@
             Property <span class="text-red-600">*</span>
         </label>
         <select wire:model.live="selectedProperty" id="propertySelect"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('room_type_id') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('room_type_id') border-red-500 @enderror">
             <option value="">-- Pilih Property --</option>
             @foreach ($properties as $property)
                 <option value="{{ $property->id }}">{{ $property->name }}</option>
@@ -19,7 +19,7 @@
             Tipe Ruangan <span class="text-red-600">*</span>
         </label>
         <select wire:model="room_type_id" id="roomTypeSelect"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('room_type_id') border-red-500 @enderror"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('room_type_id') border-red-500 @enderror"
             @if (!$selectedProperty) disabled @endif>
             <option value="">-- Pilih Tipe Ruangan --</option>
             @if ($selectedProperty)
@@ -39,7 +39,7 @@
             Nomor Ruangan <span class="text-red-600">*</span>
         </label>
         <input wire:model="room_number" type="text" id="roomNumber" placeholder="Contoh: 101, 202A"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('room_number') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('room_number') border-red-500 @enderror">
         @error('room_number')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -51,7 +51,7 @@
             Lantai <span class="text-red-600">*</span>
         </label>
         <input wire:model="floor" type="number" id="floor" min="1"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('floor') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('floor') border-red-500 @enderror">
         @error('floor')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -63,7 +63,7 @@
             Status <span class="text-red-600">*</span>
         </label>
         <select wire:model="status" id="status"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('status') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('status') border-red-500 @enderror">
             <option value="available">Tersedia</option>
             <option value="occupied">Terisi</option>
             <option value="maintenance">Maintenance</option>
@@ -80,7 +80,7 @@
             Batal
         </button>
         <button type="submit"
-            class="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+            class="flex-1 px-4 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition flex items-center justify-center"
             wire:loading.attr="disabled" wire:loading.class="opacity-50">
             <span wire:loading.remove>
                 {{ $roomId ? 'Perbarui' : 'Simpan' }}

@@ -10,13 +10,13 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Pencatatan Pengeluaran
                 </h1>
                 <p class="mt-2 text-gray-600">Kelola semua pengeluaran operasional kos</p>
             </div>
             <button wire:click="openCreateModal"
-                class="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl shadow-sm transition">
+                class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl shadow-sm transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                 </svg>
@@ -44,8 +44,8 @@
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div class="flex items-center gap-3 mb-2">
-                <div class="p-2.5 bg-blue-100 rounded-xl">
-                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="p-2.5 bg-orange-100 rounded-xl">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2">
                         </path>
@@ -89,17 +89,17 @@
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Cari</label>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari judul atau deskripsi..."
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Bulan</label>
                 <input type="month" wire:model.live="monthFilter"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Kategori</label>
                 <select wire:model.live="categoryFilter"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                     <option value="">Semua</option>
                     <option value="maintenance">Perbaikan</option>
                     <option value="utility">Utilitas</option>
@@ -114,7 +114,7 @@
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Properti</label>
                 <select wire:model.live="propertyFilter"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                     <option value="">Semua</option>
                     @foreach ($properties as $prop)
                         <option value="{{ $prop->id }}">{{ $prop->name }}</option>
@@ -156,12 +156,12 @@
                                 @php
                                     $catColor = match ($expense->category) {
                                         'maintenance' => 'bg-orange-100 text-orange-700',
-                                        'utility' => 'bg-blue-100 text-blue-700',
+                                        'utility' => 'bg-orange-100 text-orange-700',
                                         'cleaning' => 'bg-teal-100 text-teal-700',
                                         'supplies' => 'bg-purple-100 text-purple-700',
                                         'salary' => 'bg-green-100 text-green-700',
                                         'tax' => 'bg-red-100 text-red-700',
-                                        'insurance' => 'bg-indigo-100 text-indigo-700',
+                                        'insurance' => 'bg-orange-100 text-orange-700',
                                         default => 'bg-gray-100 text-gray-700',
                                     };
                                 @endphp
@@ -178,7 +178,7 @@
                             <td class="px-5 py-4 text-center" wire:click.stop>
                                 <div class="flex items-center justify-center gap-2">
                                     <button wire:click="openEditModal({{ $expense->id }})"
-                                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                        class="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition"
                                         title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -240,7 +240,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Judul <span
                                     class="text-red-500">*</span></label>
                             <input type="text" wire:model="title" placeholder="Contoh: Beli lampu kamar 5"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                             @error('title')
                                 <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                             @enderror
@@ -251,7 +251,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah (Rp) <span
                                         class="text-red-500">*</span></label>
                                 <input type="number" wire:model="amount" placeholder="0" min="1"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                                 @error('amount')
                                     <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                                 @enderror
@@ -260,7 +260,7 @@
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal <span
                                         class="text-red-500">*</span></label>
                                 <input type="date" wire:model="expense_date"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                                 @error('expense_date')
                                     <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                                 @enderror
@@ -271,7 +271,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Kategori</label>
                                 <select wire:model="category"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                                     <option value="maintenance">Perbaikan</option>
                                     <option value="utility">Utilitas (Listrik/Air)</option>
                                     <option value="cleaning">Kebersihan</option>
@@ -285,7 +285,7 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Properti</label>
                                 <select wire:model="property_id"
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                                     <option value="">-- Pilih Properti --</option>
                                     @foreach ($properties as $prop)
                                         <option value="{{ $prop->id }}">{{ $prop->name }}</option>
@@ -297,13 +297,13 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
                             <textarea wire:model="description" rows="3" placeholder="Detail pengeluaran (opsional)"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"></textarea>
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm"></textarea>
                         </div>
 
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Bukti / Nota (opsional)</label>
                             <input type="file" wire:model="receipt_image" accept="image/*"
-                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
                             @error('receipt_image')
                                 <p class="text-xs text-red-500 mt-1">{{ $message }}</p>
                             @enderror
@@ -316,7 +316,7 @@
                             Batal
                         </button>
                         <button wire:click="save"
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-sm">
+                            class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition shadow-sm">
                             {{ $isEditing ? 'Simpan Perubahan' : 'Simpan' }}
                         </button>
                     </div>

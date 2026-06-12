@@ -40,7 +40,7 @@ class AppServiceProvider extends ServiceProvider
                 $view->with('appName', Setting::getValue('app_name'));
                 $view->with('appTagline', Setting::getValue('app_tagline'));
             } else {
-                $view->with('appName', 'Fluty Kos');
+                $view->with('appName', 'Living Kost');
                 $view->with('appTagline', 'Sistem Manajemen Kos');
             }
         });

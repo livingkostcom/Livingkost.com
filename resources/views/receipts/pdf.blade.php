@@ -29,13 +29,13 @@
 
         .header {
             text-align: center;
-            border-bottom: 3px solid #2563eb;
+            border-bottom: 3px solid #ea580c;
             padding-bottom: 20px;
             margin-bottom: 30px;
         }
 
         .header h1 {
-            color: #2563eb;
+            color: #ea580c;
             font-size: 28px;
             margin-bottom: 5px;
         }
@@ -70,7 +70,7 @@
 
         .section-title {
             font-weight: bold;
-            color: #2563eb;
+            color: #ea580c;
             border-bottom: 2px solid #e5e7eb;
             padding-bottom: 8px;
             margin-bottom: 12px;
@@ -104,7 +104,7 @@
 
         .amount-section {
             background: #f0f9ff;
-            border-left: 4px solid #2563eb;
+            border-left: 4px solid #ea580c;
             padding: 15px;
             border-radius: 4px;
             margin: 20px 0;
@@ -130,7 +130,7 @@
             display: flex;
             justify-content: space-between;
             padding: 15px 0;
-            border-top: 2px solid #2563eb;
+            border-top: 2px solid #ea580c;
             margin-top: 10px;
             font-size: 16px;
             font-weight: bold;
@@ -168,7 +168,7 @@
 
         .thank-you {
             text-align: center;
-            color: #2563eb;
+            color: #ea580c;
             font-size: 14px;
             font-weight: bold;
             margin-top: 20px;

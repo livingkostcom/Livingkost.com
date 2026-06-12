@@ -14,13 +14,13 @@
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
         <div>
             <h1
-                class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-purple-600 bg-clip-text text-transparent">
                 Pengumuman
             </h1>
             <p class="text-gray-500 mt-1">Kelola pengumuman untuk penyewa</p>
         </div>
         <button wire:click="openCreateModal"
-            class="mt-4 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
+            class="mt-4 sm:mt-0 inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-orange-600 to-purple-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transform hover:-translate-y-0.5 transition-all">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -32,8 +32,8 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z" />
                     </svg>
@@ -78,14 +78,14 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <select wire:model.live="priorityFilter"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                 <option value="">Semua Prioritas</option>
                 <option value="normal">Normal</option>
                 <option value="important">Penting</option>
                 <option value="urgent">Darurat</option>
             </select>
             <select wire:model.live="statusFilter"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                 <option value="">Semua Status</option>
                 <option value="active">Aktif</option>
                 <option value="inactive">Nonaktif</option>
@@ -97,7 +97,7 @@
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari pengumuman..."
-                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
             </div>
         </div>
     </div>
@@ -128,13 +128,13 @@
                             $prioColor = match ($announcement->priority) {
                                 'urgent' => 'bg-red-100 text-red-700',
                                 'important' => 'bg-yellow-100 text-yellow-700',
-                                default => 'bg-blue-100 text-blue-700',
+                                default => 'bg-orange-100 text-orange-700',
                             };
                         @endphp
                         <tr class="hover:bg-gray-50/50 transition-colors">
                             <td class="px-6 py-4">
                                 <button wire:click="openDetailModal({{ $announcement->id }})"
-                                    class="text-left hover:text-indigo-600 transition-colors">
+                                    class="text-left hover:text-orange-600 transition-colors">
                                     <p class="font-semibold text-gray-800">{{ $announcement->title }}</p>
                                     <p class="text-sm text-gray-500 mt-0.5 line-clamp-1">
                                         {{ Str::limit($announcement->content, 60) }}</p>
@@ -148,7 +148,7 @@
                             <td class="px-6 py-4 text-sm text-gray-600">
                                 @if ($announcement->target === 'all')
                                     <span
-                                        class="text-xs px-2.5 py-1 rounded-full font-medium bg-indigo-100 text-indigo-700">Semua</span>
+                                        class="text-xs px-2.5 py-1 rounded-full font-medium bg-orange-100 text-orange-700">Semua</span>
                                 @else
                                     <span
                                         class="text-xs px-2.5 py-1 rounded-full font-medium bg-purple-100 text-purple-700">{{ $announcement->property?->name ?? '-' }}</span>
@@ -171,7 +171,7 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center justify-center gap-2">
                                     <button wire:click="openDetailModal({{ $announcement->id }})"
-                                        class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                        class="p-2 text-gray-400 hover:text-orange-600 hover:bg-orange-50 rounded-lg transition-all"
                                         title="Detail">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
@@ -244,7 +244,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Judul <span
                                 class="text-red-500">*</span></label>
                         <input wire:model="title" type="text" placeholder="Judul pengumuman..."
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                         @error('title')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -255,7 +255,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Isi Pengumuman <span
                                 class="text-red-500">*</span></label>
                         <textarea wire:model="content" rows="5" placeholder="Tulis isi pengumuman..."
-                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"></textarea>
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition"></textarea>
                         @error('content')
                             <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                         @enderror
@@ -266,7 +266,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>
                             <select wire:model="priority"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                                 <option value="normal">Normal</option>
                                 <option value="important">Penting</option>
                                 <option value="urgent">Darurat</option>
@@ -277,7 +277,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Target</label>
                             <select wire:model.live="target"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                                 <option value="all">Semua Penyewa</option>
                                 <option value="property">Per Properti</option>
                             </select>
@@ -290,7 +290,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Properti <span
                                     class="text-red-500">*</span></label>
                             <select wire:model="property_id"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                                 <option value="">Pilih Properti</option>
                                 @foreach ($properties as $property)
                                     <option value="{{ $property->id }}">{{ $property->name }}</option>
@@ -308,7 +308,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Terbit <span
                                     class="text-red-500">*</span></label>
                             <input wire:model="published_at" type="date"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                             @error('published_at')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -318,7 +318,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Kedaluwarsa</label>
                             <input wire:model="expires_at" type="date"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                             @error('expires_at')
                                 <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                             @enderror
@@ -331,7 +331,7 @@
                         Batal
                     </button>
                     <button wire:click="save"
-                        class="px-5 py-2.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
+                        class="px-5 py-2.5 bg-gradient-to-r from-orange-600 to-purple-600 text-white rounded-xl font-semibold shadow hover:shadow-lg transition">
                         {{ $isEditing ? 'Simpan Perubahan' : 'Kirim Pengumuman' }}
                     </button>
                 </div>
@@ -357,7 +357,7 @@
                             $prioColor = match ($viewingAnnouncement->priority) {
                                 'urgent' => 'bg-red-100 text-red-700',
                                 'important' => 'bg-yellow-100 text-yellow-700',
-                                default => 'bg-blue-100 text-blue-700',
+                                default => 'bg-orange-100 text-orange-700',
                             };
                         @endphp
                         <span class="text-xs px-3 py-1 rounded-full font-medium {{ $prioColor }}">

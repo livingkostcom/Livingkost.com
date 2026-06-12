@@ -1,6 +1,6 @@
 <div class="relative" x-data="{ open: @entangle('isOpen') }" @click.outside="open = false">
     <!-- Bell Icon -->
-    <button @click="open = !open" class="relative text-gray-600 hover:text-blue-600 transition focus:outline-none">
+    <button @click="open = !open" class="relative text-gray-600 hover:text-orange-600 transition focus:outline-none">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                 d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9">
@@ -27,7 +27,7 @@
             <h3 class="text-sm font-semibold text-gray-800">Notifikasi</h3>
             @if ($this->unreadCount > 0)
                 <button wire:click="markAllAsRead"
-                    class="text-xs text-blue-600 hover:text-blue-800 font-medium transition">
+                    class="text-xs text-orange-600 hover:text-orange-800 font-medium transition">
                     Tandai semua dibaca
                 </button>
             @endif
@@ -37,7 +37,7 @@
         <div class="max-h-80 overflow-y-auto divide-y divide-gray-100">
             @forelse ($notifications as $notification)
                 <div wire:key="notif-{{ $notification->id }}"
-                    class="px-4 py-3 hover:bg-blue-50/50 transition cursor-pointer {{ is_null($notification->read_at) ? 'bg-blue-50/30' : '' }}"
+                    class="px-4 py-3 hover:bg-orange-50/50 transition cursor-pointer {{ is_null($notification->read_at) ? 'bg-orange-50/30' : '' }}"
                     wire:click="markAsRead('{{ $notification->id }}')">
                     <div class="flex items-start gap-3">
                         {{-- Icon based on notification type --}}
@@ -49,7 +49,7 @@
                                 $iconColor = match ($notification->data['priority'] ?? 'normal') {
                                     'urgent' => 'text-red-500',
                                     'important' => 'text-yellow-500',
-                                    default => 'text-indigo-500',
+                                    default => 'text-orange-500',
                                 };
                             } elseif ($notifType === 'new_maintenance_request') {
                                 $iconColor = 'text-orange-500';
@@ -57,14 +57,14 @@
                                 $iconColor = match ($notification->data['status'] ?? '') {
                                     'completed' => 'text-green-500',
                                     'rejected' => 'text-red-500',
-                                    'in_progress' => 'text-blue-500',
+                                    'in_progress' => 'text-orange-500',
                                     default => 'text-yellow-500',
                                 };
                             } else {
                                 $iconColor = match ($reminderType) {
                                     'overdue' => 'text-red-500',
                                     'due_today' => 'text-yellow-500',
-                                    'upcoming' => 'text-blue-500',
+                                    'upcoming' => 'text-orange-500',
                                     default => 'text-gray-500',
                                 };
                             }
@@ -106,7 +106,7 @@
                         </div>
                         @if (is_null($notification->read_at))
                             <div class="shrink-0 mt-1.5">
-                                <span class="w-2 h-2 bg-blue-500 rounded-full block"></span>
+                                <span class="w-2 h-2 bg-orange-500 rounded-full block"></span>
                             </div>
                         @endif
                     </div>

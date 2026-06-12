@@ -5,7 +5,7 @@
             Property <span class="text-red-600">*</span>
         </label>
         <select wire:model="property_id" id="propertySelect"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('property_id') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('property_id') border-red-500 @enderror">
             <option value="">-- Pilih Property --</option>
             @foreach ($properties as $property)
                 <option value="{{ $property->id }}">{{ $property->name }}</option>
@@ -22,7 +22,7 @@
             Nama Tipe Ruangan <span class="text-red-600">*</span>
         </label>
         <input wire:model="name" type="text" id="name" placeholder="Contoh: Studio, 1 Kamar Tidur"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('name') border-red-500 @enderror">
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('name') border-red-500 @enderror">
         @error('name')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -36,7 +36,7 @@
         <div class="relative">
             <span class="absolute left-4 top-3.5 text-gray-500 font-medium">Rp</span>
             <input wire:model="price" type="number" id="price" placeholder="1000000" step="0.01"
-                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('price') border-red-500 @enderror">
+                class="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('price') border-red-500 @enderror">
         </div>
         @error('price')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -49,7 +49,7 @@
             Fasilitas <span class="text-gray-500 text-xs">(Pisahkan dengan koma)</span>
         </label>
         <textarea wire:model="facilities" id="facilities" rows="3" placeholder="Contoh: AC, TV, WiFi, Kasur, Lemari"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition @error('facilities') border-red-500 @enderror"></textarea>
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('facilities') border-red-500 @enderror"></textarea>
         @error('facilities')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror
@@ -63,7 +63,7 @@
             Batal
         </button>
         <button type="submit"
-            class="flex-1 px-4 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition flex items-center justify-center"
+            class="flex-1 px-4 py-3 bg-orange-600 text-white font-semibold rounded-lg hover:bg-orange-700 transition flex items-center justify-center"
             wire:loading.attr="disabled" wire:loading.class="opacity-50">
             <span wire:loading.remove>
                 {{ $roomTypeId ? 'Perbarui' : 'Simpan' }}

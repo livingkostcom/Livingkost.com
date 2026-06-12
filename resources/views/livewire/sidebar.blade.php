@@ -1,4 +1,4 @@
-<div class="flex h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50" x-data="{ sidebarOpen: false }"
+<div class="flex h-screen bg-gradient-to-br from-orange-50 via-white to-orange-50" x-data="{ sidebarOpen: false }"
     @keydown.escape="sidebarOpen = false">
     <!-- Sidebar Mobile Overlay -->
     <div class="fixed inset-0 bg-black/50 z-20 md:hidden transition-opacity duration-300"
@@ -14,9 +14,8 @@
         <div class="h-16 border-b border-gray-200 flex items-center px-6">
             <div class="flex items-center justify-between w-full">
                 <div>
-                    <h1
-                        class="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                        {{ $appName ?? 'Fluty Kos' }}</h1>
+                    <h1 class="text-xl font-extrabold text-orange-600">
+                        Living<span class="text-gray-900">Kost</span></h1>
                 </div>
                 <button @click="sidebarOpen = false" class="md:hidden text-gray-400 hover:text-gray-600 transition">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -31,7 +30,7 @@
         <nav class="flex-1 px-4 py-6 space-y-2">
             @foreach ($menuItems as $item)
                 <a href="{{ route($item['route']) }}" wire:navigate
-                    class="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 @if ($item['active']) bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg @else text-gray-700 hover:bg-blue-50 hover:text-blue-600 @endif"
+                    class="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 @if ($item['active']) bg-gradient-to-r from-orange-600 to-orange-600 text-white shadow-lg @else text-gray-700 hover:bg-orange-50 hover:text-orange-600 @endif"
                     @click="sidebarOpen = false">
                     <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $item['icon'] }}">
@@ -68,7 +67,7 @@
 
                     <!-- Page Title -->
                     <h2
-                        class="text-lg font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                        class="text-lg font-semibold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                         @yield('page-title', 'Dasbor')</h2>
 
                     <!-- User Info for Desktop -->
@@ -76,7 +75,7 @@
                         @livewire('notification-dropdown')
                         <span class="text-sm text-gray-700">{{ Auth::user()->name }}</span>
                         <div
-                            class="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-600 flex items-center justify-center font-bold text-white text-sm shadow-lg">
+                            class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center font-bold text-white text-sm shadow-lg">
                             {{ substr(Auth::user()->name, 0, 1) }}
                         </div>
                     </div>

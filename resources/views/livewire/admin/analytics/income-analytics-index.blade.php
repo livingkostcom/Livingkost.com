@@ -4,7 +4,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Analisis Pendapatan
                 </h1>
                 <p class="mt-2 text-gray-600">Dashboard analisis dan laporan pendapatan kos Anda</p>
@@ -18,24 +18,24 @@
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Mulai</label>
                 <input type="date" wire:model.live="startDate"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
             </div>
             <div class="flex-1">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Akhir</label>
                 <input type="date" wire:model.live="endDate"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent" />
             </div>
             <div class="flex flex-wrap gap-2">
                 <button wire:click="setLast7Days()"
-                    class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-medium">
+                    class="px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition text-sm font-medium">
                     7 Hari
                 </button>
                 <button wire:click="setLast30Days()"
-                    class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-medium">
+                    class="px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition text-sm font-medium">
                     30 Hari
                 </button>
                 <button wire:click="setThisMonth()"
-                    class="px-3 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm font-medium">
+                    class="px-3 py-2 bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition text-sm font-medium">
                     Bulan Ini
                 </button>
                 <button wire:click="resetDates()"
@@ -94,18 +94,18 @@
         </div>
 
         <!-- Total Amount -->
-        <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 shadow-md border border-blue-200">
+        <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 shadow-md border border-orange-200">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-sm font-semibold text-blue-900">Total Invoice</h3>
-                <svg class="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <h3 class="text-sm font-semibold text-orange-900">Total Invoice</h3>
+                <svg class="w-6 h-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
             </div>
-            <p class="text-3xl font-bold text-blue-900">
+            <p class="text-3xl font-bold text-orange-900">
                 Rp {{ number_format($summary['total_amount'], 0, ',', '.') }}
             </p>
-            <p class="text-sm text-blue-700 mt-2">{{ $summary['total_invoices'] }} invoice</p>
+            <p class="text-sm text-orange-700 mt-2">{{ $summary['total_invoices'] }} invoice</p>
         </div>
     </div>
 

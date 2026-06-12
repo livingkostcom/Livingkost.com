@@ -22,13 +22,13 @@ class DatabaseSeeder extends Seeder
         // Create test users with admin roles
         $owner = User::factory()->create([
             'name' => 'Owner',
-            'email' => 'owner@fluty.com',
+            'email' => 'owner@livingkost.com',
         ]);
         $owner->assignRole('owner');
 
         $manager = User::factory()->create([
             'name' => 'Manager',
-            'email' => 'manager@fluty.com',
+            'email' => 'manager@livingkost.com',
         ]);
         $manager->assignRole('manager');
 

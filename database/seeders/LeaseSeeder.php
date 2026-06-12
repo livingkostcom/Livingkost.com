@@ -16,7 +16,7 @@ class LeaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $manager = User::where('email', 'manager@fluty.com')->first();
+        $manager = User::where('email', 'manager@livingkost.com')->first();
         $tenants = Tenant::all();
         $occupiedRooms = Room::where('status', 'occupied')->get();
 

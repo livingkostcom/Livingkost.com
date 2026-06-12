@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Properties - ' . ($appName ?? 'Fluty Kos'))
+@section('title', 'Properties - ' . ($appName ?? 'Living Kost'))
 
 @section('page-title', 'Properties')
 

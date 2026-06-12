@@ -11,7 +11,7 @@ class SettingSeeder extends Seeder
     {
         $defaults = [
             // General
-            ['key' => 'app_name', 'value' => 'Fluty Kos', 'group' => 'general'],
+            ['key' => 'app_name', 'value' => 'Living Kost', 'group' => 'general'],
             ['key' => 'app_tagline', 'value' => 'Sistem Manajemen Kos', 'group' => 'general'],
             ['key' => 'app_address', 'value' => '', 'group' => 'general'],
             ['key' => 'app_phone', 'value' => '', 'group' => 'general'],

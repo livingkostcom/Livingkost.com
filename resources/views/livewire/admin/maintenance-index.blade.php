@@ -10,7 +10,7 @@
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
                 <h1
-                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                    class="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 to-orange-600 bg-clip-text text-transparent">
                     Permintaan Perbaikan
                 </h1>
                 <p class="mt-2 text-gray-600">Kelola permintaan perbaikan dari penyewa</p>
@@ -24,12 +24,12 @@
             <div class="flex-1 min-w-[200px]">
                 <label class="block text-xs font-medium text-gray-600 mb-1">Cari</label>
                 <input type="text" wire:model.live.debounce.300ms="search" placeholder="Cari judul, penyewa, kamar..."
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
             </div>
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Status</label>
                 <select wire:model.live="statusFilter"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                     <option value="">Semua</option>
                     <option value="pending">Menunggu</option>
                     <option value="in_progress">Diproses</option>
@@ -40,7 +40,7 @@
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Kategori</label>
                 <select wire:model.live="categoryFilter"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                     <option value="">Semua</option>
                     <option value="electrical">Listrik</option>
                     <option value="plumbing">Pipa/Air</option>
@@ -52,7 +52,7 @@
             <div>
                 <label class="block text-xs font-medium text-gray-600 mb-1">Prioritas</label>
                 <select wire:model.live="priorityFilter"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                     <option value="">Semua</option>
                     <option value="high">Tinggi</option>
                     <option value="medium">Sedang</option>
@@ -99,7 +99,7 @@
                                     };
                                     $catColor = match ($req->category) {
                                         'electrical' => 'bg-yellow-100 text-yellow-700',
-                                        'plumbing' => 'bg-blue-100 text-blue-700',
+                                        'plumbing' => 'bg-orange-100 text-orange-700',
                                         'furniture' => 'bg-purple-100 text-purple-700',
                                         'cleaning' => 'bg-green-100 text-green-700',
                                         default => 'bg-gray-100 text-gray-700',
@@ -128,7 +128,7 @@
                                 @php
                                     $stColor = match ($req->status) {
                                         'pending' => 'bg-yellow-100 text-yellow-700',
-                                        'in_progress' => 'bg-blue-100 text-blue-700',
+                                        'in_progress' => 'bg-orange-100 text-orange-700',
                                         'completed' => 'bg-green-100 text-green-700',
                                         'rejected' => 'bg-red-100 text-red-700',
                                         default => 'bg-gray-100 text-gray-700',
@@ -149,7 +149,7 @@
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button wire:click="openDetail({{ $req->id }})"
-                                        class="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                        class="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition"
                                         title="Detail">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -285,7 +285,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                             <select wire:model="processStatus"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm">
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm">
                                 <option value="pending">Menunggu</option>
                                 <option value="in_progress">Diproses</option>
                                 <option value="completed">Selesai</option>
@@ -295,7 +295,7 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Catatan Admin</label>
                             <textarea wire:model="adminNotes" rows="3" placeholder="Catatan untuk penyewa..."
-                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition text-sm"></textarea>
+                                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition text-sm"></textarea>
                         </div>
                     </div>
 
@@ -305,7 +305,7 @@
                             Batal
                         </button>
                         <button wire:click="updateStatus"
-                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition shadow-sm">
+                            class="px-4 py-2 text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 rounded-lg transition shadow-sm">
                             Simpan
                         </button>
                     </div>

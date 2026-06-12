@@ -23,13 +23,13 @@
 
         .header {
             text-align: center;
-            border-bottom: 3px solid #2563eb;
+            border-bottom: 3px solid #ea580c;
             padding-bottom: 15px;
             margin-bottom: 25px;
         }
 
         .header h1 {
-            color: #2563eb;
+            color: #ea580c;
             font-size: 22px;
             margin-bottom: 3px;
         }

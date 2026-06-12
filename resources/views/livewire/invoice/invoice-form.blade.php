@@ -3,7 +3,7 @@
         <!-- Header -->
         <div class="mb-8">
             <a href="{{ route('invoices.index') }}"
-                class="text-indigo-600 hover:text-indigo-700 font-medium mb-4 inline-flex items-center">
+                class="text-orange-600 hover:text-orange-700 font-medium mb-4 inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd"
                         d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
@@ -53,7 +53,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sewa <span
                             class="text-red-500">*</span></label>
                     <select wire:model.live="lease_id"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('lease_id') border-red-500 @enderror">
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent @error('lease_id') border-red-500 @enderror">
                         <option value="">-- Pilih Sewa --</option>
                         @foreach ($leases as $lease)
                             <option value="{{ $lease->id }}">
@@ -72,7 +72,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Bulan <span
                             class="text-red-500">*</span></label>
                     <input type="month" wire:model="month_year"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('month_year') border-red-500 @enderror">
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent @error('month_year') border-red-500 @enderror">
                     @error('month_year')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -85,7 +85,7 @@
                     <div class="relative">
                         <span class="absolute left-4 top-2 text-gray-600">Rp</span>
                         <input type="number" wire:model="amount" placeholder="0"
-                            class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('amount') border-red-500 @enderror"
+                            class="w-full pl-12 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent @error('amount') border-red-500 @enderror"
                             step="0.01">
                     </div>
                     @error('amount')
@@ -98,7 +98,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tanggal Jatuh Tempo <span
                             class="text-red-500">*</span></label>
                     <input type="date" wire:model="due_date"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('due_date') border-red-500 @enderror">
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent @error('due_date') border-red-500 @enderror">
                     @error('due_date')
                         <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
                     @enderror
@@ -109,7 +109,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status <span
                             class="text-red-500">*</span></label>
                     <select wire:model="status"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent @error('status') border-red-500 @enderror">
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent @error('status') border-red-500 @enderror">
                         <option value="unpaid">Belum Bayar</option>
                         <option value="pending">Pending</option>
                         <option value="paid">Sudah Bayar</option>
@@ -123,7 +123,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Catatan (Opsional)</label>
                     <textarea wire:model="notes" rows="4" placeholder="Tambahkan catatan jika diperlukan..."
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"></textarea>
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"></textarea>
                 </div>
 
                 <!-- Buttons -->
@@ -133,7 +133,7 @@
                         Batal
                     </a>
                     <button type="submit"
-                        class="flex-1 px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition">
+                        class="flex-1 px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition">
                         {{ $invoiceId ? 'Perbarui Invoice' : 'Buat Invoice' }}
                     </button>
                 </div>

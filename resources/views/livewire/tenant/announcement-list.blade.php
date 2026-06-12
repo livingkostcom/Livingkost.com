@@ -2,7 +2,7 @@
     {{-- Header --}}
     <div class="mb-8">
         <h1
-            class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            class="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-orange-600 to-purple-600 bg-clip-text text-transparent">
             Pengumuman
         </h1>
         <p class="text-gray-500 mt-1">Informasi terbaru dari pengelola kos</p>
@@ -12,7 +12,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <select wire:model.live="priorityFilter"
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
                 <option value="">Semua Prioritas</option>
                 <option value="normal">Normal</option>
                 <option value="important">Penting</option>
@@ -25,7 +25,7 @@
                         d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari pengumuman..."
-                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
             </div>
         </div>
     </div>
@@ -48,23 +48,23 @@
                     ],
                     default => [
                         'bg' => 'bg-white border-gray-100',
-                        'badge' => 'bg-blue-100 text-blue-700',
-                        'icon' => 'text-blue-500',
+                        'badge' => 'bg-orange-100 text-orange-700',
+                        'icon' => 'text-orange-500',
                     ],
                 };
             @endphp
             <div wire:click="openDetail({{ $announcement->id }})"
-                class="relative cursor-pointer rounded-2xl shadow-sm border p-5 hover:shadow-md transition-all {{ $prioConfig['bg'] }} {{ !$isRead ? 'ring-2 ring-indigo-300' : '' }}">
+                class="relative cursor-pointer rounded-2xl shadow-sm border p-5 hover:shadow-md transition-all {{ $prioConfig['bg'] }} {{ !$isRead ? 'ring-2 ring-orange-300' : '' }}">
 
                 {{-- Unread dot --}}
                 @if (!$isRead)
-                    <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></div>
+                    <div class="absolute top-4 right-4 w-3 h-3 rounded-full bg-orange-500 animate-pulse"></div>
                 @endif
 
                 <div class="flex items-start gap-4">
                     {{-- Icon --}}
                     <div
-                        class="flex-shrink-0 w-10 h-10 rounded-xl {{ $announcement->priority === 'urgent' ? 'bg-red-100' : ($announcement->priority === 'important' ? 'bg-yellow-100' : 'bg-indigo-100') }} flex items-center justify-center">
+                        class="flex-shrink-0 w-10 h-10 rounded-xl {{ $announcement->priority === 'urgent' ? 'bg-red-100' : ($announcement->priority === 'important' ? 'bg-yellow-100' : 'bg-orange-100') }} flex items-center justify-center">
                         @if ($announcement->priority === 'urgent')
                             <svg class="w-5 h-5 {{ $prioConfig['icon'] }}" fill="none" stroke="currentColor"
                                 viewBox="0 0 24 24">
@@ -83,7 +83,7 @@
                     {{-- Content --}}
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2 mb-1">
-                            <h3 class="font-semibold text-gray-800 {{ !$isRead ? 'text-indigo-700' : '' }}">
+                            <h3 class="font-semibold text-gray-800 {{ !$isRead ? 'text-orange-700' : '' }}">
                                 {{ $announcement->title }}</h3>
                             <span class="text-xs px-2 py-0.5 rounded-full font-medium {{ $prioConfig['badge'] }}">
                                 {{ \App\Models\Announcement::getPriorityLabel($announcement->priority) }}
@@ -137,7 +137,7 @@
                             $prioColor = match ($viewingAnnouncement->priority) {
                                 'urgent' => 'bg-red-100 text-red-700',
                                 'important' => 'bg-yellow-100 text-yellow-700',
-                                default => 'bg-blue-100 text-blue-700',
+                                default => 'bg-orange-100 text-orange-700',
                             };
                         @endphp
                         <span class="text-xs px-3 py-1 rounded-full font-medium {{ $prioColor }}">
