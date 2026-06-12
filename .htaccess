@@ -1,0 +1,27 @@
+# --- Force PHP 8.2 (preserve working config) ---
+AddType application/x-httpd-php82 .php
+
+<IfModule mod_env.c>
+    SetEnv PHPRC /opt/cpanel/ea-php82/root/etc
+</IfModule>
+
+<IfModule mod_dir.c>
+    DirectoryIndex index.php index.html index.htm
+</IfModule>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # --- Static landing pages (clean URLs) ---
+    RewriteRule ^$ index.php [L]
+    RewriteRule ^mitra/?$ mitra.php [L]
+    RewriteRule ^detail/?$ detail.php [L]
+
+    # --- Serve real existing files/dirs directly (images, build assets, .well-known) ---
+    RewriteCond %{REQUEST_FILENAME} -f [OR]
+    RewriteCond %{REQUEST_FILENAME} -d
+    RewriteRule ^ - [L]
+
+    # --- Everything else -> Laravel (login, dashboard, livewire, etc.) ---
+    RewriteRule ^ public/index.php [L]
+</IfModule>
