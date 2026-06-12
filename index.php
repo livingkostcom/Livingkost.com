@@ -128,7 +128,7 @@ if (is_readable($lk_envPath)) {
                                 ? '/images/' . htmlspecialchars($kost['featured_image'], ENT_QUOTES)
                                 : 'https://placehold.co/800x600/f97316/ffffff?text=Living+Kost';
                         ?>
-                        <a href="/detail">
+                        <a href="/detail?id=<?= (int) $kost['id'] ?>">
                         <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition h-full">
                             <div class="relative">
                                 <img src="<?= $img ?>" alt="<?= htmlspecialchars($kost['name'], ENT_QUOTES) ?>" class="w-full h-64 object-cover">

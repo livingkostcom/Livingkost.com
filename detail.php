@@ -1,9 +1,141 @@
+<?php
+// --- Dynamic kost detail (read-only from DB) ---
+$lk_kost = null;
+$lk_roomtypes = [];
+$lk_available = 0;
+$lk_waPhone = '6285161180441';
+
+$lk_id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$lk_envPath = __DIR__ . '/.env';
+
+if ($lk_id > 0 && is_readable($lk_envPath)) {
+    $lk_env = [];
+    foreach (file($lk_envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $lk_line) {
+        $lk_line = trim($lk_line);
+        if ($lk_line === '' || $lk_line[0] === '#' || strpos($lk_line, '=') === false) {
+            continue;
+        }
+        list($lk_k, $lk_v) = explode('=', $lk_line, 2);
+        $lk_v = trim($lk_v);
+        if (strlen($lk_v) >= 2 && ($lk_v[0] === '"' || $lk_v[0] === "'") && substr($lk_v, -1) === $lk_v[0]) {
+            $lk_v = substr($lk_v, 1, -1);
+        }
+        $lk_env[trim($lk_k)] = $lk_v;
+    }
+    if (!empty($lk_env['DB_DATABASE'])) {
+        try {
+            $pdo = new PDO(
+                'mysql:host=' . ($lk_env['DB_HOST'] ?? 'localhost') . ';port=' . ($lk_env['DB_PORT'] ?? '3306') . ';dbname=' . $lk_env['DB_DATABASE'] . ';charset=utf8mb4',
+                $lk_env['DB_USERNAME'] ?? '',
+                $lk_env['DB_PASSWORD'] ?? '',
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
+            );
+            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, featured_image, owner_id
+                                 FROM properties WHERE id = ? AND is_featured = 1 AND status = 'active' LIMIT 1");
+            $st->execute([$lk_id]);
+            $lk_kost = $st->fetch(PDO::FETCH_ASSOC) ?: null;
+
+            if ($lk_kost) {
+                $st2 = $pdo->prepare("SELECT id, name, price, facilities FROM room_types WHERE property_id = ? ORDER BY price ASC");
+                $st2->execute([$lk_id]);
+                $lk_roomtypes = $st2->fetchAll(PDO::FETCH_ASSOC) ?: [];
+
+                $st3 = $pdo->prepare("SELECT COUNT(*) FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id
+                                      WHERE rt.property_id = ? AND r.status = 'available'");
+                $st3->execute([$lk_id]);
+                $lk_available = (int) $st3->fetchColumn();
+
+                $st4 = $pdo->prepare("SELECT value FROM settings WHERE `key` = 'app_phone' AND (owner_id = ? OR owner_id IS NULL)
+                                      ORDER BY (owner_id IS NULL) ASC LIMIT 1");
+                $st4->execute([$lk_kost['owner_id']]);
+                $ph = $st4->fetchColumn();
+                if ($ph) {
+                    $ph = preg_replace('/[^0-9]/', '', $ph);
+                    if (strpos($ph, '0') === 0) {
+                        $ph = '62' . substr($ph, 1);
+                    }
+                    if ($ph !== '') {
+                        $lk_waPhone = $ph;
+                    }
+                }
+            }
+        } catch (\Throwable $e) {
+            $lk_kost = null;
+        }
+    }
+}
+
+if (!$lk_kost) {
+    http_response_code(404);
+    echo '<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Kost tidak ditemukan | Living Kost</title><script src="https://cdn.tailwindcss.com"></script></head><body class="min-h-screen flex items-center justify-center bg-gray-50 p-6"><div class="text-center"><div class="text-2xl font-bold text-orange-600 mb-2">Living<span class="text-gray-900">Kost</span></div><h1 class="text-xl font-bold text-gray-800 mb-2">Kost tidak ditemukan</h1><p class="text-gray-500 mb-6">Listing ini mungkin sudah tidak tersedia.</p><a href="/" class="inline-block bg-orange-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-orange-700 transition">Kembali ke Beranda</a></div></body></html>';
+    exit;
+}
+
+// Helpers + derived data
+function lk_rp($n)
+{
+    return $n !== null ? 'Rp ' . number_format((float) $n, 0, ',', '.') : 'Hubungi kami';
+}
+function lk_fa_icon($label)
+{
+    $l = strtolower($label);
+    $map = [
+        'ac' => 'fa-snowflake', 'pendingin' => 'fa-snowflake',
+        'wifi' => 'fa-wifi', 'internet' => 'fa-wifi',
+        'kasur' => 'fa-bed', 'bed' => 'fa-bed', 'tidur' => 'fa-bed',
+        'mandi' => 'fa-shower', 'shower' => 'fa-shower',
+        'kloset' => 'fa-toilet', 'toilet' => 'fa-toilet', 'wc' => 'fa-toilet',
+        'meja' => 'fa-briefcase', 'kerja' => 'fa-briefcase',
+        'lemari' => 'fa-box-archive',
+        'tv' => 'fa-tv',
+        'dapur' => 'fa-utensils',
+        'parkir' => 'fa-square-parking', 'garasi' => 'fa-square-parking',
+        'cuci' => 'fa-soap',
+        'air' => 'fa-droplet', 'kulkas' => 'fa-snowflake',
+    ];
+    foreach ($map as $kw => $icon) {
+        if (strpos($l, $kw) !== false) {
+            return $icon;
+        }
+    }
+    return 'fa-check';
+}
+
+$lk_facilities = [];
+foreach ($lk_roomtypes as $rt) {
+    $f = json_decode($rt['facilities'] ?? '[]', true);
+    if (is_array($f)) {
+        foreach ($f as $x) {
+            $x = trim($x);
+            if ($x !== '' && !in_array($x, $lk_facilities, true)) {
+                $lk_facilities[] = $x;
+            }
+        }
+    }
+}
+
+$lk_minPrice = null;
+foreach ($lk_roomtypes as $rt) {
+    if ($rt['price'] !== null) {
+        $p = (float) $rt['price'];
+        if ($lk_minPrice === null || $p < $lk_minPrice) {
+            $lk_minPrice = $p;
+        }
+    }
+}
+
+$lk_hero = !empty($lk_kost['featured_image'])
+    ? '/images/' . $lk_kost['featured_image']
+    : 'https://placehold.co/1200x700/f97316/ffffff?text=Living+Kost';
+
+$e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Living Kost Menteng | Detail Kamar</title>
+    <title><?= $e($lk_kost['name']) ?> | Detail Kost</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -23,317 +155,145 @@
 
     <main class="max-w-7xl mx-auto px-4 md:px-6 py-8">
         <nav class="text-sm text-gray-500 mb-6">
-            <a href="#" class="hover:text-orange-600">Home</a> / 
-            <a href="#" class="hover:text-orange-600">Jakarta Selatan</a> / 
-            <span class="text-gray-900 font-semibold">Living Kost Pejaten</span>
+            <a href="/" class="hover:text-orange-600">Home</a> /
+            <?php if (!empty($lk_kost['location_label'])): ?>
+                <span class="hover:text-orange-600"><?= $e($lk_kost['location_label']) ?></span> /
+            <?php endif; ?>
+            <span class="text-gray-900 font-semibold"><?= $e($lk_kost['name']) ?></span>
         </nav>
 
-        <!-- start image -->
-        <div class="max-w-7xl mx-auto mb-10 px-4 md:px-0">
-            <div class="flex flex-col lg:flex-row gap-4">
-                
-                <div class="flex-1">
-                    <div class="relative h-[300px] md:h-[550px] overflow-hidden rounded-2xl shadow-sm bg-gray-100">
-                        <img id="mainView" src="/images/Dapur.png" 
-                             class="w-full h-full object-cover cursor-zoom-in transition-all duration-500"
-                             onclick="openGallery(this.src)"
-                             alt="Dapur">
-                        
-                        <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs">
-                            <span id="currentImgIdx">1</span> / 6
-                        </div>
-                    </div>
-                </div>
-        
-                <div class="flex lg:flex-col overflow-x-auto lg:overflow-y-auto gap-3 no-scrollbar lg:w-32 lg:h-[550px] py-1">
-                    
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-orange-600 thumb-item opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Dapur.png')">
-                        <img src="/images/Dapur.png" class="w-full h-full object-cover">
-                    </div>
-        
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Dapur2.png')">
-                        <img src="/images/Dapur2.png" class="w-full h-full object-cover">
-                    </div>
-        
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/R.Makan.png')">
-                        <img src="/images/R.Makan.png" class="w-full h-full object-cover">
-                    </div>
-        
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Meja Makan.png')">
-                        <img src="/images/Meja Makan.png" class="w-full h-full object-cover">
-                    </div>
-        
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Jemuran.jpeg')">
-                        <img src="/images/Jemuran.jpeg" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Kamar4.png')">
-                        <img src="/images/Kamar4.png" class="w-full h-full object-cover">
-                    </div>
-                    
-                     <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Kamar5.jpeg')">
-                        <img src="/images/Kamar5.jpeg" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Kamar Mandi.png')">
-                        <img src="/images/Kamar Mandi.png" class="w-full h-full object-cover">
-                    </div>
-        
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Garasi.jpeg')">
-                        <img src="/images/Garasi.jpeg" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Luar3.jpeg')">
-                        <img src="/images/Luar3.jpeg" class="w-full h-full object-cover">
-                    </div>
-                    
-                    <div class="min-w-[100px] lg:min-w-full h-24 cursor-pointer rounded-xl overflow-hidden border-2 border-transparent thumb-item opacity-60 hover:opacity-100 shrink-0 transition"
-                         onclick="changeImage(this, '/images/Luar1.jpeg')">
-                        <img src="/images/Luar1.jpeg" class="w-full h-full object-cover">
-                    </div>
-        
-                </div>
+        <!-- Hero image -->
+        <div class="max-w-7xl mx-auto mb-10">
+            <div class="relative h-[300px] md:h-[550px] overflow-hidden rounded-2xl shadow-sm bg-gray-100">
+                <img id="mainView" src="<?= $e($lk_hero) ?>"
+                     class="w-full h-full object-cover cursor-zoom-in transition-all duration-500"
+                     onclick="openGallery(this.src)" alt="<?= $e($lk_kost['name']) ?>">
             </div>
         </div>
-        
-        <style>
-            /* Sembunyikan scrollbar di semua browser */
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-            .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-            
-            /* Efek transisi halus untuk gambar utama */
-            #mainView { object-position: center; }
-        </style>
-        <!-- end image -->
-        
-        <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm">
+
+        <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/90 items-center justify-center p-4 backdrop-blur-sm" style="display:none;">
             <button onclick="closeGallery()" class="absolute top-6 right-6 text-white text-4xl hover:text-orange-500 transition">&times;</button>
             <img id="modalImage" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl">
         </div>
 
         <div class="flex flex-col md:flex-row gap-10">
             <div class="flex-1">
+                <!-- Title + badges -->
                 <div class="border-b pb-8">
-                    <h1 class="text-3xl font-bold text-gray-900 mb-2">Living Kost Pejaten</h1>
-                    <p class="text-gray-500 mb-4"><i class="fas fa-location-dot text-orange-600 mr-2"></i>Jl. Bank Niaga No.47B 15, RT.15/RW.3, Pejaten Bar., Ps. Minggu, Jakarta</p>
+                    <h1 class="text-3xl font-bold text-gray-900 mb-2"><?= $e($lk_kost['name']) ?></h1>
+                    <p class="text-gray-500 mb-4"><i class="fas fa-location-dot text-orange-600 mr-2"></i><?= $e($lk_kost['address']) ?></p>
                     <div class="flex flex-wrap gap-2">
-                        <span class="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">Putra & Putri</span>
-                        <span class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide">Tersedia 2 Kamar</span>
+                        <?php if (!empty($lk_kost['badge_text'])): ?>
+                            <span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"><?= $e($lk_kost['badge_text']) ?></span>
+                        <?php endif; ?>
+                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide <?= $lk_available > 0 ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500' ?>">
+                            <?= $lk_available > 0 ? 'Tersedia ' . $lk_available . ' Kamar' : 'Belum ada kamar tersedia' ?>
+                        </span>
                     </div>
                 </div>
 
-                <div class="py-10 border-b">
-                    <h2 class="text-xl font-bold mb-6">Fasilitas Umum</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-sink w-8 text-orange-500"></i>
-                            <span>Dapur Gratis Gas</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-clipboard w-8 text-orange-500"></i>
-                            <span>Kulkas</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-droplet w-8 text-orange-500"></i>
-                            <span>Dispenser Air Minum</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-soap w-8 text-orange-500"></i>
-                            <span>Mesin Cuci</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-sun w-8 text-orange-500"></i>
-                            <span>Tempat Jemur</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-utensils w-8 text-orange-500"></i>
-                            <span>Meja Makan Sky View</span>
+                <!-- Description -->
+                <?php if (!empty($lk_kost['description'])): ?>
+                    <div class="py-10 border-b">
+                        <h2 class="text-xl font-bold mb-4">Tentang Kost</h2>
+                        <p class="text-gray-600 leading-relaxed whitespace-pre-line"><?= $e($lk_kost['description']) ?></p>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Facilities -->
+                <?php if (!empty($lk_facilities)): ?>
+                    <div class="py-10 border-b">
+                        <h2 class="text-xl font-bold mb-6">Fasilitas</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                            <?php foreach ($lk_facilities as $f): ?>
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas <?= $e(lk_fa_icon($f)) ?> w-8 text-orange-500"></i>
+                                    <span><?= $e($f) ?></span>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
                     </div>
-                </div>
-                
+                <?php endif; ?>
+
+                <!-- Room types -->
                 <div class="py-10 border-b">
-                    <h2 class="text-xl font-bold mb-6">Fasilitas Kamar</h2>
-                    <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-snowflake w-8 text-orange-500"></i>
-                            <span>AC</span>
+                    <h2 class="text-xl font-bold mb-6">Pilihan Tipe Kamar</h2>
+                    <?php if (!empty($lk_roomtypes)): ?>
+                        <div class="space-y-6">
+                            <?php foreach ($lk_roomtypes as $rt):
+                                $rtFacs = json_decode($rt['facilities'] ?? '[]', true);
+                                if (!is_array($rtFacs)) { $rtFacs = []; }
+                            ?>
+                                <div class="flex flex-col md:flex-row gap-6 items-start border border-gray-100 rounded-2xl p-4 shadow-sm">
+                                    <div class="w-full md:w-1/3 h-44 rounded-xl overflow-hidden shrink-0 bg-gray-100">
+                                        <img src="<?= $e($lk_hero) ?>" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
+                                    </div>
+                                    <div class="flex-1 pt-1">
+                                        <h3 class="text-lg font-bold text-gray-900 mb-2"><?= $e($rt['name']) ?></h3>
+                                        <?php if (!empty($rtFacs)): ?>
+                                            <div class="flex flex-wrap gap-2 mb-3">
+                                                <?php foreach (array_slice($rtFacs, 0, 6) as $f): ?>
+                                                    <span class="inline-flex items-center gap-1 bg-orange-50 text-orange-700 text-xs px-2 py-1 rounded-lg">
+                                                        <i class="fas <?= $e(lk_fa_icon($f)) ?>"></i> <?= $e($f) ?>
+                                                    </span>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-[10px] font-bold text-gray-400 uppercase">Harga</span>
+                                            <span class="text-orange-600 text-base font-bold"><?= $e(lk_rp($rt['price'])) ?><span class="text-gray-400 font-normal text-sm">/bln</span></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endforeach; ?>
                         </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-bed w-8 text-orange-500"></i>
-                            <span>Kasur</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-wifi w-8 text-orange-500"></i>
-                            <span>WiFi 100 Mbps</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-briefcase w-8 text-orange-500"></i>
-                            <span>Meja Kerja</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-shower w-8 text-orange-500"></i>
-                            <span>Kamar Mandi Dalam</span>
-                        </div>
-                        <div class="flex items-center text-gray-700">
-                            <i class="fas fa-toilet w-8 text-orange-500"></i>
-                            <span>Kloset Duduk</span>
-                        </div>
-                    </div>
+                    <?php else: ?>
+                        <p class="text-gray-500">Informasi tipe kamar belum tersedia. Hubungi kami untuk detail.</p>
+                    <?php endif; ?>
                 </div>
 
-                <div class="py-10 border-b">
-                    <h2 class="text-xl font-bold mb-4">Pilihan Tipe Kamar</h2>
-                    <p class="text-gray-600 leading-relaxed mb-4">
-                        Living Kost Pejaten Barat dekat ST Pasar Minggu, Pancoran, Kalibata. Kost Eksklusif murah bagi Karyawan, Karyawati, Mahasiswa dan Profesional Muda.
-                    </p>
-                    <p class="text-gray-600 leading-relaxed">
-                        Kami memiliki 3 jenis kamar dengan berbagai fasilitas umum GRATIS yang bisa menghemat dan membuat nyaman seluruh penghuni seperti:
-                    </p>
-                    <!-- Kamar -->
-                    <section class="py-6 px-6 bg-transparent">
-                        <div class="max-w-7xl mx-auto">
-                            <div class="space-y-8">
-                                
-                                <div class="flex flex-col md:flex-row gap-6 items-start border-b border-gray-100 pb-8">
-                                    <div class="relative w-full md:w-1/4 group shrink-0">
-                                        <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2 rounded-xl h-44 md:h-48">
-                                            <img src="https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=600&q=80" 
-                                                 class="min-w-full h-full object-cover snap-center cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
-                                            <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=600&q=80" 
-                                                 class="min-w-full h-full object-cover snap-center cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
-                                        </div>
-                                        <div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-lg pointer-events-none">
-                                            <i class="fas fa-image mr-1"></i> 1/2
-                                        </div>
-                                    </div>
-                    
-                                    <div class="flex-1 pt-1">
-                                        <h3 class="text-lg font-bold text-gray-900 mb-1">Superior</h3>
-                                        <p class="text-gray-500 text-sm leading-relaxed max-w-xl mb-3">
-                                            Berada di lantai 2 dengan ukuran 3m X 3m. Kamar ini menggunakan konsep Tatami Bed dengan kasur 100x200. Sangat cocok untuk anda yang masih single.
-                                        </p>
-                                        <div class="flex gap-6">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-[10px] font-bold text-gray-400 uppercase">Harga</span>
-                                                <span class="text-orange-600 text-sm font-bold">Rp 1.800.000<span class="text-gray-400 font-normal">/bln</span></span>
-                                                <span class="text-gray-400 text-sm font-bold line-through italic">Rp 2.000.000</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                    
-                                <div class="flex flex-col md:flex-row gap-6 items-start border-b border-gray-100 pb-8">
-                                    <div class="relative w-full md:w-1/4 group shrink-0">
-                                        <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2 rounded-xl h-44 md:h-48">
-                                            <img src="/images/Kamar4.png" 
-                                                 class="min-w-full h-full object-cover snap-center cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
-                                            <img src="/images/Kamar Mandi.png" 
-                                                 class="min-w-full h-full object-cover snap-center cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
-                                        </div>
-                                        <div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-lg pointer-events-none">
-                                            <i class="fas fa-image mr-1"></i> 1/2
-                                        </div>
-                                    </div>
-                    
-                                    <div class="flex-1 pt-1">
-                                        <h3 class="text-lg font-bold text-gray-900 mb-1">Deluxe</h3>
-                                        <p class="text-gray-500 text-sm leading-relaxed max-w-xl mb-3">
-                                            Berada di lantai 1 dengan ukuran 2.5 m X 3.5m. Fasilitas TV dengan kasur 100cm X 200cm. Cocok bagi mobilitas tinggi.
-                                        </p>
-                                        <div class="flex gap-6">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-[10px] font-bold text-gray-400 uppercase">Harga</span>
-                                                <span class="text-orange-600 text-sm font-bold">Rp 2.000.000<span class="text-gray-400 font-normal">/bln</span></span>
-                                                <span class="text-gray-400 text-sm font-bold line-through italic">Rp 2.300.000</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                    
-                                <div class="flex flex-col md:flex-row gap-6 items-start pb-4">
-                                    <div class="relative w-full md:w-1/4 group shrink-0">
-                                        <div class="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-2 rounded-xl h-44 md:h-48">
-                                            <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80" 
-                                                 class="min-w-full h-full object-cover snap-center cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
-                                            <img src="https://images.unsplash.com/photo-1616137422495-1e9e46e2aa77?auto=format&fit=crop&w=600&q=80" 
-                                                 class="min-w-full h-full object-cover snap-center cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
-                                        </div>
-                                        <div class="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm text-white text-[10px] px-2 py-1 rounded-lg pointer-events-none">
-                                            <i class="fas fa-image mr-1"></i> 1/2
-                                        </div>
-                                    </div>
-                    
-                                    <div class="flex-1 pt-1">
-                                        <h3 class="text-lg font-bold text-gray-900 mb-1">Suite</h3>
-                                        <p class="text-gray-500 text-sm leading-relaxed max-w-xl mb-3">
-                                            Lantai 3 & 4. Ukuran 3.5m X 4m. Smart TV dan 2 kasur (100x200). Sangat cocok untuk tinggal berdua.
-                                        </p>
-                                        <div class="flex gap-6">
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-[10px] font-bold text-gray-400 uppercase">Harga</span>
-                                                <span class="text-orange-600 text-sm font-bold">Rp 2.200.000<span class="text-gray-400 font-normal">/bln</span></span>
-                                                <span class="text-gray-400 text-sm font-bold line-through italic">Rp 2.500.000</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                    
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/95 flex items-center justify-center p-4 backdrop-blur-md">
-                        <button onclick="closeGallery()" class="absolute top-6 right-6 text-white text-4xl hover:text-orange-500 transition">&times;</button>
-                        <img id="modalImage" src="" class="max-w-full max-h-[90vh] rounded-xl shadow-2xl border border-white/10">
-                    </div>
-                    <!-- kamar End -->
-                </div>
-                
+                <!-- Location -->
                 <div class="py-10 border-b">
                     <h2 class="text-xl font-bold mb-4">Lokasi Kost</h2>
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.9450753270744!2d106.8401179!3d-6.2709535999999995!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e69f3c30af693f7%3A0x2450664bfb72a94d!2sLiving%20Kost%20Pejaten!5e0!3m2!1sid!2sid!4v1775745790658!5m2!1sid!2sid" width="100%" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+                    <p class="text-gray-600 mb-4"><i class="fas fa-location-dot text-orange-600 mr-2"></i><?= $e($lk_kost['address']) ?></p>
+                    <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($lk_kost['address']) ?>" target="_blank"
+                       class="inline-flex items-center gap-2 text-orange-600 font-semibold hover:text-orange-700">
+                        <i class="fas fa-map"></i> Lihat di Google Maps
+                    </a>
                 </div>
             </div>
 
+            <!-- Booking sidebar -->
             <div class="w-full md:w-80 lg:w-96">
                 <div class="sticky sticky-card bg-white border border-gray-100 rounded-3xl shadow-2xl p-8">
-                    <p class="text-sm text-gray-500 mb-1">Harga Promo</p>
+                    <p class="text-sm text-gray-500 mb-1">Mulai dari</p>
                     <div class="flex items-end space-x-2 mb-6">
-                        <span id="displayPrice" class="text-3xl font-bold text-gray-900">Rp 1.800.000</span>
+                        <span id="displayPrice" class="text-3xl font-bold text-gray-900"><?= $e(lk_rp($lk_minPrice)) ?></span>
                         <span class="text-gray-500 pb-1">/ bulan</span>
                     </div>
-            
-                    <div class="space-y-4 mb-6">
-                        <div class="p-3 border rounded-xl bg-gray-50">
-                            <label class="block text-[10px] font-bold uppercase text-gray-400">Tipe Kamar</label>
-                            <select id="roomSelect" class="w-full bg-transparent outline-none text-sm font-semibold cursor-pointer">
-                                <option value="Superior">Superior</option>
-                                <option value="Deluxe">Deluxe</option>
-                                <option value="Suite">Suite</option>
-                            </select>
+
+                    <?php if (!empty($lk_roomtypes)): ?>
+                        <div class="space-y-4 mb-6">
+                            <div class="p-3 border rounded-xl bg-gray-50">
+                                <label class="block text-[10px] font-bold uppercase text-gray-400">Tipe Kamar</label>
+                                <select id="roomSelect" class="w-full bg-transparent outline-none text-sm font-semibold cursor-pointer">
+                                    <?php foreach ($lk_roomtypes as $rt): ?>
+                                        <option value="<?= $e($rt['name']) ?>"><?= $e($rt['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                        <a id="waButton" href="#" target="_blank" class="inline-flex items-center justify-center bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-600 transition shadow-lg shadow-green-900/20 w-full md:w-auto">
+                    <?php endif; ?>
+
+                    <div class="flex flex-col gap-4">
+                        <a id="waButton" href="#" target="_blank" class="inline-flex items-center justify-center bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-600 transition shadow-lg shadow-green-900/20 w-full">
                             <i class="fab fa-whatsapp text-2xl mr-3"></i>
                             Tanya Ketersediaan
                         </a>
                     </div>
-            
+
                     <div class="mt-6 pt-6 border-t text-center">
-                        <p class="text-xs text-gray-400 font-medium"><i class="fas fa-shield-check mr-2"></i>Pembayaran Aman & Terverifikasi</p>
+                        <p class="text-xs text-gray-400 font-medium"><i class="fas fa-shield-halved mr-2"></i>Pembayaran Aman &amp; Terverifikasi</p>
                     </div>
                 </div>
             </div>
@@ -349,7 +309,7 @@
             <div>
                 <h5 class="font-bold mb-4">Pusat Bantuan</h5>
                 <ul class="text-gray-400 space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-white">Syarat & Ketentuan</a></li>
+                    <li><a href="#" class="hover:text-white">Syarat &amp; Ketentuan</a></li>
                     <li><a href="#" class="hover:text-white">Kebijakan Privasi</a></li>
                     <li><a href="#" class="hover:text-white">Hubungi Kami</a></li>
                 </ul>
@@ -369,88 +329,49 @@
     </footer>
 
     <script>
-        function changeImage(element, src) {
-            const mainImg = document.getElementById('mainView');
-            
-            // Animasi fade out sederhana
-            mainImg.style.opacity = '0.5';
-            
-            setTimeout(() => {
-                mainImg.src = src;
-                mainImg.style.opacity = '1';
-            }, 150);
-    
-            // Update border thumbnail
-            const thumbs = document.querySelectorAll('.thumb-item');
-            thumbs.forEach(thumb => {
-                thumb.classList.remove('border-orange-600', 'opacity-100');
-                thumb.classList.add('border-transparent', 'opacity-60');
-            });
-    
-            element.classList.remove('border-transparent', 'opacity-60');
-            element.classList.add('border-orange-600', 'opacity-100');
-    
-            // Fitur SMART SCROLL: 
-            // Membuat thumbnail yang diklik otomatis bergeser ke area pandang
-            element.scrollIntoView({
-                behavior: 'smooth',
-                block: 'nearest',
-                inline: 'center'
-            });
-        }
-    </script>
-    <script>
         const roomSelect = document.getElementById('roomSelect');
         const displayPrice = document.getElementById('displayPrice');
         const waButton = document.getElementById('waButton');
-        const phoneNumber = "6285161180441";
-    
-        // Data Harga Kamar (Pastikan formatnya sesuai keinginan Anda)
+        const phoneNumber = <?= json_encode($lk_waPhone) ?>;
+        const kostName = <?= json_encode($lk_kost['name']) ?>;
         const roomData = {
-            "Superior": "Rp 1.800.000",
-            "Deluxe": "Rp 2.000.000",
-            "Suite": "Rp 2.200.000"
+            <?php foreach ($lk_roomtypes as $rt): ?>
+            <?= json_encode($rt['name']) ?>: <?= json_encode(lk_rp($rt['price'])) ?>,
+            <?php endforeach; ?>
         };
-    
+
         function updateContent() {
-            const selectedRoom = roomSelect.value;
-            const selectedPrice = roomData[selectedRoom]; // Mengambil harga berdasarkan tipe
-            
-            // 1. Update Tampilan Harga di UI
-            displayPrice.innerText = selectedPrice;
-    
-            // 2. Update Link WhatsApp dengan Format Pesan Baru
-            // Menggunakan template literal agar harga otomatis masuk ke dalam pesan
-            const message = `Halo admin, saya mau tanya apakah promo kamar ${selectedRoom} harga ${selectedPrice} nya masih tersedia?`;
-            
-            const waUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
-            waButton.href = waUrl;
+            const selectedRoom = roomSelect ? roomSelect.value : '';
+            const selectedPrice = selectedRoom && roomData[selectedRoom] ? roomData[selectedRoom] : <?= json_encode(lk_rp($lk_minPrice)) ?>;
+            if (displayPrice && selectedRoom) displayPrice.innerText = selectedPrice;
+
+            let message;
+            if (selectedRoom) {
+                message = `Halo admin, saya tertarik dengan ${kostName} (tipe ${selectedRoom}, ${selectedPrice}). Apakah masih tersedia?`;
+            } else {
+                message = `Halo admin, saya tertarik dengan ${kostName}. Apakah masih tersedia?`;
+            }
+            waButton.href = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
         }
-    
-        // Jalankan fungsi saat dropdown berubah
-        roomSelect.addEventListener('change', updateContent);
-    
-        // Jalankan saat halaman pertama kali dimuat
+
+        if (roomSelect) roomSelect.addEventListener('change', updateContent);
         updateContent();
     </script>
     <script>
         function openGallery(src) {
             const modal = document.getElementById('galleryModal');
-            const modalImg = document.getElementById('modalImage');
-            
-            modalImg.src = src;
+            document.getElementById('modalImage').src = src;
+            modal.style.display = 'flex';
             modal.classList.remove('hidden');
-            document.body.style.overflow = 'hidden'; // Stop scrolling
+            document.body.style.overflow = 'hidden';
         }
-    
         function closeGallery() {
             const modal = document.getElementById('galleryModal');
+            modal.style.display = 'none';
             modal.classList.add('hidden');
-            document.body.style.overflow = 'auto'; // Re-enable scrolling
+            document.body.style.overflow = 'auto';
         }
-    
-        // Tutup modal jika klik di luar gambar
-        document.getElementById('galleryModal').addEventListener('click', function(e) {
+        document.getElementById('galleryModal').addEventListener('click', function (e) {
             if (e.target === this) closeGallery();
         });
     </script>
