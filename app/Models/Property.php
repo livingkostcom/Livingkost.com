@@ -9,7 +9,20 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Property extends Model
 {
     use HasFactory, \App\Models\Concerns\BelongsToOwner;
-    protected $fillable = ['owner_id', 'name', 'address', 'description', 'status'];
+    protected $fillable = ['owner_id', 'name', 'address', 'description', 'status', 'is_featured', 'featured_image', 'location_label', 'badge_text'];
+
+    protected $casts = [
+        'is_featured' => 'boolean',
+    ];
+
+    /**
+     * Starting (cheapest) monthly price derived from this property's room types.
+     */
+    public function getPriceFromAttribute(): ?float
+    {
+        $min = $this->roomTypes()->min('price');
+        return $min !== null ? (float) $min : null;
+    }
 
     public function roomTypes(): HasMany
     {

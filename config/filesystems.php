@@ -47,6 +47,16 @@ return [
             'report' => false,
         ],
 
+        // Public landing images (served directly at /images by the static site)
+        'landing' => [
+            'driver' => 'local',
+            'root' => base_path('images'),
+            'url' => '/images',
+            'visibility' => 'public',
+            'throw' => false,
+            'report' => false,
+        ],
+
         's3' => [
             'driver' => 's3',
             'key' => env('AWS_ACCESS_KEY_ID'),

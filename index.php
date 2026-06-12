@@ -1,3 +1,49 @@
+<?php
+// --- Dynamic "Rekomendasi Kost": featured properties from all owners ---
+// Reads the database directly (read-only) so the static landing can show
+// listings that owners toggle from their dashboard. Fails silently.
+$lk_featured = [];
+$lk_envPath = __DIR__ . '/.env';
+if (is_readable($lk_envPath)) {
+    $lk_env = [];
+    foreach (file($lk_envPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES) as $lk_line) {
+        $lk_line = trim($lk_line);
+        if ($lk_line === '' || $lk_line[0] === '#' || strpos($lk_line, '=') === false) {
+            continue;
+        }
+        list($lk_k, $lk_v) = explode('=', $lk_line, 2);
+        $lk_v = trim($lk_v);
+        if (strlen($lk_v) >= 2 && ($lk_v[0] === '"' || $lk_v[0] === "'") && substr($lk_v, -1) === $lk_v[0]) {
+            $lk_v = substr($lk_v, 1, -1);
+        }
+        $lk_env[trim($lk_k)] = $lk_v;
+    }
+    if (!empty($lk_env['DB_DATABASE'])) {
+        try {
+            $lk_pdo = new PDO(
+                'mysql:host=' . ($lk_env['DB_HOST'] ?? 'localhost') . ';port=' . ($lk_env['DB_PORT'] ?? '3306') . ';dbname=' . $lk_env['DB_DATABASE'] . ';charset=utf8mb4',
+                $lk_env['DB_USERNAME'] ?? '',
+                $lk_env['DB_PASSWORD'] ?? '',
+                [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
+            );
+            $lk_stmt = $lk_pdo->query(
+                "SELECT p.id, p.name, p.location_label, p.badge_text, p.featured_image,
+                        (SELECT MIN(rt.price) FROM room_types rt WHERE rt.property_id = p.id) AS price_from,
+                        (SELECT rt.facilities FROM room_types rt WHERE rt.property_id = p.id ORDER BY rt.price ASC LIMIT 1) AS facilities
+                 FROM properties p
+                 WHERE p.is_featured = 1 AND p.status = 'active'
+                 ORDER BY p.updated_at DESC
+                 LIMIT 6"
+            );
+            if ($lk_stmt) {
+                $lk_featured = $lk_stmt->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } catch (\Throwable $e) {
+            $lk_featured = [];
+        }
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -69,64 +115,51 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <a href="/detail">
-                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition">
-                    <div class="relative">
-                        <img src="/images/Dapur.png" alt="Kamar" class="w-full h-64 object-cover">
-                        <span class="absolute top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Sisa 2 Kamar</span>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-1">Jakarta Selatan</p>
-                        <h4 class="text-xl font-bold mb-4 text-gray-900">Living Kost Pejaten</h4>
-                        <div class="flex items-center text-gray-500 text-sm mb-4 space-x-4">
-                            <span><i class="fas fa-bed mr-1"></i> Single</span>
-                            <span><i class="fas fa-shower mr-1"></i> Dalam</span>
-                            <span><i class="fas fa-snowflake mr-1"></i> AC</span>
+                <?php if (!empty($lk_featured)): ?>
+                    <?php foreach ($lk_featured as $kost): ?>
+                        <?php
+                            $facs = json_decode($kost['facilities'] ?? '[]', true);
+                            if (!is_array($facs)) { $facs = []; }
+                            $facs = array_slice($facs, 0, 3);
+                            $price = (isset($kost['price_from']) && $kost['price_from'] !== null)
+                                ? 'Rp ' . number_format((float) $kost['price_from'], 0, ',', '.')
+                                : 'Hubungi kami';
+                            $img = !empty($kost['featured_image'])
+                                ? '/images/' . htmlspecialchars($kost['featured_image'], ENT_QUOTES)
+                                : 'https://placehold.co/800x600/f97316/ffffff?text=Living+Kost';
+                        ?>
+                        <a href="/detail">
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition h-full">
+                            <div class="relative">
+                                <img src="<?= $img ?>" alt="<?= htmlspecialchars($kost['name'], ENT_QUOTES) ?>" class="w-full h-64 object-cover">
+                                <?php if (!empty($kost['badge_text'])): ?>
+                                    <span class="absolute top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase"><?= htmlspecialchars($kost['badge_text'], ENT_QUOTES) ?></span>
+                                <?php endif; ?>
+                            </div>
+                            <div class="p-6">
+                                <?php if (!empty($kost['location_label'])): ?>
+                                    <p class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-1"><?= htmlspecialchars($kost['location_label'], ENT_QUOTES) ?></p>
+                                <?php endif; ?>
+                                <h4 class="text-xl font-bold mb-4 text-gray-900"><?= htmlspecialchars($kost['name'], ENT_QUOTES) ?></h4>
+                                <?php if (!empty($facs)): ?>
+                                    <div class="flex flex-wrap items-center text-gray-500 text-sm mb-4 gap-x-4 gap-y-1">
+                                        <?php foreach ($facs as $f): ?>
+                                            <span><i class="fas fa-check text-orange-500 mr-1"></i> <?= htmlspecialchars($f, ENT_QUOTES) ?></span>
+                                        <?php endforeach; ?>
+                                    </div>
+                                <?php endif; ?>
+                                <div class="flex justify-between items-center border-t pt-4">
+                                    <p class="text-gray-900 font-bold"><?= $price ?> <span class="text-gray-400 font-normal text-sm">/ bln</span></p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex justify-between items-center border-t pt-4">
-                            <p class="text-gray-900 font-bold">Rp 1.800.000 <span class="text-gray-400 font-normal text-sm">/ bln</span></p>
-                        </div>
+                        </a>
+                    <?php endforeach; ?>
+                <?php else: ?>
+                    <div class="md:col-span-3 text-center text-gray-400 py-12">
+                        Rekomendasi kost akan segera hadir.
                     </div>
-                </div>
-                </a>
-
-                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition">
-                    <div class="relative">
-                        <img style="filter: grayscale(100%);" src="https://images.unsplash.com/photo-1513694203232-719a280e022f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" alt="Kamar" class="w-full h-64 object-cover">
-                        <span class="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Coming Soon</span>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mb-1">Jakarta Selatan</p>
-                        <h4 class="text-xl font-bold mb-4 text-gray-500">Living Kost Kemang</h4>
-                        <div class="flex items-center text-gray-500 text-sm mb-4 space-x-4">
-                            <span><i class="fas fa-bed mr-1"></i> Single</span>
-                            <span><i class="fas fa-shower mr-1"></i> Luar</span>
-                            <span><i class="fas fa-snowflake mr-1"></i> AC</span>
-                        </div>
-                        <div class="flex justify-between items-center border-t pt-4">
-                            <p class="text-gray-500 font-bold">Rp 1.800.000 <span class="text-gray-400 font-normal text-sm">/ bln</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition">
-                    <div class="relative">
-                        <img style="filter: grayscale(100%);" src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=60" alt="Kamar" class="w-full h-64 object-cover">
-                        <span class="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">Coming Soon</span>
-                    </div>
-                    <div class="p-6">
-                        <p class="text-gray-500 font-bold text-xs uppercase tracking-widest mb-1">Jakarta Barat</p>
-                        <h4 class="text-xl font-bold mb-4 text-gray-500">Living Kost Grogol</h4>
-                        <div class="flex items-center text-gray-500 text-sm mb-4 space-x-4">
-                            <span><i class="fas fa-bed mr-1"></i> Queen</span>
-                            <span><i class="fas fa-shower mr-1"></i> Dalam</span>
-                            <span><i class="fas fa-snowflake mr-1"></i> AC</span>
-                        </div>
-                        <div class="flex justify-between items-center border-t pt-4">
-                            <p class="text-gray-500 font-bold">Rp 1.800.000 <span class="text-gray-400 font-normal text-sm">/ bln</span></p>
-                        </div>
-                    </div>
-                </div>
+                <?php endif; ?>
             </div>
         </div>
     </section>

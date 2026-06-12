@@ -56,5 +56,8 @@ bootstrap/cache/*.php
 public/hot
 public/storage
 
+# Owner-uploaded landing images (runtime data, not source)
+/images/featured/
+
 # Old backup
 .old_backup/
