@@ -33,3 +33,28 @@ npm-debug.log*
 # SSH keys (never commit keys!)
 *.pem
 *.ppk
+
+# Laravel specific
+/vendor/
+/node_modules/
+storage/logs/*.log
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*.php
+.env
+.env.backup
+.phpunit.result.cache
+/.idea
+/.vscode
+.DS_Store
+.sqlite
+.sqlite-shm
+.sqlite-wal
+
+# Build files
+public/hot
+public/storage
+
+# Old backup
+.old_backup/

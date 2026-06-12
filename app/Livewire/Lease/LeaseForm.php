@@ -1,0 +1,132 @@
+<?php
+
+namespace App\Livewire\Lease;
+
+use App\Models\Lease;
+use App\Models\Tenant;
+use App\Models\Room;
+use App\Models\Property;
+use Livewire\Component;
+
+class LeaseForm extends Component
+{
+    public ?int $leaseId = null;
+
+    public int $property_id = 0;
+
+    #[\Livewire\Attributes\Validate('required|integer|exists:tenants,id')]
+    public int $tenant_id = 0;
+
+    #[\Livewire\Attributes\Validate('required|integer|exists:rooms,id')]
+    public int $room_id = 0;
+
+    #[\Livewire\Attributes\Validate('required|date')]
+    public string $start_date = '';
+
+    #[\Livewire\Attributes\Validate('required|date|after:start_date')]
+    public string $end_date = '';
+
+    #[\Livewire\Attributes\Validate('required|integer|min:1|max:31')]
+    public int $due_date_per_month = 1;
+
+    #[\Livewire\Attributes\Validate('required|numeric|min:0')]
+    public string $deposit_amount = '0';
+
+    #[\Livewire\Attributes\Validate('required|string|in:pending,active,completed,terminated,cancelled')]
+    public string $status = 'pending';
+
+    public function mount(?int $leaseId = null)
+    {
+        $this->leaseId = $leaseId;
+
+        if ($leaseId) {
+            $lease = Lease::findOrFail($leaseId);
+            $this->authorize('update', $lease);
+            
+            $this->property_id = $lease->room->roomType->property_id;
+            $this->tenant_id = $lease->tenant_id;
+            $this->room_id = $lease->room_id;
+            $this->start_date = $lease->start_date->format('Y-m-d');
+            $this->end_date = $lease->end_date->format('Y-m-d');
+            $this->due_date_per_month = $lease->due_date_per_month;
+            $this->deposit_amount = (string) $lease->deposit_amount;
+            $this->status = $lease->status;
+        }
+    }
+
+    #[\Livewire\Attributes\On('property_id')]
+    public function updatedPropertyId()
+    {
+        $this->room_id = 0;
+    }
+
+    public function save()
+    {
+        $validationRules = [
+            'tenant_id' => 'required|integer|exists:tenants,id',
+            'room_id' => 'required|integer|exists:rooms,id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'due_date_per_month' => 'required|integer|min:1|max:31',
+            'deposit_amount' => 'required|numeric|min:0',
+            'status' => 'required|string|in:pending,active,completed,terminated,cancelled',
+        ];
+
+        $this->validate($validationRules);
+
+        $data = [
+            'tenant_id' => $this->tenant_id,
+            'room_id' => $this->room_id,
+            'start_date' => $this->start_date,
+            'end_date' => $this->end_date,
+            'due_date_per_month' => $this->due_date_per_month,
+            'deposit_amount' => (float) $this->deposit_amount,
+            'status' => $this->status,
+        ];
+
+        if ($this->leaseId) {
+            $lease = Lease::findOrFail($this->leaseId);
+            $this->authorize('update', $lease);
+            $data['updated_by'] = auth()->user()->name;
+            $lease->update($data);
+            $message = 'Kontrak berhasil diperbarui!';
+        } else {
+            $this->authorize('create', Lease::class);
+            $data['created_by'] = auth()->user()->name;
+            Lease::create($data);
+            $message = 'Kontrak berhasil dibuat!';
+        }
+
+        $this->dispatch('lease-saved', message: $message);
+    }
+
+    public function render()
+    {
+        $properties = Property::orderBy('name')->get();
+        
+        // Filter tenants - tampilkan hanya penyewa yang belum punya lease aktif di PROPERTI MANAPUN
+        $tenants = Tenant::where('status', 'active')
+            ->whereDoesntHave('leases', function ($query) {
+                $query->whereIn('status', ['pending', 'active']);
+            })
+            ->orderBy('name')
+            ->get();
+        
+        $rooms = collect();
+        if ($this->property_id) {
+            $rooms = Room::with('roomType')
+                ->whereHas('roomType', function ($query) {
+                    $query->where('property_id', $this->property_id);
+                })
+                ->where('status', 'available')
+                ->orderBy('room_number')
+                ->get();
+        }
+        
+        return view('livewire.lease.lease-form', [
+            'properties' => $properties,
+            'tenants' => $tenants,
+            'rooms' => $rooms,
+        ]);
+    }
+}
