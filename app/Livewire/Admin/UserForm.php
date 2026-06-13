@@ -13,6 +13,7 @@ class UserForm extends Component
     public ?int $userId = null;
     public string $name = '';
     public string $email = '';
+    public string $phone = '';
     public string $password = '';
     public string $role = '';
 
@@ -25,6 +26,7 @@ class UserForm extends Component
             $this->authorize('update', $user);
             $this->name = $user->name;
             $this->email = $user->email;
+            $this->phone = $user->phone ?? '';
             $this->role = $user->getRoleNames()->first() ?? '';
         } else {
             $this->authorize('create', User::class);
@@ -53,6 +55,7 @@ class UserForm extends Component
         return [
             'name' => 'required|string|max:255',
             'email' => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($this->userId)],
+            'phone' => 'nullable|string|max:20',
             'password' => $this->userId ? 'nullable|string|min:6' : 'required|string|min:6',
             'role' => ['required', Rule::in($this->roleChoices())],
         ];
@@ -70,6 +73,7 @@ class UserForm extends Component
 
             $user->name = $this->name;
             $user->email = $this->email;
+            $user->phone = $this->phone ?: null;
             if ($this->password !== '') {
                 $user->password = Hash::make($this->password);
             }
@@ -84,6 +88,7 @@ class UserForm extends Component
             $user = User::create([
                 'name' => $this->name,
                 'email' => $this->email,
+                'phone' => $this->phone ?: null,
                 'password' => Hash::make($this->password),
                 'owner_id' => $this->resolveOwnerId($actor, null),
                 'email_verified_at' => now(),

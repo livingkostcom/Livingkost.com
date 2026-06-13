@@ -70,10 +70,22 @@ class MaintenanceRequestIndex extends Component
             $admin->notify(new NewMaintenanceRequestNotification($maintenanceRequest));
         }
 
-        // WhatsApp to the owner's registered number (Setting app_phone, owner-scoped)
+        // WhatsApp: owner's business number (Setting app_phone) + each manager's own phone
+        $waMessage = $this->buildWaMessage($maintenanceRequest);
+        $sentTo = [];
+
         $ownerPhone = Setting::getValue('app_phone');
         if ($ownerPhone) {
-            WhatsAppService::send($ownerPhone, $this->buildWaMessage($maintenanceRequest));
+            WhatsAppService::send($ownerPhone, $waMessage);
+            $sentTo[] = preg_replace('/[^0-9]/', '', $ownerPhone);
+        }
+
+        foreach ($admins as $admin) {
+            $phone = $admin->phone ?? null;
+            if ($phone && !in_array(preg_replace('/[^0-9]/', '', $phone), $sentTo, true)) {
+                WhatsAppService::send($phone, $waMessage);
+                $sentTo[] = preg_replace('/[^0-9]/', '', $phone);
+            }
         }
 
         $this->showCreateModal = false;

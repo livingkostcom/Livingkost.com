@@ -61,6 +61,7 @@
                     <tr>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Nama</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Email</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Telepon</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Role</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Aksi</th>
                     </tr>
@@ -81,6 +82,9 @@
                             </td>
                             <td class="px-6 py-4">
                                 <p class="text-gray-600 text-sm">{{ $user->email }}</p>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p class="text-gray-600 text-sm">{{ $user->phone ?: '-' }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $roleBadges[$roleName]['class'] ?? 'bg-gray-100 text-gray-800' }}">
@@ -112,7 +116,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="4" class="px-6 py-12 text-center">
+                            <td colspan="5" class="px-6 py-12 text-center">
                                 <p class="text-gray-500">Belum ada user.</p>
                             </td>
                         </tr>

@@ -26,6 +26,19 @@
         @enderror
     </div>
 
+    <!-- Phone -->
+    <div>
+        <label for="phone" class="block text-sm font-semibold text-gray-700 mb-2">
+            Nomor Telepon
+        </label>
+        <input wire:model="phone" type="text" id="phone" placeholder="cth: 08123456789"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('phone') border-red-500 @enderror">
+        <p class="mt-1 text-xs text-gray-500">Untuk notifikasi WhatsApp (mis. permintaan perbaikan).</p>
+        @error('phone')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
     <!-- Password -->
     <div>
         <label for="password" class="block text-sm font-semibold text-gray-700 mb-2">
