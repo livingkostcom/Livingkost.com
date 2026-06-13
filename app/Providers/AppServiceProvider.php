@@ -7,6 +7,7 @@ use App\Models\Lease;
 use App\Models\Setting;
 use App\Observers\InvoiceObserver;
 use App\Observers\LeaseObserver;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
@@ -30,6 +31,11 @@ class AppServiceProvider extends ServiceProvider
         // Register model observers
         Invoice::observe(InvoiceObserver::class);
         Lease::observe(LeaseObserver::class);
+
+        // Super-admins bypass every policy/gate check (full platform control).
+        Gate::before(function ($user) {
+            return $user->isSuperAdmin() ? true : null;
+        });
 
         // Use Tailwind pagination view
         Paginator::useTailwind();
