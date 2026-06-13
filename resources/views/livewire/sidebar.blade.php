@@ -51,7 +51,7 @@
     </aside>
 
     <!-- Main Content Area -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col min-w-0">
         <!-- Top Navigation Bar -->
         <nav class="bg-white/80 backdrop-blur-md shadow-md sticky top-0 z-30">
             <div class="px-4 sm:px-6 lg:px-8">
