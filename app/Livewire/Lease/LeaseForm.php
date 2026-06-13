@@ -74,6 +74,19 @@ class LeaseForm extends Component
 
         $this->validate($validationRules);
 
+        // Enforce one ACTIVE lease per tenant (DB can't do partial unique on MySQL).
+        if ($this->status === 'active') {
+            $conflict = Lease::where('tenant_id', $this->tenant_id)
+                ->where('status', 'active')
+                ->when($this->leaseId, fn ($q) => $q->where('id', '!=', $this->leaseId))
+                ->exists();
+
+            if ($conflict) {
+                $this->addError('tenant_id', 'Penyewa ini sudah memiliki kontrak aktif. Selesaikan/batalkan kontrak lama dulu.');
+                return;
+            }
+        }
+
         $data = [
             'tenant_id' => $this->tenant_id,
             'room_id' => $this->room_id,
