@@ -90,7 +90,7 @@
 
         <!-- Main Content -->
         <main class="flex-1 overflow-auto">
-            <div class="max-w-8xl mx-auto py-8 px-3 sm:px-5 lg:px-8">
+            <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                 @yield('content')
             </div>
         </main>
