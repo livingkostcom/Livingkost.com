@@ -2,9 +2,13 @@
 
 namespace App\Livewire\Tenant;
 
+use App\Mail\TenantWelcomeMail;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -132,12 +136,52 @@ class TenantForm extends Component
             $data['user_id'] = $user->id;
             Tenant::create($data);
 
-            $message = $plainPassword
-                ? "Penyewa & akun login dibuat — Email: {$this->email} · Password: {$plainPassword} (simpan & bagikan ke penyewa)"
-                : 'Penyewa ditambahkan & ditautkan ke akun login yang sudah ada.';
+            // First-time account: send login credentials via email + WhatsApp
+            if ($plainPassword) {
+                $this->sendCredentials($this->name, $this->email, $this->phone, $plainPassword);
+
+                $message = "Penyewa & akun login dibuat — kredensial dikirim ke email & WhatsApp penyewa. (Email: {$this->email} · Password: {$plainPassword})";
+            } else {
+                $message = 'Penyewa ditambahkan & ditautkan ke akun login yang sudah ada.';
+            }
         }
 
         $this->dispatch('tenant-saved', message: $message);
+    }
+
+    /**
+     * Send the new login credentials to the tenant via email and WhatsApp.
+     * Failures are logged but never block tenant creation.
+     */
+    private function sendCredentials(string $name, string $email, string $phone, string $plainPassword): void
+    {
+        $loginUrl = route('login');
+
+        // Email
+        try {
+            if (config('mail.default') !== 'log' && $email) {
+                Mail::to($email)->send(new TenantWelcomeMail($name, $email, $plainPassword, $loginUrl));
+            }
+        } catch (\Throwable $e) {
+            Log::error('Tenant welcome email failed', ['email' => $email, 'error' => $e->getMessage()]);
+        }
+
+        // WhatsApp
+        try {
+            if ($phone) {
+                $waMessage = "Halo {$name},\n\n"
+                    . "Selamat datang di *Living Kost*! Akun login Anda telah dibuat.\n\n"
+                    . "Berikut detail akun untuk masuk ke portal penghuni:\n"
+                    . "Email: {$email}\n"
+                    . "Password: {$plainPassword}\n\n"
+                    . "Login di sini: {$loginUrl}\n\n"
+                    . "Demi keamanan, segera ganti password Anda setelah login pertama. Jangan bagikan password ini kepada siapa pun.\n\n"
+                    . "_Living Kost_";
+                WhatsAppService::send($phone, $waMessage);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Tenant welcome WhatsApp failed', ['phone' => $phone, 'error' => $e->getMessage()]);
+        }
     }
 
     private function getValidationRules()
