@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Notifications\NewMaintenanceRequestNotification;
 use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -67,7 +68,17 @@ class MaintenanceRequestIndex extends Component
             ->where(fn ($q) => $q->where('id', $ownerId)->orWhere('owner_id', $ownerId))
             ->get();
         foreach ($admins as $admin) {
-            $admin->notify(new NewMaintenanceRequestNotification($maintenanceRequest));
+            // Email may fail (e.g. owner address has no real mailbox); never let
+            // that break request creation. The in-app DB notification is sent
+            // first, so it persists even when the mail channel throws.
+            try {
+                $admin->notify(new NewMaintenanceRequestNotification($maintenanceRequest));
+            } catch (\Throwable $e) {
+                Log::error('Maintenance request notification failed', [
+                    'admin_id' => $admin->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         // WhatsApp: owner's business number (Setting app_phone) + each manager's own phone
