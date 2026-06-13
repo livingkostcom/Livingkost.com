@@ -203,8 +203,9 @@ class TenantInvoiceIndex extends Component
             . "Penghuni: {$tenant}\n"
             . "Kamar: {$room}\n"
             . "Jumlah: {$amount}\n\n"
-            . "Status: Menunggu verifikasi.\n"
-            . "Silakan periksa di dashboard » Verifikasi Pembayaran.\n\n"
+            . "Status: Menunggu verifikasi.\n\n"
+            . "Cek & verifikasi buktinya di sini:\n"
+            . "https://livingkost.com/payment-verifications\n\n"
             . "_Living Kost_";
     }
 

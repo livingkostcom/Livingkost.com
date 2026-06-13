@@ -59,7 +59,13 @@
       </div>
     </div>
 
-    <p class="note">Silakan masuk ke dashboard Living Kost &raquo; Verifikasi Pembayaran untuk memeriksa bukti dan menyetujui atau menolak pembayaran ini.</p>
+    <p class="note">Silakan periksa bukti pembayaran dan setujui atau tolak melalui tombol di bawah.</p>
+    <p style="text-align:center;margin:16px 0 4px;">
+      <a href="https://livingkost.com/payment-verifications"
+         style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;">
+        Cek Bukti Pembayaran
+      </a>
+    </p>
   </div>
   <div class="footer">
     &copy; {{ date('Y') }} LivingKost &mdash; Email ini dikirim otomatis, jangan balas pesan ini.
