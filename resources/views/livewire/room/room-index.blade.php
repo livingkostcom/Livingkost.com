@@ -93,7 +93,6 @@
             class="px-4 py-3 bg-white border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition duration-300 shadow-sm hover:shadow-md">
             <option value="">-- Semua Status --</option>
             <option value="available">Tersedia</option>
-            <option value="occupied">Terisi</option>
             <option value="maintenance">Maintenance</option>
         </select>
     </div>
@@ -159,15 +158,15 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
                                     class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
-                                @if ($room->status === 'available') bg-green-100 text-green-800
-                                @elseif ($room->status === 'occupied')
+                                @if ($room->computed_status === 'available') bg-green-100 text-green-800
+                                @elseif ($room->computed_status === 'occupied')
                                     bg-red-100 text-red-800
                                 @else
                                     bg-yellow-100 text-yellow-800 @endif">
-                                    @if ($room->status === 'available')
+                                    @if ($room->computed_status === 'available')
                                         <span class="w-2 h-2 rounded-full bg-green-500 mr-2"></span>Tersedia
-                                    @elseif ($room->status === 'occupied')
-                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>Terisi
+                                    @elseif ($room->computed_status === 'occupied')
+                                        <span class="w-2 h-2 rounded-full bg-red-500 mr-2"></span>Tidak Tersedia
                                     @else
                                         <span class="w-2 h-2 rounded-full bg-yellow-500 mr-2"></span>Maintenance
                                     @endif

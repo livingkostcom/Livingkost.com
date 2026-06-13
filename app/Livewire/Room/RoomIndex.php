@@ -52,12 +52,12 @@ class RoomIndex extends Component
     public function openEditModal(Room $room)
     {
         try {
-            // Check if room is occupied first
-            if ($room->status === 'occupied') {
+            // Check if room is occupied (has active lease)
+            if ($room->computed_status === 'occupied') {
                 $this->errorMessage = 'Ruangan yang terisi tidak dapat diubah. Harus melalui penyelesaian kontrak.';
                 return;
             }
-            
+
             $this->authorize('update', $room);
             $this->editingId = $room->id;
             $this->showModal = true;
@@ -100,12 +100,12 @@ class RoomIndex extends Component
     public function openDeleteModal(Room $room)
     {
         try {
-            // Check if room is occupied first
-            if ($room->status === 'occupied') {
+            // Check if room is occupied (has active lease)
+            if ($room->computed_status === 'occupied') {
                 $this->errorMessage = 'Ruangan yang terisi tidak dapat dihapus. Harus melalui penyelesaian kontrak.';
                 return;
             }
-            
+
             $this->authorize('delete', $room);
             $this->deletingRoom = $room;
             $this->deletingRoomId = $room->id;

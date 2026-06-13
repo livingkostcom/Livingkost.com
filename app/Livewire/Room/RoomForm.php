@@ -20,6 +20,9 @@ class RoomForm extends Component
     #[\Livewire\Attributes\Validate('required|integer|min:1')]
     public int $floor = 1;
 
+    #[\Livewire\Attributes\Validate('required|string|in:available,maintenance')]
+    public string $status = 'available';
+
     public ?int $selectedProperty = null;
     public array $roomTypes = [];
 
@@ -33,6 +36,7 @@ class RoomForm extends Component
             $this->room_type_id = $room->room_type_id;
             $this->room_number = $room->room_number;
             $this->floor = $room->floor;
+            $this->status = $room->status;
             $this->selectedProperty = $room->roomType->property_id;
             $this->loadRoomTypes($room->roomType->property_id);
         }
@@ -64,6 +68,7 @@ class RoomForm extends Component
                 'room_type_id' => $this->room_type_id,
                 'room_number' => $this->room_number,
                 'floor' => $this->floor,
+                'status' => $this->status,
             ]);
             $message = 'Ruangan berhasil diperbarui!';
         } else {
@@ -72,6 +77,7 @@ class RoomForm extends Component
                 'room_type_id' => $this->room_type_id,
                 'room_number' => $this->room_number,
                 'floor' => $this->floor,
+                'status' => $this->status,
             ]);
             $message = 'Ruangan berhasil dibuat!';
         }

@@ -10,17 +10,17 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Room extends Model
 {
     use HasFactory, \App\Models\Concerns\BelongsToOwner;
-    protected $fillable = ['owner_id', 'room_type_id', 'room_number', 'floor'];
+    protected $fillable = ['owner_id', 'room_type_id', 'room_number', 'floor', 'status'];
 
-    protected $appends = ['status'];
+    protected $appends = ['computed_status'];
 
     /**
-     * Status is computed based on whether there's an active lease.
-     * Rooms with active leases are 'occupied'; otherwise 'available'.
+     * Computed status: 'occupied' if has active lease, else returns the stored status ('available' or 'maintenance').
+     * Manual status only allows 'available' or 'maintenance'; 'occupied' is derived from leases.
      */
-    public function getStatusAttribute()
+    public function getComputedStatusAttribute()
     {
-        return $this->activeLease() ? 'occupied' : 'available';
+        return $this->activeLease() ? 'occupied' : $this->attributes['status'] ?? 'available';
     }
 
     public function roomType(): BelongsTo

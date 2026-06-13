@@ -57,6 +57,22 @@
         @enderror
     </div>
 
+    <!-- Status Select -->
+    <div>
+        <label for="status" class="block text-sm font-semibold text-gray-700 mb-2">
+            Status <span class="text-red-600">*</span>
+        </label>
+        <select wire:model="status" id="status"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('status') border-red-500 @enderror">
+            <option value="available">Tersedia</option>
+            <option value="maintenance">Maintenance</option>
+        </select>
+        <p class="mt-1 text-xs text-gray-500">Status "Tidak Tersedia" otomatis saat ada penghuni aktif.</p>
+        @error('status')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
     <!-- Action Buttons -->
     <div class="flex gap-3 pt-4">
         <button type="button" wire:click="$parent.closeModal()"
