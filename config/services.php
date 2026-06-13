@@ -32,6 +32,16 @@ return [
         'token' => env('FONNTE_TOKEN'),
     ],
 
+    'doku' => [
+        'client_id' => env('DOKU_CLIENT_ID'),
+        'secret_key' => env('DOKU_SECRET_KEY'),
+        // 'sandbox' or 'production'
+        'env' => env('DOKU_ENV', 'sandbox'),
+        'base_url' => env('DOKU_ENV', 'sandbox') === 'production'
+            ? 'https://api.doku.com'
+            : 'https://api-sandbox.doku.com',
+    ],
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
