@@ -209,9 +209,72 @@
                 </div>
 
                 <form wire:submit.prevent="submitProof" class="p-6 space-y-4">
+                    <!-- Transfer Instructions -->
+                    <div class="bg-orange-50 border border-orange-200 rounded-xl p-4">
+                        <h4 class="text-sm font-bold text-orange-800 mb-3 flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            Transfer Pembayaran
+                        </h4>
+
+                        @if ($bank['number'])
+                            <div class="space-y-2 text-sm" x-data="{ copied: false }">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Bank</span>
+                                    <span class="font-semibold text-gray-900">{{ $bank['name'] ?: '-' }}</span>
+                                </div>
+                                <div class="flex justify-between items-center">
+                                    <span class="text-gray-500">No. Rekening</span>
+                                    <span class="flex items-center gap-2">
+                                        <span class="font-bold text-gray-900 tracking-wide">{{ $bank['number'] }}</span>
+                                        <button type="button"
+                                            @click="navigator.clipboard.writeText('{{ $bank['number'] }}'); copied = true; setTimeout(() => copied = false, 1500)"
+                                            class="text-orange-600 hover:text-orange-800" title="Salin nomor rekening">
+                                            <svg x-show="!copied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                            </svg>
+                                            <svg x-show="copied" style="display:none" class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </button>
+                                    </span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-500">Atas Nama</span>
+                                    <span class="font-semibold text-gray-900">{{ $bank['holder'] ?: '-' }}</span>
+                                </div>
+                                @if ($uploadingAmount)
+                                    <div class="flex justify-between pt-2 mt-2 border-t border-orange-200">
+                                        <span class="text-gray-500">Jumlah Transfer</span>
+                                        <span class="font-bold text-orange-600">Rp {{ number_format($uploadingAmount, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            @if ($bank['instructions'])
+                                <p class="text-xs text-gray-600 mt-3 whitespace-pre-line">{{ $bank['instructions'] }}</p>
+                            @endif
+                        @else
+                            <p class="text-sm text-gray-600">Informasi rekening belum diatur oleh pemilik kos. Silakan hubungi pengelola untuk detail pembayaran.</p>
+                        @endif
+
+                        <div class="mt-3 pt-3 border-t border-orange-200">
+                            <p class="text-xs font-semibold text-gray-700 mb-1">Cara upload bukti:</p>
+                            <ol class="text-xs text-gray-600 list-decimal list-inside space-y-0.5">
+                                <li>Transfer sesuai jumlah ke rekening di atas.</li>
+                                <li>Simpan/screenshot bukti transfer (PDF/JPG/PNG).</li>
+                                <li>Pilih file bukti di bawah, lalu tekan <span class="font-semibold">Upload</span>.</li>
+                                <li>Tunggu verifikasi dari pengelola.</li>
+                            </ol>
+                        </div>
+                    </div>
+
                     <!-- File Input -->
                     <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih File</label>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Pilih File Bukti Transfer</label>
                         <div class="relative">
                             <input type="file" wire:model="proofFile" accept=".pdf,.jpg,.jpeg,.png"
                                 class="w-full px-4 py-3 border-2 border-dashed border-gray-300 rounded-xl focus:outline-none focus:border-orange-500 file:hidden cursor-pointer"

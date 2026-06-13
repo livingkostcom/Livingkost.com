@@ -25,6 +25,8 @@ class TenantInvoiceIndex extends Component
     public $filterStatus = '';
     public $showUploadModal = false;
     public $uploadingInvoiceId = null;
+    public $uploadingAmount = null;
+    public $uploadingRef = '';
     public $proofFile = null;
     public $successMessage = '';
     public $errorMessage = '';
@@ -96,6 +98,8 @@ class TenantInvoiceIndex extends Component
         }
 
         $this->uploadingInvoiceId = $invoiceId;
+        $this->uploadingAmount = $invoice->amount;
+        $this->uploadingRef = $invoice->reference_number;
         $this->proofFile = null;
         $this->showUploadModal = true;
     }
@@ -249,6 +253,13 @@ class TenantInvoiceIndex extends Component
                 'unpaid' => ['label' => 'Belum Bayar', 'color' => 'red'],
                 'pending' => ['label' => 'Menunggu Verifikasi', 'color' => 'yellow'],
                 'paid' => ['label' => 'Sudah Bayar', 'color' => 'green'],
+            ],
+            // Owner's registered bank account (owner-scoped via the tenant's owner_id)
+            'bank' => [
+                'name' => Setting::getValue('bank_name'),
+                'number' => Setting::getValue('bank_account_number'),
+                'holder' => Setting::getValue('bank_account_holder'),
+                'instructions' => Setting::getValue('payment_instructions'),
             ],
         ]);
     }
