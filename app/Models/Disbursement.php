@@ -15,6 +15,7 @@ class Disbursement extends Model
         'bank_account_number',
         'bank_account_holder',
         'reference',
+        'proof_path',
         'notes',
         'requested_by',
         'processed_by',

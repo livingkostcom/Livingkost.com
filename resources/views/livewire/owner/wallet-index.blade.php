@@ -58,7 +58,11 @@
                         <tr>
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{{ $d->created_at->translatedFormat('d M Y') }}</td>
                             <td class="px-6 py-4 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format($d->amount, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">{{ $d->bank_name }} {{ $d->bank_account_number }}<br><span class="text-xs text-gray-400">{{ $d->bank_account_holder }}</span></td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ $d->bank_name }} {{ $d->bank_account_number }}<br><span class="text-xs text-gray-400">{{ $d->bank_account_holder }}</span>
+                                @if ($d->proof_path)
+                                    <br><a href="{{ route('disbursements.proof', $d->id) }}" target="_blank" class="text-xs text-orange-600 hover:text-orange-800 font-medium">Lihat bukti transfer</a>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-center">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $disbStatus[$d->status]['class'] ?? 'bg-gray-100 text-gray-700' }}">{{ $disbStatus[$d->status]['label'] ?? $d->status }}</span>
                             </td>

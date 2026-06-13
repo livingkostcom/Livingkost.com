@@ -150,6 +150,22 @@ Route::middleware('auth')->group(function () {
         return view('admin.disbursements.index');
     })->middleware(['auth'])->name('disbursements.index');
 
+    // Disbursement transfer proof — private file, streamed inline
+    Route::get('/disbursements/{disbursement}/proof', function (\App\Models\Disbursement $disbursement) {
+        $u = Auth::user();
+        if (! $u?->isSuperAdmin() && $u?->id !== $disbursement->owner_id) {
+            abort(403);
+        }
+        if (! $disbursement->proof_path) {
+            abort(404);
+        }
+        $path = storage_path('app/private/' . $disbursement->proof_path);
+        if (! is_file($path)) {
+            abort(404);
+        }
+        return response()->file($path);
+    })->middleware(['auth'])->name('disbursements.proof');
+
     // Owner wallet
     Route::get('/wallet', function () {
         abort_unless(Auth::user()?->isOwner() || Auth::user()?->isSuperAdmin(), 403);

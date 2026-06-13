@@ -8,11 +8,12 @@ use App\Models\User;
 use App\Services\WalletService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 class DisbursementIndex extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public string $successMessage = '';
     public string $errorMessage = '';
@@ -27,6 +28,7 @@ class DisbursementIndex extends Component
     public string $bankAccountNumber = '';
     public string $bankAccountHolder = '';
     public string $notes = '';
+    public $proofFile = null;
 
     public function mount()
     {
@@ -48,6 +50,7 @@ class DisbursementIndex extends Component
         $this->bankAccountNumber = (string) Setting::getForOwner('bank_account_number', $ownerId);
         $this->bankAccountHolder = (string) Setting::getForOwner('bank_account_holder', $ownerId);
         $this->notes = '';
+        $this->proofFile = null;
         $this->errorMessage = '';
         $this->showCreateModal = true;
     }
@@ -56,6 +59,7 @@ class DisbursementIndex extends Component
     {
         $this->showCreateModal = false;
         $this->createOwnerId = null;
+        $this->proofFile = null;
     }
 
     public function createDisbursement()
@@ -74,6 +78,15 @@ class DisbursementIndex extends Component
             return;
         }
 
+        $this->validate([
+            'proofFile' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+        ], [], ['proofFile' => 'bukti transfer']);
+
+        $proofPath = null;
+        if ($this->proofFile) {
+            $proofPath = $this->proofFile->store('disbursements', 'local');
+        }
+
         Disbursement::create([
             'owner_id' => $this->createOwnerId,
             'amount' => $amount,
@@ -81,6 +94,7 @@ class DisbursementIndex extends Component
             'bank_name' => $this->bankName ?: null,
             'bank_account_number' => $this->bankAccountNumber ?: null,
             'bank_account_holder' => $this->bankAccountHolder ?: null,
+            'proof_path' => $proofPath,
             'notes' => $this->notes ?: null,
             'requested_by' => Auth::id(),
         ]);

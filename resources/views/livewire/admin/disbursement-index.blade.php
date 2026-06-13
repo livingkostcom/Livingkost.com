@@ -73,7 +73,11 @@
                             <td class="px-6 py-4 text-sm text-gray-600 whitespace-nowrap">{{ $d->created_at->translatedFormat('d M Y') }}</td>
                             <td class="px-6 py-4 text-sm font-medium text-gray-900 whitespace-nowrap">{{ $d->owner->name ?? '-' }}</td>
                             <td class="px-6 py-4 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format($d->amount, 0, ',', '.') }}</td>
-                            <td class="px-6 py-4 text-sm text-gray-600">{{ $d->bank_name }} {{ $d->bank_account_number }}<br><span class="text-xs text-gray-400">{{ $d->bank_account_holder }}</span></td>
+                            <td class="px-6 py-4 text-sm text-gray-600">{{ $d->bank_name }} {{ $d->bank_account_number }}<br><span class="text-xs text-gray-400">{{ $d->bank_account_holder }}</span>
+                                @if ($d->proof_path)
+                                    <br><a href="{{ route('disbursements.proof', $d->id) }}" target="_blank" class="text-xs text-orange-600 hover:text-orange-800 font-medium">Lihat bukti transfer</a>
+                                @endif
+                            </td>
                             <td class="px-6 py-4 text-center">
                                 <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $disbStatus[$d->status]['class'] ?? 'bg-gray-100 text-gray-700' }}">{{ $disbStatus[$d->status]['label'] ?? $d->status }}</span>
                             </td>
@@ -134,6 +138,17 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Catatan (opsional)</label>
                         <input wire:model="notes" type="text" placeholder="No. referensi transfer, dll" class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Bukti Transfer (opsional)</label>
+                        <input wire:model="proofFile" type="file" accept=".jpg,.jpeg,.png,.pdf"
+                            class="w-full px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg text-sm cursor-pointer focus:outline-none focus:border-orange-500">
+                        <p class="text-xs text-gray-500 mt-1">JPG, PNG, atau PDF • maks 5MB</p>
+                        <div wire:loading wire:target="proofFile" class="text-xs text-orange-600 mt-1">Mengunggah...</div>
+                        @error('proofFile') <p class="text-xs text-red-600 mt-1">{{ $message }}</p> @enderror
+                        @if ($proofFile)
+                            <p class="text-xs text-green-600 mt-1">✓ Siap: {{ $proofFile->getClientOriginalName() }}</p>
+                        @endif
                     </div>
                     @if ($errorMessage)
                         <p class="text-sm text-red-600">{{ $errorMessage }}</p>
