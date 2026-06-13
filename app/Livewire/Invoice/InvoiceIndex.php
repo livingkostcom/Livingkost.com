@@ -290,10 +290,13 @@ class InvoiceIndex extends Component
         $due = $invoice->due_date->translatedFormat('d F Y');
         $ref = $invoice->reference_number;
 
+        $bank = $invoice->bankTransferWaBlock();
+        $bankBlock = $bank ? "\n\n{$bank}" : '';
+
         return match ($reminderType) {
-            'overdue' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* telah melewati jatuh tempo ({$due}).\n\nMohon segera lakukan pembayaran. Terima kasih.\n\n_Living Kost_",
-            'due_today' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* jatuh tempo *hari ini* ({$due}).\n\nSilakan segera lakukan pembayaran. Terima kasih.\n\n_Living Kost_",
-            default => "Halo {$tenant},\n\nIni adalah pengingat bahwa tagihan kos Anda *{$ref}* sebesar *{$amount}* akan jatuh tempo pada *{$due}*.\n\nMohon lakukan pembayaran sebelum tanggal tersebut. Terima kasih.\n\n_Living Kost_",
+            'overdue' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* telah melewati jatuh tempo ({$due}).\n\nMohon segera lakukan pembayaran.{$bankBlock}\n\nTerima kasih.\n\n_Living Kost_",
+            'due_today' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* jatuh tempo *hari ini* ({$due}).\n\nSilakan segera lakukan pembayaran.{$bankBlock}\n\nTerima kasih.\n\n_Living Kost_",
+            default => "Halo {$tenant},\n\nIni adalah pengingat bahwa tagihan kos Anda *{$ref}* sebesar *{$amount}* akan jatuh tempo pada *{$due}*.\n\nMohon lakukan pembayaran sebelum tanggal tersebut.{$bankBlock}\n\nTerima kasih.\n\n_Living Kost_",
         };
     }
 

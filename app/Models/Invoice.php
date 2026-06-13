@@ -43,6 +43,35 @@ class Invoice extends Model
         return $this->hasOne(Receipt::class);
     }
 
+    /**
+     * WhatsApp-formatted bank transfer block for this invoice's owner.
+     * Returns an empty string when the owner has no account number set.
+     */
+    public function bankTransferWaBlock(): string
+    {
+        $ownerId = $this->owner_id ?? $this->lease?->tenant?->owner_id ?? null;
+
+        $number = Setting::getForOwner('bank_account_number', $ownerId);
+        if (! $number) {
+            return '';
+        }
+
+        $name = Setting::getForOwner('bank_name', $ownerId);
+        $holder = Setting::getForOwner('bank_account_holder', $ownerId);
+
+        $block = "Transfer ke:\n";
+        if ($name) {
+            $block .= "Bank: {$name}\n";
+        }
+        $block .= "No. Rek: {$number}\n";
+        if ($holder) {
+            $block .= "a.n. {$holder}\n";
+        }
+        $block .= "\nSetelah transfer, unggah bukti di portal: Login » Invoice » Upload Bukti.";
+
+        return $block;
+    }
+
     public static function generateInvoiceNumber(): string
     {
         $prefix = 'INV-' . date('Ymd');
