@@ -168,50 +168,13 @@ class TenantInvoiceIndex extends Component
             $this->errorMessage = 'Invoice ini bukan milik Anda';
             return;
         }
-        if ($invoice->status === 'paid') {
-            $this->errorMessage = 'Invoice ini sudah lunas.';
-            return;
-        }
 
-        $ownerId = $invoice->lease->tenant->owner_id;
-        if (!OwnerWallet::onlineEnabledFor($ownerId)) {
-            $this->errorMessage = 'Pembayaran online belum tersedia untuk kos ini. Silakan transfer manual & unggah bukti.';
-            return;
-        }
-
-        $doku = new DokuService();
-        if (!$doku->isConfigured()) {
-            $this->errorMessage = 'Gateway pembayaran belum dikonfigurasi. Hubungi pengelola.';
-            return;
-        }
-
-        $tenant = $invoice->lease->tenant;
-        $reference = $invoice->reference_number . '-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4));
-        $callback = route('tenant.invoices.index');
-
-        $res = $doku->createCheckoutPayment(
-            $reference,
-            (float) $invoice->amount,
-            $tenant->display_name ?? $tenant->name ?? 'Penghuni',
-            $tenant->email,
-            $callback
-        );
+        $res = \App\Services\PaymentInitiator::startForInvoice($invoice);
 
         if (empty($res['success'])) {
             $this->errorMessage = 'Gagal memulai pembayaran online: ' . ($res['error'] ?? 'silakan coba lagi');
             return;
         }
-
-        PaymentTransaction::create([
-            'invoice_id' => $invoice->id,
-            'owner_id' => $ownerId,
-            'gateway' => 'doku',
-            'reference' => $reference,
-            'amount' => $invoice->amount,
-            'status' => 'pending',
-            'payment_url' => $res['url'],
-            'raw' => $res['raw'] ?? null,
-        ]);
 
         return redirect()->away($res['url']);
     }

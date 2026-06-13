@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DokuWebhookController;
+use App\Http\Controllers\PaymentController;
 use App\Livewire\Auth\Login;
 use Illuminate\Support\Facades\Auth;
 
@@ -154,6 +155,9 @@ Route::middleware('auth')->group(function () {
         abort_unless(Auth::user()?->isOwner() || Auth::user()?->isSuperAdmin(), 403);
         return view('owner.wallet.index');
     })->middleware(['auth'])->name('wallet.index');
+
+    // Tenant: pay an invoice online via DOKU (deep link from reminders)
+    Route::get('/invoices/{invoice}/pay', [PaymentController::class, 'pay'])->name('invoices.pay');
 });
 
 // Welcome page (public) - redirect to login

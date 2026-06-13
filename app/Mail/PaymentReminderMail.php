@@ -45,6 +45,8 @@ class PaymentReminderMail extends Mailable
                 'holder' => Setting::getForOwner('bank_account_holder', $ownerId),
                 'instructions' => Setting::getForOwner('payment_instructions', $ownerId),
             ],
+            'onlineEnabled' => $this->invoice->isOnlinePaymentEnabled(),
+            'payUrl' => $this->invoice->payUrl(),
         ]);
     }
 }

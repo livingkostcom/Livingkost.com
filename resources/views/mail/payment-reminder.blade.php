@@ -71,7 +71,7 @@
       </div>
     </div>
 
-    @if (!empty($bank['number']))
+    @if (empty($onlineEnabled) && !empty($bank['number']))
       <p style="font-size:14px;color:#374151;margin:24px 0 4px;font-weight:600;">Transfer ke rekening berikut:</p>
       <div class="info-box" style="background:#f0fdf4;border-color:#bbf7d0;">
         <div class="info-row">
@@ -104,13 +104,23 @@
       <p class="note">Tagihan Anda akan jatuh tempo dalam waktu dekat. Silakan lakukan pembayaran sebelum tanggal jatuh tempo.</p>
     @endif
 
-    <p class="note" style="margin-top:16px;">Sudah melakukan pembayaran? Unggah bukti transfer Anda melalui tombol di bawah, lalu tunggu verifikasi pengelola.</p>
-    <p style="text-align:center;margin:16px 0 4px;">
-      <a href="https://www.livingkost.com/tenant/invoices"
-         style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;">
-        Upload Bukti Pembayaran
-      </a>
-    </p>
+    @if (!empty($onlineEnabled))
+      <p class="note" style="margin-top:16px;">Bayar tagihan Anda secara online (kartu, e-wallet, QRIS, virtual account) melalui tombol di bawah. Pembayaran terverifikasi otomatis.</p>
+      <p style="text-align:center;margin:16px 0 4px;">
+        <a href="{{ $payUrl }}"
+           style="display:inline-block;background:#16a34a;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;">
+          Bayar Online Sekarang
+        </a>
+      </p>
+    @else
+      <p class="note" style="margin-top:16px;">Sudah melakukan pembayaran? Unggah bukti transfer Anda melalui tombol di bawah, lalu tunggu verifikasi pengelola.</p>
+      <p style="text-align:center;margin:16px 0 4px;">
+        <a href="https://www.livingkost.com/tenant/invoices"
+           style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;">
+          Upload Bukti Pembayaran
+        </a>
+      </p>
+    @endif
   </div>
   <div class="footer">
     &copy; {{ date('Y') }} LivingKost &mdash; Email ini dikirim otomatis, jangan balas pesan ini.

@@ -71,6 +71,40 @@ class Invoice extends Model
         return $block;
     }
 
+    /**
+     * Whether this invoice's owner has DOKU online payment enabled.
+     */
+    public function isOnlinePaymentEnabled(): bool
+    {
+        $ownerId = $this->owner_id ?? $this->lease?->tenant?->owner_id ?? null;
+
+        return \App\Models\OwnerWallet::onlineEnabledFor($ownerId);
+    }
+
+    /**
+     * Deep link that initiates the DOKU payment for this invoice.
+     */
+    public function payUrl(): string
+    {
+        return 'https://www.livingkost.com/invoices/' . $this->id . '/pay';
+    }
+
+    /**
+     * WhatsApp action block for reminders: a direct DOKU pay link when online
+     * payment is enabled; otherwise bank transfer details + upload-proof link.
+     */
+    public function reminderActionWaBlock(): string
+    {
+        if ($this->isOnlinePaymentEnabled()) {
+            return "\n\nBayar online sekarang di sini:\n" . $this->payUrl();
+        }
+
+        $bank = $this->bankTransferWaBlock();
+        $bankBlock = $bank ? "\n\n{$bank}" : '';
+
+        return $bankBlock . "\n\nSudah bayar? Unggah bukti pembayaran di sini:\nhttps://www.livingkost.com/tenant/invoices";
+    }
+
     public static function generateInvoiceNumber(): string
     {
         $prefix = 'INV-' . date('Ymd');

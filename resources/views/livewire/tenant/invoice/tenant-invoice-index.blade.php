@@ -162,11 +162,12 @@
                                             <span wire:loading.remove wire:target="payOnline({{ $invoice->id }})">Bayar Online</span>
                                             <span wire:loading wire:target="payOnline({{ $invoice->id }})">Memproses...</span>
                                         </button>
+                                    @else
+                                        <button wire:click="openUploadModal({{ $invoice->id }})"
+                                            class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
+                                            Upload Bukti
+                                        </button>
                                     @endif
-                                    <button wire:click="openUploadModal({{ $invoice->id }})"
-                                        class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
-                                        Upload Bukti
-                                    </button>
                                 @elseif ($invoice->status === 'pending')
                                     <span
                                         class="inline-flex items-center px-3 py-1 bg-yellow-100 text-yellow-700 rounded font-medium text-xs">
