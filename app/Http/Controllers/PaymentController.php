@@ -15,12 +15,16 @@ class PaymentController extends Controller
     public function pay(Request $request, Invoice $invoice)
     {
         $user = $request->user();
+        $ownerId = $invoice->owner_id ?? $invoice->lease?->tenant?->owner_id;
 
-        // Only the tenant who owns this invoice may pay it.
-        $owns = $user?->tenant
+        // The owning tenant may pay it; the managing owner/manager or a
+        // super-admin may also open it (to assist a tenant or to test).
+        $isOwningTenant = $user?->tenant
             && $user->tenant->leases()->where('id', $invoice->lease_id)->exists();
+        $isStaff = $user?->isSuperAdmin()
+            || ($user && $user->ownerId() === $ownerId && ($user->isOwner() || $user->hasRole('manager')));
 
-        if (! $owns) {
+        if (! $isOwningTenant && ! $isStaff) {
             abort(403, 'Invoice ini bukan milik Anda.');
         }
 
