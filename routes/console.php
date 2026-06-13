@@ -8,5 +8,8 @@ Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
 
-// Send payment reminders daily at 8:00 AM
-Schedule::command('invoices:send-reminders')->dailyAt('08:00');
+// Auto-generate invoice on H-1 (day before due date) at 07:00
+Schedule::command('invoices:generate --h1')->dailyAt('07:00');
+
+// Send payment reminders at H-1 (08:00) via in-app, email, and WhatsApp
+Schedule::command('invoices:send-reminders --days-before=1')->dailyAt('08:00');

@@ -5,6 +5,7 @@ namespace App\Livewire\Invoice;
 use App\Models\Invoice;
 use App\Models\Lease;
 use App\Notifications\PaymentReminderNotification;
+use App\Services\WhatsAppService;
 use Carbon\Carbon;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -223,6 +224,13 @@ class InvoiceIndex extends Component
         };
 
         $user->notify(new PaymentReminderNotification($invoice, $reminderType));
+
+        // WhatsApp
+        $phone = $invoice->lease->tenant->phone ?? null;
+        if ($phone) {
+            WhatsAppService::send($phone, $this->buildWaMessage($invoice, $reminderType));
+        }
+
         $this->successMessage = "Pengingat berhasil dikirim ke {$invoice->lease->tenant->display_name}";
     }
 
@@ -258,10 +266,30 @@ class InvoiceIndex extends Component
             };
 
             $user->notify(new PaymentReminderNotification($invoice, $reminderType));
+
+            $phone = $invoice->lease->tenant->phone ?? null;
+            if ($phone) {
+                WhatsAppService::send($phone, $this->buildWaMessage($invoice, $reminderType));
+            }
+
             $sent++;
         }
 
         $this->successMessage = "{$sent} pengingat berhasil dikirim" . ($skipped > 0 ? ", {$skipped} dilewati (tanpa akun)" : "");
+    }
+
+    private function buildWaMessage(Invoice $invoice, string $reminderType): string
+    {
+        $tenant = $invoice->lease->tenant->display_name ?? $invoice->lease->tenant->name ?? 'Penghuni';
+        $amount = 'Rp ' . number_format($invoice->amount, 0, ',', '.');
+        $due = $invoice->due_date->translatedFormat('d F Y');
+        $ref = $invoice->reference_number;
+
+        return match ($reminderType) {
+            'overdue' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* telah melewati jatuh tempo ({$due}).\n\nMohon segera lakukan pembayaran. Terima kasih.\n\n_Living Kost_",
+            'due_today' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* jatuh tempo *hari ini* ({$due}).\n\nSilakan segera lakukan pembayaran. Terima kasih.\n\n_Living Kost_",
+            default => "Halo {$tenant},\n\nIni adalah pengingat bahwa tagihan kos Anda *{$ref}* sebesar *{$amount}* akan jatuh tempo pada *{$due}*.\n\nMohon lakukan pembayaran sebelum tanggal tersebut. Terima kasih.\n\n_Living Kost_",
+        };
     }
 
     public function render()
