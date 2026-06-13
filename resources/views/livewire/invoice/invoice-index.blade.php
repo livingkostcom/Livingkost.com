@@ -145,13 +145,13 @@
                                 <div class="flex items-center gap-3">
                                     <div
                                         class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-100 flex items-center justify-center font-semibold text-orange-600 shadow-sm">
-                                        {{ substr($invoice->lease->tenant->display_name, 0, 1) }}
+                                        {{ substr($invoice->lease?->tenant?->display_name ?? '?', 0, 1) }}
                                     </div>
                                     <div>
                                         <p class="text-gray-900 font-semibold">
-                                            {{ $invoice->lease->tenant->display_name }}
+                                            {{ $invoice->lease?->tenant?->display_name ?? 'Kontrak dihapus' }}
                                         </p>
-                                        <p class="text-xs text-gray-500">{{ $invoice->lease->room->room_number }}</p>
+                                        <p class="text-xs text-gray-500">{{ $invoice->lease?->room?->room_number ?? '-' }}</p>
                                     </div>
                                 </div>
                             </td>

@@ -44,7 +44,7 @@ class InvoiceIndex extends Component
 
     public function openDetailModal($invoiceId)
     {
-        $this->detailingInvoice = Invoice::with('lease.tenant', 'lease.room.roomType.property', 'creator', 'verifier')->find($invoiceId);
+        $this->detailingInvoice = Invoice::with(['lease' => fn($q) => $q->withTrashed(), 'lease.tenant', 'lease.room.roomType.property', 'creator', 'verifier'])->find($invoiceId);
         $this->showDetailModal = true;
     }
 
@@ -57,8 +57,8 @@ class InvoiceIndex extends Component
     public function openDeleteModal($invoiceId)
     {
         try {
-            $invoice = Invoice::find($invoiceId);
-            
+            $invoice = Invoice::with(['lease' => fn($q) => $q->withTrashed(), 'lease.tenant'])->find($invoiceId);
+
             // Check if invoice is verified
             if ($invoice->verified_at) {
                 $this->errorMessage = 'Tidak dapat menghapus invoice yang sudah diverifikasi. Hubungi admin untuk bantuan lebih lanjut.';
@@ -202,7 +202,7 @@ class InvoiceIndex extends Component
 
     public function sendReminder(int $invoiceId)
     {
-        $invoice = Invoice::with(['lease.tenant.user', 'lease.room.roomType'])->find($invoiceId);
+        $invoice = Invoice::with(['lease' => fn($q) => $q->withTrashed(), 'lease.tenant.user', 'lease.room.roomType'])->find($invoiceId);
 
         if (!$invoice || $invoice->status === 'paid') {
             $this->errorMessage = 'Invoice tidak ditemukan atau sudah lunas.';
@@ -304,7 +304,7 @@ class InvoiceIndex extends Component
     public function render()
     {
         $invoices = Invoice::query()
-            ->with('lease.tenant', 'lease.room', 'creator', 'verifier')
+            ->with(['lease' => fn($q) => $q->withTrashed(), 'lease.tenant', 'lease.room', 'creator', 'verifier'])
             ->when($this->search, function ($query) {
                 $query->whereHas('lease', function ($q) {
                     $q->whereHas('tenant', function ($tq) {
