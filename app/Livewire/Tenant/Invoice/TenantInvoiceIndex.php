@@ -3,10 +3,15 @@
 namespace App\Livewire\Tenant\Invoice;
 
 use App\Models\Invoice;
+use App\Models\Setting;
+use App\Models\User;
+use App\Notifications\PaymentProofUploadedNotification;
+use App\Services\WhatsAppService;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TenantInvoiceIndex extends Component
@@ -132,12 +137,71 @@ class TenantInvoiceIndex extends Component
                 'status' => 'pending', // Change status to pending
             ]);
 
+            // Notify this tenant's owner & managers (in-app + email + WhatsApp)
+            $this->notifyAdmins($invoice);
+
             $this->successMessage = 'Bukti pembayaran berhasil diunggah! Menunggu verifikasi dari manager.';
             $this->closeUploadModal();
             $this->resetPage();
         } catch (\Exception $e) {
             $this->errorMessage = 'Terjadi kesalahan saat mengunggah file: ' . $e->getMessage();
         }
+    }
+
+    /**
+     * Notify the tenant's owner & managers about an uploaded payment proof,
+     * via in-app + email (best-effort) and WhatsApp. Failures never block upload.
+     */
+    private function notifyAdmins(Invoice $invoice): void
+    {
+        $invoice->load(['lease.tenant', 'lease.room']);
+        $ownerId = $invoice->lease->tenant->owner_id;
+
+        $admins = User::role(['owner', 'manager'])
+            ->where(fn ($q) => $q->where('id', $ownerId)->orWhere('owner_id', $ownerId))
+            ->get();
+
+        foreach ($admins as $admin) {
+            try {
+                $admin->notify(new PaymentProofUploadedNotification($invoice));
+            } catch (\Throwable $e) {
+                Log::error('Payment proof notification failed', ['admin_id' => $admin->id, 'error' => $e->getMessage()]);
+            }
+        }
+
+        // WhatsApp: owner's business number + each manager's own phone (deduped)
+        $waMessage = $this->buildProofWaMessage($invoice);
+        $sentTo = [];
+
+        $ownerPhone = Setting::getValue('app_phone');
+        if ($ownerPhone) {
+            WhatsAppService::send($ownerPhone, $waMessage);
+            $sentTo[] = preg_replace('/[^0-9]/', '', $ownerPhone);
+        }
+
+        foreach ($admins as $admin) {
+            $phone = $admin->phone ?? null;
+            if ($phone && !in_array(preg_replace('/[^0-9]/', '', $phone), $sentTo, true)) {
+                WhatsAppService::send($phone, $waMessage);
+                $sentTo[] = preg_replace('/[^0-9]/', '', $phone);
+            }
+        }
+    }
+
+    private function buildProofWaMessage(Invoice $invoice): string
+    {
+        $tenant = $invoice->lease->tenant->display_name ?? $invoice->lease->tenant->name;
+        $room = $invoice->lease->room->room_number ?? '-';
+        $amount = 'Rp ' . number_format($invoice->amount, 0, ',', '.');
+
+        return "*Bukti Pembayaran Baru*\n\n"
+            . "No. Invoice: {$invoice->reference_number}\n"
+            . "Penghuni: {$tenant}\n"
+            . "Kamar: {$room}\n"
+            . "Jumlah: {$amount}\n\n"
+            . "Status: Menunggu verifikasi.\n"
+            . "Silakan periksa di dashboard » Verifikasi Pembayaran.\n\n"
+            . "_Living Kost_";
     }
 
     /**

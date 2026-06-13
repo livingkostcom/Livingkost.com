@@ -70,6 +70,24 @@ Route::middleware('auth')->group(function () {
         );
     })->middleware(['auth'])->name('receipts.download');
 
+    // Payment proof — private file, streamed inline to authorized users only
+    Route::get('/payment-proofs/{invoice}/view', function (\App\Models\Invoice $invoice) {
+        if (!Auth::user()->can('verify-payment') && Auth::user()->id !== $invoice->lease->tenant->user_id) {
+            abort(403, 'Unauthorized');
+        }
+
+        if (!$invoice->proof_of_payment) {
+            abort(404);
+        }
+
+        $path = storage_path('app/private/' . $invoice->proof_of_payment);
+        if (!is_file($path)) {
+            abort(404);
+        }
+
+        return response()->file($path);
+    })->middleware(['auth'])->name('payment-proofs.view');
+
     // Income Analytics Routes
     Route::get('/analytics/income', function () {
         return view('admin.analytics.income');

@@ -319,7 +319,7 @@
                                 <h4 class="text-sm font-semibold text-gray-900 mb-3">Bukti Pembayaran</h4>
                                 @php
                                     $extension = pathinfo($detailInvoice->proof_of_payment, PATHINFO_EXTENSION);
-                                    $fileUrl = Storage::url($detailInvoice->proof_of_payment);
+                                    $fileUrl = route('payment-proofs.view', $detailInvoice->id);
                                 @endphp
                                 <div class="bg-gray-50 p-4 rounded-lg">
                                     @if (in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'gif']))
