@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Mail\MaintenanceRequestMail;
 use App\Models\MaintenanceRequest;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
@@ -16,7 +17,19 @@ class NewMaintenanceRequestNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['database'];
+        $channels = ['database'];
+
+        if (config('mail.default') !== 'log' && !empty($notifiable->email)) {
+            $channels[] = 'mail';
+        }
+
+        return $channels;
+    }
+
+    public function toMail(object $notifiable): MaintenanceRequestMail
+    {
+        return (new MaintenanceRequestMail($this->request))
+            ->to($notifiable->email, $notifiable->name ?? '');
     }
 
     public function toArray(object $notifiable): array

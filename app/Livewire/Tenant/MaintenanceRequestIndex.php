@@ -3,8 +3,10 @@
 namespace App\Livewire\Tenant;
 
 use App\Models\MaintenanceRequest;
+use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\NewMaintenanceRequestNotification;
+use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -58,16 +60,51 @@ class MaintenanceRequestIndex extends Component
             'priority' => $this->priority,
         ]);
 
-        // Notify owner & manager
+        // Notify this tenant's owner & managers only (in-app + email)
         $maintenanceRequest->load(['tenant.user', 'room']);
-        $admins = User::role(['owner', 'manager'])->get();
+        $ownerId = $tenant->owner_id;
+        $admins = User::role(['owner', 'manager'])
+            ->where(fn ($q) => $q->where('id', $ownerId)->orWhere('owner_id', $ownerId))
+            ->get();
         foreach ($admins as $admin) {
             $admin->notify(new NewMaintenanceRequestNotification($maintenanceRequest));
+        }
+
+        // WhatsApp to the owner's registered number (Setting app_phone, owner-scoped)
+        $ownerPhone = Setting::getValue('app_phone');
+        if ($ownerPhone) {
+            WhatsAppService::send($ownerPhone, $this->buildWaMessage($maintenanceRequest));
         }
 
         $this->showCreateModal = false;
         $this->reset(['title', 'description', 'category', 'priority']);
         session()->flash('message', 'Permintaan perbaikan berhasil dikirim');
+    }
+
+    private function buildWaMessage(MaintenanceRequest $request): string
+    {
+        $priLabel = match ($request->priority) {
+            'high' => 'Tinggi',
+            'medium' => 'Sedang',
+            default => 'Rendah',
+        };
+        $catLabel = match ($request->category) {
+            'electrical' => 'Listrik',
+            'plumbing' => 'Saluran Air',
+            'furniture' => 'Perabot',
+            'cleaning' => 'Kebersihan',
+            default => 'Lainnya',
+        };
+
+        return "*Permintaan Perbaikan Baru*\n\n"
+            . "Judul: {$request->title}\n"
+            . "Penghuni: " . ($request->tenant?->display_name ?? '-') . "\n"
+            . "Kamar: " . ($request->room?->room_number ?? '-') . "\n"
+            . "Kategori: {$catLabel}\n"
+            . "Prioritas: {$priLabel}\n\n"
+            . "Deskripsi:\n{$request->description}\n\n"
+            . "Silakan tindak lanjuti melalui dashboard Living Kost.\n\n"
+            . "_Living Kost_";
     }
 
     public function openDetail(int $id)
