@@ -14,7 +14,146 @@
         </div>
     </div>
 
-    @if ($isOwner || $isManager)
+    @if ($isSuperAdmin)
+        {{-- ======================== SUPER ADMIN DASHBOARD ======================== --}}
+        @php $p = $superadmin['platform']; @endphp
+
+        <!-- Platform Metric Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <!-- Owner -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="p-2.5 bg-orange-100 rounded-xl">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full bg-blue-100 text-blue-700">{{ $p['total_managers'] }} manajer</span>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ $p['total_owners'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">Total Owner</p>
+            </div>
+
+            <!-- Penyewa Aktif -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="p-2.5 bg-green-100 rounded-xl">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 10-4-4 4 4 0 004 4zm6-4a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ $p['total_tenants'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">Penyewa Aktif</p>
+            </div>
+
+            <!-- Properti -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="p-2.5 bg-purple-100 rounded-xl">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0H5m14 0h2M5 21H3m4-14h.01M11 7h.01M7 11h.01M11 11h.01M7 15h.01M11 15h.01"/></svg>
+                    </div>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ $p['total_properties'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">Total Properti</p>
+            </div>
+
+            <!-- Total Kamar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
+                <div class="flex items-center justify-between mb-3">
+                    <div class="p-2.5 bg-orange-100 rounded-xl">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-4 7 4M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    </div>
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700">{{ $p['occupied_rooms'] }} terisi</span>
+                </div>
+                <p class="text-3xl font-bold text-gray-900">{{ $p['total_rooms'] }}</p>
+                <p class="text-sm text-gray-500 mt-1">Total Kamar</p>
+            </div>
+        </div>
+
+        <!-- Second row: occupancy, income, attention -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-8">
+            <!-- Tingkat Hunian -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <p class="text-sm text-gray-500 mb-1">Tingkat Hunian Platform</p>
+                <p class="text-3xl font-bold text-gray-900">{{ $p['occupancy_rate'] }}%</p>
+                <div class="mt-3 w-full bg-gray-200 rounded-full h-2">
+                    <div class="bg-green-500 h-2 rounded-full transition-all duration-500" style="width: {{ $p['occupancy_rate'] }}%"></div>
+                </div>
+                <p class="text-xs text-gray-400 mt-2">{{ $p['occupied_rooms'] }} dari {{ $p['total_rooms'] }} kamar terisi</p>
+            </div>
+
+            <!-- Pendapatan Platform Bulan Ini -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <p class="text-sm text-gray-500 mb-1">Pendapatan Platform (Bulan Ini)</p>
+                <p class="text-2xl font-bold text-emerald-600">Rp {{ number_format($p['income_this_month'], 0, ',', '.') }}</p>
+                <p class="text-xs text-gray-400 mt-2">Total pembayaran terverifikasi seluruh owner</p>
+            </div>
+
+            <!-- Perlu Perhatian -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <p class="text-sm text-gray-500 mb-3">Perlu Perhatian</p>
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Menunggu verifikasi</span>
+                        <span class="font-bold px-2 py-0.5 rounded-full {{ $p['pending_payments'] > 0 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500' }}">{{ $p['pending_payments'] }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Invoice jatuh tempo</span>
+                        <span class="font-bold px-2 py-0.5 rounded-full {{ $p['overdue_invoices'] > 0 ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-500' }}">{{ $p['overdue_invoices'] }}</span>
+                    </div>
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Perbaikan pending</span>
+                        <span class="font-bold px-2 py-0.5 rounded-full {{ $p['pending_maintenance'] > 0 ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500' }}">{{ $p['pending_maintenance'] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Platform Income Chart -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Pendapatan Platform (6 Bulan Terakhir)</h3>
+            <div class="h-64"><canvas id="incomeChart"></canvas></div>
+        </div>
+
+        <!-- Per-Owner Breakdown -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-8">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-bold text-gray-900">Rincian per Owner</h3>
+                <p class="text-sm text-gray-500">Ringkasan performa tiap owner</p>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Owner</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Properti</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Kamar</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Hunian</th>
+                            <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Penyewa</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">Pendapatan (Bln Ini)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        @forelse ($superadmin['owners'] as $o)
+                            <tr class="hover:bg-orange-50 transition">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <p class="font-semibold text-gray-900">{{ $o['name'] }}</p>
+                                    <p class="text-xs text-gray-500">{{ $o['email'] }}</p>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-700">{{ $o['properties'] }}</td>
+                                <td class="px-6 py-4 text-center text-gray-700">{{ $o['occupied'] }}/{{ $o['rooms'] }}</td>
+                                <td class="px-6 py-4 text-center">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium {{ $o['occupancy'] >= 70 ? 'bg-green-100 text-green-700' : ($o['occupancy'] >= 40 ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700') }}">{{ $o['occupancy'] }}%</span>
+                                </td>
+                                <td class="px-6 py-4 text-center text-gray-700">{{ $o['tenants'] }}</td>
+                                <td class="px-6 py-4 text-right font-semibold text-gray-900 whitespace-nowrap">Rp {{ number_format($o['income'], 0, ',', '.') }}</td>
+                            </tr>
+                        @empty
+                            <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500">Belum ada owner terdaftar.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    @elseif ($isOwner || $isManager)
         {{-- ======================== OWNER / MANAGER DASHBOARD ======================== --}}
 
         <!-- Metric Cards -->
@@ -602,7 +741,7 @@
     @endif
 
     {{-- Chart.js for income chart --}}
-    @if ($isOwner || $isManager)
+    @if ($isSuperAdmin || $isOwner || $isManager)
         @assets
             <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
         @endassets

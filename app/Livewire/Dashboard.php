@@ -9,6 +9,7 @@ use App\Models\MaintenanceRequest;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\Tenant;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -145,6 +146,61 @@ class Dashboard extends Component
         ];
     }
 
+    /**
+     * Platform-wide overview + per-owner breakdown for the super-admin.
+     * Models bypass the owner global scope for super-admins, so unscoped
+     * counts are platform-wide and explicit owner_id filters are exact.
+     */
+    public function getSuperAdminData(): array
+    {
+        $totalRooms = Room::count();
+        $occupiedRooms = Lease::where('status', 'active')->count();
+        $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100, 1) : 0;
+
+        $incomeThisMonth = Invoice::where('status', 'paid')
+            ->whereYear('verified_at', now()->year)
+            ->whereMonth('verified_at', now()->month)
+            ->sum('amount');
+
+        $platform = [
+            'total_owners' => User::role('owner')->count(),
+            'total_managers' => User::role('manager')->count(),
+            'total_tenants' => Tenant::where('status', 'active')->count(),
+            'total_properties' => Property::count(),
+            'total_rooms' => $totalRooms,
+            'occupied_rooms' => $occupiedRooms,
+            'occupancy_rate' => $occupancyRate,
+            'income_this_month' => $incomeThisMonth,
+            'pending_payments' => Invoice::where('status', 'pending')->count(),
+            'overdue_invoices' => Invoice::where('status', 'unpaid')->where('due_date', '<', now())->count(),
+            'pending_maintenance' => MaintenanceRequest::where('status', 'pending')->count(),
+        ];
+
+        $rows = [];
+        foreach (User::role('owner')->orderBy('name')->get() as $owner) {
+            $oid = $owner->id;
+            $rooms = Room::where('owner_id', $oid)->count();
+            $occupied = Lease::where('owner_id', $oid)->where('status', 'active')->count();
+
+            $rows[] = [
+                'name' => $owner->name,
+                'email' => $owner->email,
+                'properties' => Property::where('owner_id', $oid)->count(),
+                'rooms' => $rooms,
+                'occupied' => $occupied,
+                'occupancy' => $rooms > 0 ? round(($occupied / $rooms) * 100) : 0,
+                'tenants' => Tenant::where('owner_id', $oid)->where('status', 'active')->count(),
+                'income' => Invoice::where('owner_id', $oid)
+                    ->where('status', 'paid')
+                    ->whereYear('verified_at', now()->year)
+                    ->whereMonth('verified_at', now()->month)
+                    ->sum('amount'),
+            ];
+        }
+
+        return ['platform' => $platform, 'owners' => $rows];
+    }
+
     public function getUpcomingExpiringLeases()
     {
         return Lease::where('status', 'active')
@@ -158,13 +214,22 @@ class Dashboard extends Component
     public function render()
     {
         $user = Auth::user();
+        $isSuperAdmin = $user->hasRole('super-admin');
         $isOwner = $user->hasRole('owner');
         $isManager = $user->hasRole('manager');
         $isTenant = $user->hasRole('tenant');
 
-        $data = ['isOwner' => $isOwner, 'isManager' => $isManager, 'isTenant' => $isTenant];
+        $data = [
+            'isSuperAdmin' => $isSuperAdmin,
+            'isOwner' => $isOwner,
+            'isManager' => $isManager,
+            'isTenant' => $isTenant,
+        ];
 
-        if ($isOwner || $isManager) {
+        if ($isSuperAdmin) {
+            $data['superadmin'] = $this->getSuperAdminData();
+            $data['incomeChart'] = $this->getIncomeChartData();
+        } elseif ($isOwner || $isManager) {
             $data['metrics'] = $this->getOwnerMetrics();
             $data['incomeChart'] = $this->getIncomeChartData();
             $data['recentInvoices'] = $this->getRecentInvoices();
