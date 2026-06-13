@@ -154,6 +154,15 @@
                             </td>
                             <td class="px-6 py-4 text-sm flex gap-2">
                                 @if ($invoice->status === 'unpaid')
+                                    @if ($onlineEnabled)
+                                        <button wire:click="payOnline({{ $invoice->id }})"
+                                            wire:loading.attr="disabled" wire:target="payOnline({{ $invoice->id }})"
+                                            class="inline-flex items-center gap-1 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition font-medium disabled:opacity-50">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
+                                            <span wire:loading.remove wire:target="payOnline({{ $invoice->id }})">Bayar Online</span>
+                                            <span wire:loading wire:target="payOnline({{ $invoice->id }})">Memproses...</span>
+                                        </button>
+                                    @endif
                                     <button wire:click="openUploadModal({{ $invoice->id }})"
                                         class="inline-flex items-center px-3 py-1 bg-orange-100 text-orange-700 rounded hover:bg-orange-200 transition font-medium">
                                         Upload Bukti

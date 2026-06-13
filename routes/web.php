@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\DokuWebhookController;
 use App\Livewire\Auth\Login;
 use Illuminate\Support\Facades\Auth;
 
@@ -8,6 +9,9 @@ use Illuminate\Support\Facades\Auth;
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
 });
+
+// DOKU payment notification (webhook) — public, no auth/CSRF
+Route::post('/doku/notification', [DokuWebhookController::class, 'handle'])->name('doku.notification');
 
 // Authenticated Routes
 Route::middleware('auth')->group(function () {

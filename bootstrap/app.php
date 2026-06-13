@@ -11,7 +11,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // DOKU posts its payment notification without a CSRF token.
+        $middleware->validateCsrfTokens(except: ['doku/notification']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

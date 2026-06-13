@@ -3,9 +3,12 @@
 namespace App\Livewire\Tenant\Invoice;
 
 use App\Models\Invoice;
+use App\Models\OwnerWallet;
+use App\Models\PaymentTransaction;
 use App\Models\Setting;
 use App\Models\User;
 use App\Notifications\PaymentProofUploadedNotification;
+use App\Services\DokuService;
 use App\Services\WhatsAppService;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -13,6 +16,7 @@ use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class TenantInvoiceIndex extends Component
 {
@@ -153,6 +157,66 @@ class TenantInvoiceIndex extends Component
     }
 
     /**
+     * Start an online (DOKU) payment for an invoice and redirect to the
+     * hosted DOKU payment page. Only when the owner has online payment enabled.
+     */
+    public function payOnline($invoiceId)
+    {
+        $invoice = Invoice::with('lease.tenant')->find($invoiceId);
+
+        if (!$invoice || !Auth::user()->tenant || !Auth::user()->tenant->leases->pluck('id')->contains($invoice->lease_id)) {
+            $this->errorMessage = 'Invoice ini bukan milik Anda';
+            return;
+        }
+        if ($invoice->status === 'paid') {
+            $this->errorMessage = 'Invoice ini sudah lunas.';
+            return;
+        }
+
+        $ownerId = $invoice->lease->tenant->owner_id;
+        if (!OwnerWallet::onlineEnabledFor($ownerId)) {
+            $this->errorMessage = 'Pembayaran online belum tersedia untuk kos ini. Silakan transfer manual & unggah bukti.';
+            return;
+        }
+
+        $doku = new DokuService();
+        if (!$doku->isConfigured()) {
+            $this->errorMessage = 'Gateway pembayaran belum dikonfigurasi. Hubungi pengelola.';
+            return;
+        }
+
+        $tenant = $invoice->lease->tenant;
+        $reference = $invoice->reference_number . '-' . now()->format('YmdHis') . '-' . Str::upper(Str::random(4));
+        $callback = route('tenant.invoices.index');
+
+        $res = $doku->createCheckoutPayment(
+            $reference,
+            (float) $invoice->amount,
+            $tenant->display_name ?? $tenant->name ?? 'Penghuni',
+            $tenant->email,
+            $callback
+        );
+
+        if (empty($res['success'])) {
+            $this->errorMessage = 'Gagal memulai pembayaran online: ' . ($res['error'] ?? 'silakan coba lagi');
+            return;
+        }
+
+        PaymentTransaction::create([
+            'invoice_id' => $invoice->id,
+            'owner_id' => $ownerId,
+            'gateway' => 'doku',
+            'reference' => $reference,
+            'amount' => $invoice->amount,
+            'status' => 'pending',
+            'payment_url' => $res['url'],
+            'raw' => $res['raw'] ?? null,
+        ]);
+
+        return redirect()->away($res['url']);
+    }
+
+    /**
      * Notify the tenant's owner & managers about an uploaded payment proof,
      * via in-app + email (best-effort) and WhatsApp. Failures never block upload.
      */
@@ -262,6 +326,8 @@ class TenantInvoiceIndex extends Component
                 'holder' => Setting::getValue('bank_account_holder'),
                 'instructions' => Setting::getValue('payment_instructions'),
             ],
+            // Whether this tenant's owner has DOKU online payment enabled
+            'onlineEnabled' => OwnerWallet::onlineEnabledFor(Auth::user()->tenant?->owner_id),
         ]);
     }
 }
