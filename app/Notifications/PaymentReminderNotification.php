@@ -33,16 +33,20 @@ class PaymentReminderNotification extends Notification
 
     public function toMail(object $notifiable): PaymentReminderMail
     {
-        return new PaymentReminderMail($this->invoice, $this->reminderType);
+        return (new PaymentReminderMail($this->invoice, $this->reminderType))
+            ->to($notifiable->email, $notifiable->name ?? '');
     }
 
     public function toArray(object $notifiable): array
     {
+        $dueFormatted = $this->invoice->due_date->translatedFormat('d M Y');
+        $ref = $this->invoice->reference_number;
+
         $message = match ($this->reminderType) {
-            'overdue' => "Pembayaran invoice {$this->invoice->reference_number} sudah melewati jatuh tempo ({$this->invoice->due_date->translatedFormat('d M Y')})",
-            'due_today' => "Invoice {$this->invoice->reference_number} jatuh tempo hari ini",
-            default => "Invoice {$this->invoice->reference_number} akan jatuh tempo pada {$this->invoice->due_date->translatedFormat('d M Y')}",
-        ];
+            'overdue' => "Pembayaran invoice {$ref} sudah melewati jatuh tempo ({$dueFormatted})",
+            'due_today' => "Invoice {$ref} jatuh tempo hari ini",
+            default => "Invoice {$ref} akan jatuh tempo pada {$dueFormatted}",
+        };
 
         return [
             'type' => 'payment_reminder',
