@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\Invoice;
+use App\Models\Setting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -33,6 +34,17 @@ class PaymentReminderMail extends Mailable
 
     public function content(): Content
     {
-        return new Content(view: 'mail.payment-reminder');
+        // Resolve the owning landlord's bank details explicitly (no Auth context
+        // in scheduler/queue), based on the invoice's owner.
+        $ownerId = $this->invoice->owner_id ?? $this->invoice->lease->tenant->owner_id ?? null;
+
+        return new Content(view: 'mail.payment-reminder', with: [
+            'bank' => [
+                'name' => Setting::getForOwner('bank_name', $ownerId),
+                'number' => Setting::getForOwner('bank_account_number', $ownerId),
+                'holder' => Setting::getForOwner('bank_account_holder', $ownerId),
+                'instructions' => Setting::getForOwner('payment_instructions', $ownerId),
+            ],
+        ]);
     }
 }

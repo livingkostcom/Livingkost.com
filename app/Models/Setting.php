@@ -50,6 +50,24 @@ class Setting extends Model
     }
 
     /**
+     * Get a setting value for an explicit owner (no Auth context needed).
+     * Falls back to the global value, then to defaults(). Useful in console /
+     * queued contexts (e.g. mailers) where there is no authenticated user.
+     */
+    public static function getForOwner(string $key, ?int $ownerId, mixed $default = null): mixed
+    {
+        $default ??= static::defaults()[$key] ?? null;
+
+        $setting = static::withoutGlobalScopes()->where('key', $key)->where('owner_id', $ownerId)->first();
+
+        if (! $setting && $ownerId !== null) {
+            $setting = static::withoutGlobalScopes()->where('key', $key)->whereNull('owner_id')->first();
+        }
+
+        return $setting ? $setting->value : $default;
+    }
+
+    /**
      * Set a setting value (scoped to the current owner, or global for branding).
      */
     public static function set(string $key, mixed $value, string $group = 'general'): void

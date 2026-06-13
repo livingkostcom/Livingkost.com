@@ -71,6 +71,32 @@
       </div>
     </div>
 
+    @if (!empty($bank['number']))
+      <p style="font-size:14px;color:#374151;margin:24px 0 4px;font-weight:600;">Transfer ke rekening berikut:</p>
+      <div class="info-box" style="background:#f0fdf4;border-color:#bbf7d0;">
+        <div class="info-row">
+          <span class="info-label">Bank</span>
+          <span class="info-value">{{ $bank['name'] ?: '-' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">No. Rekening</span>
+          <span class="info-value" style="letter-spacing:.5px;">{{ $bank['number'] }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">Atas Nama</span>
+          <span class="info-value">{{ $bank['holder'] ?: '-' }}</span>
+        </div>
+        <div class="info-row" style="margin-top:12px;padding-top:12px;border-top:1px solid #bbf7d0;">
+          <span class="info-label" style="font-size:15px;">Jumlah Transfer</span>
+          <span class="amount" style="color:#16a34a;">Rp {{ number_format($invoice->amount, 0, ',', '.') }}</span>
+        </div>
+      </div>
+      @if (!empty($bank['instructions']))
+        <p class="note" style="margin-top:0;">{{ $bank['instructions'] }}</p>
+      @endif
+      <p class="note" style="margin-top:8px;">Setelah transfer, unggah bukti pembayaran melalui portal penghuni: Login &raquo; Invoice &raquo; <strong>Upload Bukti</strong>, lalu tunggu verifikasi pengelola.</p>
+    @endif
+
     @if ($reminderType === 'overdue')
       <p class="note">Pembayaran Anda telah melewati jatuh tempo. Mohon segera lakukan pembayaran untuk menghindari denda keterlambatan. Hubungi kami jika ada pertanyaan.</p>
     @elseif ($reminderType === 'due_today')
