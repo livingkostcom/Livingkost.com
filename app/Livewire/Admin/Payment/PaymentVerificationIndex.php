@@ -3,10 +3,12 @@
 namespace App\Livewire\Admin\Payment;
 
 use App\Models\Invoice;
+use App\Services\WhatsAppService;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PaymentVerificationIndex extends Component
 {
@@ -154,14 +156,51 @@ class PaymentVerificationIndex extends Component
                 'verified_by' => Auth::id(),
             ]);
 
-            // Generate receipt
+            // Generate receipt (also e-mails the PDF receipt to the tenant)
             $invoice->generateReceipt(Auth::id());
 
-            $this->successMessage = "Invoice #{$invoice->reference_number} berhasil diverifikasi. Receipt telah digenerate dan akan dikirim ke tenant.";
+            // Notify the tenant via WhatsApp that the payment was accepted
+            $this->notifyTenantPaymentAccepted($invoice);
+
+            $this->successMessage = "Invoice #{$invoice->reference_number} berhasil diverifikasi. Receipt telah dikirim ke email tenant dan notifikasi WhatsApp terkirim.";
             $this->closeApprovalModal();
             $this->resetPage();
         } catch (\Exception $e) {
             $this->errorMessage = 'Terjadi kesalahan saat menyimpan: ' . $e->getMessage();
+        }
+    }
+
+    /**
+     * Send a WhatsApp message to the tenant confirming the payment was accepted.
+     * Best-effort: a failure here must not break the approval flow.
+     */
+    private function notifyTenantPaymentAccepted(Invoice $invoice): void
+    {
+        try {
+            $invoice->loadMissing('lease.tenant');
+            $tenant = $invoice->lease->tenant;
+            $phone = $tenant->phone ?? null;
+
+            if (!$phone) {
+                return;
+            }
+
+            $name = $tenant->display_name ?? $tenant->name ?? 'Penghuni';
+            $amount = 'Rp ' . number_format($invoice->amount, 0, ',', '.');
+            $email = $tenant->email ?? null;
+            $emailLine = $email
+                ? "Bukti pembayaran (receipt) telah kami kirim ke email Anda: {$email}. Silakan cek email Anda untuk melihat receipt-nya."
+                : "Bukti pembayaran (receipt) telah kami kirim ke email Anda. Silakan cek email Anda untuk melihat receipt-nya.";
+
+            $message = "Halo {$name},\n\n"
+                . "Pembayaran Anda untuk tagihan *{$invoice->reference_number}* sebesar *{$amount}* telah *DITERIMA* dan diverifikasi. \u{2705}\n\n"
+                . "{$emailLine}\n\n"
+                . "Terima kasih.\n\n"
+                . "_Living Kost_";
+
+            WhatsAppService::send($phone, $message);
+        } catch (\Throwable $e) {
+            Log::error('Payment accepted WhatsApp failed', ['invoice_id' => $invoice->id, 'error' => $e->getMessage()]);
         }
     }
 
