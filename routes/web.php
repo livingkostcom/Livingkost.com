@@ -142,6 +142,18 @@ Route::middleware('auth')->group(function () {
         abort_unless(Auth::user()?->isSuperAdmin(), 403);
         return view('admin.payment-partners.index');
     })->middleware(['auth'])->name('payment-partners.index');
+
+    // Disbursements management (super-admin only)
+    Route::get('/disbursements', function () {
+        abort_unless(Auth::user()?->isSuperAdmin(), 403);
+        return view('admin.disbursements.index');
+    })->middleware(['auth'])->name('disbursements.index');
+
+    // Owner wallet
+    Route::get('/wallet', function () {
+        abort_unless(Auth::user()?->isOwner() || Auth::user()?->isSuperAdmin(), 403);
+        return view('owner.wallet.index');
+    })->middleware(['auth'])->name('wallet.index');
 });
 
 // Welcome page (public) - redirect to login
