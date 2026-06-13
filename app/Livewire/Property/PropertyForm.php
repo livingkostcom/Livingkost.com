@@ -24,6 +24,12 @@ class PropertyForm extends Component
     #[\Livewire\Attributes\Validate('required|string|in:active,inactive')]
     public string $status = 'active';
 
+    #[\Livewire\Attributes\Validate('nullable|string|in:putra,putri,putra_putri')]
+    public string $gender_type = '';
+
+    #[\Livewire\Attributes\Validate('nullable|string|max:1000')]
+    public string $common_facilities_text = '';
+
     // --- Landing "Rekomendasi Kost" fields ---
     public bool $is_featured = false;
 
@@ -60,6 +66,9 @@ class PropertyForm extends Component
             $this->location_label = $property->location_label ?? '';
             $this->badge_text = $property->badge_text ?? '';
             $this->existing_gallery = is_array($property->gallery) ? $property->gallery : [];
+            $this->gender_type = $property->gender_type ?? '';
+            $facs = is_array($property->common_facilities) ? $property->common_facilities : [];
+            $this->common_facilities_text = implode(', ', $facs);
         }
     }
 
@@ -87,11 +96,17 @@ class PropertyForm extends Component
             $this->validate(['gallery_uploads.*' => 'image|max:2048']);
         }
 
+        $commonFacs = array_values(array_filter(
+            array_map('trim', explode(',', $this->common_facilities_text))
+        ));
+
         $data = [
             'name' => $this->name,
             'address' => $this->address,
             'description' => $this->description,
             'status' => $this->status,
+            'gender_type' => $this->gender_type ?: null,
+            'common_facilities' => !empty($commonFacs) ? $commonFacs : null,
             'is_featured' => $this->is_featured,
             'location_label' => $this->location_label ?: null,
             'badge_text' => $this->badge_text ?: null,

@@ -27,7 +27,7 @@ if (is_readable($lk_envPath)) {
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
             );
             $lk_stmt = $lk_pdo->query(
-                "SELECT p.id, p.name, p.location_label, p.featured_image,
+                "SELECT p.id, p.name, p.location_label, p.featured_image, p.gender_type,
                         (SELECT MIN(rt.price) FROM room_types rt WHERE rt.property_id = p.id) AS price_from,
                         (SELECT rt.facilities FROM room_types rt WHERE rt.property_id = p.id ORDER BY rt.price ASC LIMIT 1) AS facilities,
                         (SELECT COUNT(*) FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id
@@ -144,7 +144,15 @@ if (is_readable($lk_envPath)) {
                                 <?php if (!empty($kost['location_label'])): ?>
                                     <p class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-1"><?= htmlspecialchars($kost['location_label'], ENT_QUOTES) ?></p>
                                 <?php endif; ?>
-                                <h4 class="text-xl font-bold mb-4 text-gray-900"><?= htmlspecialchars($kost['name'], ENT_QUOTES) ?></h4>
+                                <h4 class="text-xl font-bold mb-2 text-gray-900"><?= htmlspecialchars($kost['name'], ENT_QUOTES) ?></h4>
+                                <?php
+                                    $gt = $kost['gender_type'] ?? '';
+                                    $gtLabel = match($gt) { 'putra' => 'Putra', 'putri' => 'Putri', 'putra_putri' => 'Putra & Putri', default => '' };
+                                    $gtClass = match($gt) { 'putra' => 'bg-blue-100 text-blue-700', 'putri' => 'bg-pink-100 text-pink-700', 'putra_putri' => 'bg-purple-100 text-purple-700', default => '' };
+                                ?>
+                                <?php if ($gtLabel): ?>
+                                    <span class="inline-block mb-3 px-2 py-0.5 rounded-full text-xs font-bold uppercase <?= $gtClass ?>"><?= htmlspecialchars($gtLabel, ENT_QUOTES) ?></span>
+                                <?php endif; ?>
                                 <?php if (!empty($facs)): ?>
                                     <div class="flex flex-wrap items-center text-gray-500 text-sm mb-4 gap-x-4 gap-y-1">
                                         <?php foreach ($facs as $f): ?>

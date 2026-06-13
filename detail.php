@@ -30,7 +30,7 @@ if ($lk_id > 0 && is_readable($lk_envPath)) {
                 $lk_env['DB_PASSWORD'] ?? '',
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
             );
-            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, featured_image, gallery, owner_id
+            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, featured_image, gallery, owner_id, gender_type, common_facilities
                                  FROM properties WHERE id = ? AND is_featured = 1 AND status = 'active' LIMIT 1");
             $st->execute([$lk_id]);
             $lk_kost = $st->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -114,6 +114,19 @@ foreach ($lk_roomtypes as $rt) {
         }
     }
 }
+
+$lk_common_facilities = json_decode($lk_kost['common_facilities'] ?? '[]', true);
+if (!is_array($lk_common_facilities)) {
+    $lk_common_facilities = [];
+}
+
+$lk_gender_type = $lk_kost['gender_type'] ?? '';
+$lk_gender_label = match($lk_gender_type) {
+    'putra' => 'Putra',
+    'putri' => 'Putri',
+    'putra_putri' => 'Putra & Putri',
+    default => '',
+};
 
 $lk_minPrice = null;
 foreach ($lk_roomtypes as $rt) {
@@ -222,6 +235,12 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                     <h1 class="text-3xl font-bold text-gray-900 mb-2"><?= $e($lk_kost['name']) ?></h1>
                     <p class="text-gray-500 mb-4"><i class="fas fa-location-dot text-orange-600 mr-2"></i><?= $e($lk_kost['address']) ?></p>
                     <div class="flex flex-wrap gap-2">
+                        <?php if ($lk_gender_label): ?>
+                            <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide
+                                <?= $lk_gender_type === 'putra' ? 'bg-blue-50 text-blue-600' : ($lk_gender_type === 'putri' ? 'bg-pink-50 text-pink-600' : 'bg-purple-50 text-purple-600') ?>">
+                                <?= $e($lk_gender_label) ?>
+                            </span>
+                        <?php endif; ?>
                         <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide <?= $lk_available > 0 ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500' ?>">
                             <?= $lk_available > 0 ? 'Tersedia ' . $lk_available . ' Kamar' : 'Belum ada kamar tersedia' ?>
                         </span>
@@ -236,10 +255,25 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                     </div>
                 <?php endif; ?>
 
-                <!-- Facilities -->
+                <!-- Fasilitas Umum -->
+                <?php if (!empty($lk_common_facilities)): ?>
+                    <div class="py-10 border-b">
+                        <h2 class="text-xl font-bold mb-6">Fasilitas Umum</h2>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                            <?php foreach ($lk_common_facilities as $f): ?>
+                                <div class="flex items-center text-gray-700">
+                                    <i class="fas <?= $e(lk_fa_icon($f)) ?> w-8 text-orange-500"></i>
+                                    <span><?= $e($f) ?></span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <!-- Fasilitas Kamar -->
                 <?php if (!empty($lk_facilities)): ?>
                     <div class="py-10 border-b">
-                        <h2 class="text-xl font-bold mb-6">Fasilitas</h2>
+                        <h2 class="text-xl font-bold mb-6">Fasilitas Kamar</h2>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
                             <?php foreach ($lk_facilities as $f): ?>
                                 <div class="flex items-center text-gray-700">

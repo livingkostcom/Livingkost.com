@@ -77,6 +77,12 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="font-semibold text-gray-900">{{ $property->name }}</p>
+                                        @if ($property->gender_type)
+                                            <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-xs font-semibold
+                                                {{ $property->gender_type === 'putra' ? 'bg-blue-100 text-blue-700' : ($property->gender_type === 'putri' ? 'bg-pink-100 text-pink-700' : 'bg-purple-100 text-purple-700') }}">
+                                                {{ $property->gender_type === 'putra' ? 'Putra' : ($property->gender_type === 'putri' ? 'Putri' : 'Putra & Putri') }}
+                                            </span>
+                                        @endif
                                     </div>
                                 </div>
                             </td>

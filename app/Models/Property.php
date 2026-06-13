@@ -9,11 +9,12 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Property extends Model
 {
     use HasFactory, \App\Models\Concerns\BelongsToOwner;
-    protected $fillable = ['owner_id', 'name', 'address', 'description', 'status', 'is_featured', 'featured_image', 'gallery', 'location_label', 'badge_text'];
+    protected $fillable = ['owner_id', 'name', 'address', 'description', 'status', 'gender_type', 'is_featured', 'featured_image', 'gallery', 'location_label', 'badge_text', 'common_facilities'];
 
     protected $casts = [
         'is_featured' => 'boolean',
         'gallery' => 'array',
+        'common_facilities' => 'array',
     ];
 
     /**

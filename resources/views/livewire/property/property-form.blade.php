@@ -51,6 +51,33 @@
         @enderror
     </div>
 
+    <!-- Gender Type -->
+    <div>
+        <label for="gender_type" class="block text-sm font-semibold text-gray-700 mb-2">Tipe Penghuni</label>
+        <select wire:model="gender_type" id="gender_type"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('gender_type') border-red-500 @enderror">
+            <option value="">-- Tidak Ditentukan --</option>
+            <option value="putra">Putra</option>
+            <option value="putri">Putri</option>
+            <option value="putra_putri">Putra & Putri</option>
+        </select>
+        @error('gender_type')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
+    <!-- Fasilitas Umum -->
+    <div>
+        <label for="common_facilities_text" class="block text-sm font-semibold text-gray-700 mb-2">Fasilitas Umum</label>
+        <input wire:model="common_facilities_text" type="text" id="common_facilities_text"
+            placeholder="Contoh: Dapur, Kulkas, Mesin Cuci, Tempat Jemur"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('common_facilities_text') border-red-500 @enderror">
+        <p class="mt-1 text-xs text-gray-500">Pisahkan dengan koma. Contoh: Dapur Gratis Gas, Kulkas, Mesin Cuci</p>
+        @error('common_facilities_text')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
     <!-- Landing / Rekomendasi Kost -->
     <div class="border-t pt-4">
         <label class="flex items-center gap-3 cursor-pointer">
