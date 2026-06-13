@@ -74,7 +74,10 @@ class Invoice extends Model
     public static function generateInvoiceNumber(): string
     {
         $prefix = 'INV-' . date('Ymd');
-        $lastInvoice = static::where('reference_number', 'like', $prefix . '%')
+        // Reference numbers are globally unique, so look across ALL owners
+        // (bypass the owner global scope) to avoid colliding sequences.
+        $lastInvoice = static::withoutGlobalScopes()
+            ->where('reference_number', 'like', $prefix . '%')
             ->orderBy('reference_number', 'desc')
             ->first();
 
