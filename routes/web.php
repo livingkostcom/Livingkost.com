@@ -132,6 +132,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/settings', function () {
         return view('admin.settings.index');
     })->middleware(['auth'])->name('settings.index');
+
+    // Payment partnerships (super-admin only)
+    Route::get('/payment-partners', function () {
+        abort_unless(Auth::user()?->isSuperAdmin(), 403);
+        return view('admin.payment-partners.index');
+    })->middleware(['auth'])->name('payment-partners.index');
 });
 
 // Welcome page (public) - redirect to login
