@@ -41,7 +41,8 @@ if ($lk_id > 0 && is_readable($lk_envPath)) {
                 $lk_roomtypes = $st2->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
                 $st3 = $pdo->prepare("SELECT COUNT(*) FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id
-                                      WHERE rt.property_id = ? AND r.status = 'available'");
+                                      WHERE rt.property_id = ? AND r.status = 'available'
+                                      AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')");
                 $st3->execute([$lk_id]);
                 $lk_available = (int) $st3->fetchColumn();
 
@@ -221,9 +222,6 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                     <h1 class="text-3xl font-bold text-gray-900 mb-2"><?= $e($lk_kost['name']) ?></h1>
                     <p class="text-gray-500 mb-4"><i class="fas fa-location-dot text-orange-600 mr-2"></i><?= $e($lk_kost['address']) ?></p>
                     <div class="flex flex-wrap gap-2">
-                        <?php if (!empty($lk_kost['badge_text'])): ?>
-                            <span class="bg-orange-50 text-orange-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide"><?= $e($lk_kost['badge_text']) ?></span>
-                        <?php endif; ?>
                         <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide <?= $lk_available > 0 ? 'bg-green-50 text-green-600' : 'bg-gray-100 text-gray-500' ?>">
                             <?= $lk_available > 0 ? 'Tersedia ' . $lk_available . ' Kamar' : 'Belum ada kamar tersedia' ?>
                         </span>

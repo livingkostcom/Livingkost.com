@@ -27,9 +27,12 @@ if (is_readable($lk_envPath)) {
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
             );
             $lk_stmt = $lk_pdo->query(
-                "SELECT p.id, p.name, p.location_label, p.badge_text, p.featured_image,
+                "SELECT p.id, p.name, p.location_label, p.featured_image,
                         (SELECT MIN(rt.price) FROM room_types rt WHERE rt.property_id = p.id) AS price_from,
-                        (SELECT rt.facilities FROM room_types rt WHERE rt.property_id = p.id ORDER BY rt.price ASC LIMIT 1) AS facilities
+                        (SELECT rt.facilities FROM room_types rt WHERE rt.property_id = p.id ORDER BY rt.price ASC LIMIT 1) AS facilities,
+                        (SELECT COUNT(*) FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id
+                         WHERE rt.property_id = p.id AND r.status = 'available'
+                         AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')) AS available_rooms
                  FROM properties p
                  WHERE p.is_featured = 1 AND p.status = 'active'
                  ORDER BY p.updated_at DESC
@@ -132,9 +135,10 @@ if (is_readable($lk_envPath)) {
                         <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition h-full">
                             <div class="relative">
                                 <img src="<?= $img ?>" alt="<?= htmlspecialchars($kost['name'], ENT_QUOTES) ?>" class="w-full h-64 object-cover">
-                                <?php if (!empty($kost['badge_text'])): ?>
-                                    <span class="absolute top-4 left-4 bg-orange-600 text-white text-xs font-bold px-3 py-1 rounded-full uppercase"><?= htmlspecialchars($kost['badge_text'], ENT_QUOTES) ?></span>
-                                <?php endif; ?>
+                                <?php $avail = (int)($kost['available_rooms'] ?? 0); ?>
+                                <span class="absolute top-4 left-4 <?= $avail > 0 ? 'bg-green-600' : 'bg-gray-500' ?> text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                    <?= $avail > 0 ? 'Tersedia ' . $avail . ' Kamar' : 'Tidak Tersedia' ?>
+                                </span>
                             </div>
                             <div class="p-6">
                                 <?php if (!empty($kost['location_label'])): ?>
