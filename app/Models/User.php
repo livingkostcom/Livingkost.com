@@ -98,6 +98,14 @@ class User extends Authenticatable
         return $this->hasOne(Tenant::class);
     }
 
+    /**
+     * The payment wallet for this owner (online payment config + balance).
+     */
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(OwnerWallet::class, 'owner_id');
+    }
+
     public function createdInvoices(): HasMany
     {
         return $this->hasMany(Invoice::class, 'created_by');
