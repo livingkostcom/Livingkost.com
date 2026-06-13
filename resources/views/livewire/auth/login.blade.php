@@ -260,46 +260,6 @@
                 </button>
             </form>
 
-            <!-- Demo Credentials -->
-            <div class="mt-2 border border-orange-200 rounded-xl bg-orange-50/50 p-4 animate-slide-down stagger-5">
-                <p class="text-xs font-semibold text-orange-700 mb-3 flex items-center gap-1.5">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    Demo Login
-                </p>
-                <div class="space-y-2">
-                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-orange-100 cursor-pointer hover:border-orange-300 transition"
-                        wire:click="$set('email', 'owner@livingkost.com'); $set('password', 'password')">
-                        <div>
-                            <span class="font-medium text-gray-700">Owner</span>
-                            <span class="text-gray-400 ml-1">— owner@livingkost.com</span>
-                        </div>
-                        <span class="text-orange-500 font-medium text-[10px] bg-orange-100 px-2 py-0.5 rounded-full">Full
-                            Access</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-orange-100 cursor-pointer hover:border-orange-300 transition"
-                        wire:click="$set('email', 'manager@livingkost.com'); $set('password', 'password')">
-                        <div>
-                            <span class="font-medium text-gray-700">Manager</span>
-                            <span class="text-gray-400 ml-1">— manager@livingkost.com</span>
-                        </div>
-                        <span
-                            class="text-orange-500 font-medium text-[10px] bg-orange-100 px-2 py-0.5 rounded-full">Operasional</span>
-                    </div>
-                    <div class="flex items-center justify-between text-xs bg-white rounded-lg px-3 py-2 border border-orange-100 cursor-pointer hover:border-orange-300 transition"
-                        wire:click="$set('email', 'ahmad@example.com'); $set('password', 'password123')">
-                        <div>
-                            <span class="font-medium text-gray-700">Tenant</span>
-                            <span class="text-gray-400 ml-1">— ahmad@example.com</span>
-                        </div>
-                        <span
-                            class="text-emerald-500 font-medium text-[10px] bg-emerald-100 px-2 py-0.5 rounded-full">Self-Service</span>
-                    </div>
-                </div>
-            </div>
-
             <!-- Footer -->
             <div class="pt-6 border-t border-gray-200">
                 <p class="text-center text-sm text-gray-600">
