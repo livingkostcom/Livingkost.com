@@ -63,11 +63,10 @@ class Invoice extends Model
         if ($name) {
             $block .= "Bank: {$name}\n";
         }
-        $block .= "No. Rek: {$number}\n";
+        $block .= "No. Rek: {$number}";
         if ($holder) {
-            $block .= "a.n. {$holder}\n";
+            $block .= "\na.n. {$holder}";
         }
-        $block .= "\nSetelah transfer, unggah bukti di portal: Login » Invoice » Upload Bukti.";
 
         return $block;
     }

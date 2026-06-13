@@ -94,7 +94,6 @@
       @if (!empty($bank['instructions']))
         <p class="note" style="margin-top:0;">{{ $bank['instructions'] }}</p>
       @endif
-      <p class="note" style="margin-top:8px;">Setelah transfer, unggah bukti pembayaran melalui portal penghuni: Login &raquo; Invoice &raquo; <strong>Upload Bukti</strong>, lalu tunggu verifikasi pengelola.</p>
     @endif
 
     @if ($reminderType === 'overdue')
@@ -104,6 +103,14 @@
     @else
       <p class="note">Tagihan Anda akan jatuh tempo dalam waktu dekat. Silakan lakukan pembayaran sebelum tanggal jatuh tempo.</p>
     @endif
+
+    <p class="note" style="margin-top:16px;">Sudah melakukan pembayaran? Unggah bukti transfer Anda melalui tombol di bawah, lalu tunggu verifikasi pengelola.</p>
+    <p style="text-align:center;margin:16px 0 4px;">
+      <a href="https://www.livingkost.com/tenant/invoices"
+         style="display:inline-block;background:#ea580c;color:#fff;text-decoration:none;padding:12px 28px;border-radius:10px;font-weight:700;font-size:14px;">
+        Upload Bukti Pembayaran
+      </a>
+    </p>
   </div>
   <div class="footer">
     &copy; {{ date('Y') }} LivingKost &mdash; Email ini dikirim otomatis, jangan balas pesan ini.

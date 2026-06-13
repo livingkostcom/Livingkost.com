@@ -292,11 +292,12 @@ class InvoiceIndex extends Component
 
         $bank = $invoice->bankTransferWaBlock();
         $bankBlock = $bank ? "\n\n{$bank}" : '';
+        $uploadBlock = "\n\nSudah bayar? Unggah bukti pembayaran di sini:\nhttps://www.livingkost.com/tenant/invoices";
 
         return match ($reminderType) {
-            'overdue' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* telah melewati jatuh tempo ({$due}).\n\nMohon segera lakukan pembayaran.{$bankBlock}\n\nTerima kasih.\n\n_Living Kost_",
-            'due_today' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* jatuh tempo *hari ini* ({$due}).\n\nSilakan segera lakukan pembayaran.{$bankBlock}\n\nTerima kasih.\n\n_Living Kost_",
-            default => "Halo {$tenant},\n\nIni adalah pengingat bahwa tagihan kos Anda *{$ref}* sebesar *{$amount}* akan jatuh tempo pada *{$due}*.\n\nMohon lakukan pembayaran sebelum tanggal tersebut.{$bankBlock}\n\nTerima kasih.\n\n_Living Kost_",
+            'overdue' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* telah melewati jatuh tempo ({$due}).\n\nMohon segera lakukan pembayaran.{$bankBlock}{$uploadBlock}\n\nTerima kasih.\n\n_Living Kost_",
+            'due_today' => "Halo {$tenant},\n\nTagihan kos Anda *{$ref}* sebesar *{$amount}* jatuh tempo *hari ini* ({$due}).\n\nSilakan segera lakukan pembayaran.{$bankBlock}{$uploadBlock}\n\nTerima kasih.\n\n_Living Kost_",
+            default => "Halo {$tenant},\n\nIni adalah pengingat bahwa tagihan kos Anda *{$ref}* sebesar *{$amount}* akan jatuh tempo pada *{$due}*.\n\nMohon lakukan pembayaran sebelum tanggal tersebut.{$bankBlock}{$uploadBlock}\n\nTerima kasih.\n\n_Living Kost_",
         };
     }
 
