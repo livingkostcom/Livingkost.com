@@ -379,7 +379,7 @@
     <!-- Approval Modal -->
     @if ($showApprovalModal)
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div class="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-6 py-4">
                     <h2 class="text-lg font-bold text-gray-900">Approve Pembayaran</h2>
                 </div>
@@ -432,7 +432,7 @@
     <!-- Rejection Modal -->
     @if ($showRejectionModal)
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full">
+            <div class="bg-white rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div class="bg-gradient-to-r from-red-50 to-red-100 border-b border-red-200 px-6 py-4">
                     <h2 class="text-lg font-bold text-gray-900">Tolak Pembayaran</h2>
                 </div>

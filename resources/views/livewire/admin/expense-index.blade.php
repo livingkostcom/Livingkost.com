@@ -329,7 +329,7 @@
     @if ($showDetailModal && $selectedExpense)
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
             wire:click.self="$set('showDetailModal', false)">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-lg font-bold text-gray-800">Detail Pengeluaran</h3>
@@ -403,7 +403,7 @@
     @if ($showDeleteModal)
         <div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
             wire:click.self="$set('showDeleteModal', false)">
-            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm max-h-[90vh] overflow-y-auto">
                 <div class="p-6 text-center">
                     <div class="w-12 h-12 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
                         <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

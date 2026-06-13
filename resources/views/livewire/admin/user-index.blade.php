@@ -132,7 +132,7 @@
     <!-- Create/Edit Modal -->
     @if ($showModal)
         <div class="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div class="bg-orange-600 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-white">{{ $editingId ? 'Edit User' : 'Tambah User Baru' }}</h2>
                     <button wire:click="closeModal" class="text-white hover:bg-white/20 rounded-lg p-1 transition">
@@ -151,7 +151,7 @@
     <!-- Delete Modal -->
     @if ($showDeleteModal && $deletingUser)
         <div class="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div class="bg-gradient-to-r from-red-600 to-pink-600 px-6 py-4">
                     <h2 class="text-lg font-bold text-white flex items-center gap-3">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

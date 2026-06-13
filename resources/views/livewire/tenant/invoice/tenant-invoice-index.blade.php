@@ -196,7 +196,7 @@
     <!-- Payment Upload Modal -->
     @if ($showUploadModal)
         <div class="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full overflow-hidden">
+            <div class="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
                 <div class="bg-orange-600 px-6 py-4 flex justify-between items-center">
                     <h3 class="text-lg font-bold text-white">Upload Bukti Pembayaran</h3>
                     <button wire:click="closeUploadModal" class="text-white hover:text-orange-100">

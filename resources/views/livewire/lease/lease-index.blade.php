@@ -230,7 +230,7 @@
     <!-- Modal -->
     @if ($showModal)
         <div class="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden animate-fade-in">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-y-auto max-h-[90vh] animate-fade-in">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-orange-600 to-orange-600 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-white">
@@ -255,7 +255,7 @@
     <!-- Delete Confirmation Modal -->
     @if ($showDeleteModal && $deletingLease)
         <div class="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-y-auto max-h-[90vh] animate-fade-in">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-red-600 to-pink-600 px-6 py-4">
                     <h2 class="text-lg font-bold text-white flex items-center gap-3">
@@ -306,7 +306,7 @@
     <!-- Detail Modal -->
     @if ($showDetailModal && $detailingLease)
         <div class="fixed inset-0 bg-black/20 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
-            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-hidden animate-fade-in">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-y-auto max-h-[90vh] animate-fade-in">
                 <!-- Header -->
                 <div class="bg-gradient-to-r from-orange-600 to-orange-600 px-6 py-4 flex items-center justify-between">
                     <h2 class="text-lg font-bold text-white flex items-center gap-3">
