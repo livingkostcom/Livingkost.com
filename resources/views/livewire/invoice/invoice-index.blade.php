@@ -189,45 +189,38 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center gap-2">
                                     <button wire:click="openDetailModal({{ $invoice->id }})"
-                                        class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition font-medium text-sm border border-orange-200">
+                                        class="inline-flex items-center p-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition font-medium text-sm border border-orange-200" title="Detail">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                                        Detail
                                     </button>
                                     @if ($invoice->verified_at)
                                         <button disabled
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 text-gray-400 rounded-lg cursor-not-allowed font-medium text-sm border border-gray-200"
+                                            class="inline-flex items-center p-2 bg-gray-50 text-gray-400 rounded-lg cursor-not-allowed font-medium text-sm border border-gray-200"
                                             title="Invoice sudah diverifikasi">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            Edit
                                         </button>
                                     @else
                                         <a href="{{ route('invoices.edit', $invoice->id) }}"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition font-medium text-sm border border-orange-200">
+                                            class="inline-flex items-center p-2 bg-orange-50 text-orange-700 rounded-lg hover:bg-orange-100 transition font-medium text-sm border border-orange-200" title="Edit">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            Edit
                                         </a>
                                     @endif
                                     @if ($invoice->verified_at)
                                         <button disabled
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-gray-50 text-gray-400 rounded-lg cursor-not-allowed font-medium text-sm border border-gray-200"
+                                            class="inline-flex items-center p-2 bg-gray-50 text-gray-400 rounded-lg cursor-not-allowed font-medium text-sm border border-gray-200"
                                             title="Invoice sudah diverifikasi">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            Hapus
                                         </button>
                                     @else
                                         <button wire:click="openDeleteModal({{ $invoice->id }})"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition font-medium text-sm border border-red-200">
+                                            class="inline-flex items-center p-2 bg-red-50 text-red-700 rounded-lg hover:bg-red-100 transition font-medium text-sm border border-red-200" title="Hapus">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            Hapus
                                         </button>
                                     @endif
                                     @if ($invoice->status === 'unpaid')
                                         <button wire:click="sendReminder({{ $invoice->id }})"
                                             wire:loading.attr="disabled" wire:target="sendReminder({{ $invoice->id }})"
-                                            class="inline-flex items-center gap-1 px-3 py-1.5 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition font-medium text-sm border border-yellow-200 disabled:opacity-50">
+                                            class="inline-flex items-center p-2 bg-yellow-50 text-yellow-700 rounded-lg hover:bg-yellow-100 transition font-medium text-sm border border-yellow-200 disabled:opacity-50" title="Ingatkan">
                                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-                                            <span wire:loading.remove wire:target="sendReminder({{ $invoice->id }})">Ingatkan</span>
-                                            <span wire:loading wire:target="sendReminder({{ $invoice->id }})">...</span>
                                         </button>
                                     @endif
                                 </div>
