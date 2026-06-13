@@ -10,10 +10,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class RoomType extends Model
 {
     use HasFactory, \App\Models\Concerns\BelongsToOwner;
-    protected $fillable = ['owner_id', 'property_id', 'name', 'price', 'facilities'];
+    protected $fillable = ['owner_id', 'property_id', 'name', 'price', 'facilities', 'images'];
 
     protected $casts = [
         'facilities' => 'json',
+        'images' => 'array',
         'price' => 'decimal:2',
     ];
 

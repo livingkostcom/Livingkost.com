@@ -5,9 +5,12 @@ namespace App\Livewire\RoomType;
 use App\Models\RoomType;
 use App\Models\Property;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class RoomTypeForm extends Component
 {
+    use WithFileUploads;
+
     public ?int $roomTypeId = null;
 
     #[\Livewire\Attributes\Validate('required|integer|exists:properties,id')]
@@ -22,6 +25,11 @@ class RoomTypeForm extends Component
     #[\Livewire\Attributes\Validate('nullable|string')]
     public string $facilities = '';
 
+    #[\Livewire\Attributes\Validate('nullable')]
+    public array $image_uploads = [];
+
+    public array $existing_images = [];
+
     public function mount(?int $roomTypeId = null)
     {
         $this->roomTypeId = $roomTypeId;
@@ -34,6 +42,23 @@ class RoomTypeForm extends Component
             $this->name = $roomType->name;
             $this->price = (string) $roomType->price;
             $this->facilities = $roomType->facilities ? implode(', ', $roomType->facilities) : '';
+            $this->existing_images = is_array($roomType->images) ? $roomType->images : [];
+        }
+    }
+
+    public function removeExistingImage(int $index): void
+    {
+        if (isset($this->existing_images[$index])) {
+            unset($this->existing_images[$index]);
+            $this->existing_images = array_values($this->existing_images);
+        }
+    }
+
+    public function removeUpload(int $index): void
+    {
+        if (isset($this->image_uploads[$index])) {
+            unset($this->image_uploads[$index]);
+            $this->image_uploads = array_values($this->image_uploads);
         }
     }
 
@@ -41,29 +66,39 @@ class RoomTypeForm extends Component
     {
         $this->validate();
 
-        // Parse facilities from comma-separated string to array
-        $facilitiesArray = array_filter(
+        if (!empty($this->image_uploads)) {
+            $this->validate(['image_uploads.*' => 'image|max:2048']);
+        }
+
+        $facilitiesArray = array_values(array_filter(
             array_map('trim', explode(',', $this->facilities))
-        );
+        ));
+
+        $images = $this->existing_images;
+        foreach ($this->image_uploads as $upload) {
+            if ($upload instanceof \Livewire\Features\SupportFileUploads\TemporaryUploadedFile) {
+                $fname = 'room-types/' . uniqid('rt-') . '.' . $upload->getClientOriginalExtension();
+                $upload->storeAs('room-types', basename($fname), 'landing');
+                $images[] = $fname;
+            }
+        }
+
+        $data = [
+            'property_id' => $this->property_id,
+            'name' => $this->name,
+            'price' => $this->price,
+            'facilities' => $facilitiesArray ?: null,
+            'images' => !empty($images) ? array_values($images) : null,
+        ];
 
         if ($this->roomTypeId) {
             $roomType = RoomType::findOrFail($this->roomTypeId);
             $this->authorize('update', $roomType);
-            $roomType->update([
-                'property_id' => $this->property_id,
-                'name' => $this->name,
-                'price' => $this->price,
-                'facilities' => $facilitiesArray ?: null,
-            ]);
+            $roomType->update($data);
             $message = 'Tipe ruangan berhasil diperbarui!';
         } else {
             $this->authorize('create', RoomType::class);
-            RoomType::create([
-                'property_id' => $this->property_id,
-                'name' => $this->name,
-                'price' => $this->price,
-                'facilities' => $facilitiesArray ?: null,
-            ]);
+            RoomType::create($data);
             $message = 'Tipe ruangan berhasil dibuat!';
         }
 

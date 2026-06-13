@@ -36,7 +36,7 @@ if ($lk_id > 0 && is_readable($lk_envPath)) {
             $lk_kost = $st->fetch(PDO::FETCH_ASSOC) ?: null;
 
             if ($lk_kost) {
-                $st2 = $pdo->prepare("SELECT id, name, price, facilities FROM room_types WHERE property_id = ? ORDER BY price ASC");
+                $st2 = $pdo->prepare("SELECT id, name, price, facilities, images FROM room_types WHERE property_id = ? ORDER BY price ASC");
                 $st2->execute([$lk_id]);
                 $lk_roomtypes = $st2->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
@@ -293,10 +293,29 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                             <?php foreach ($lk_roomtypes as $rt):
                                 $rtFacs = json_decode($rt['facilities'] ?? '[]', true);
                                 if (!is_array($rtFacs)) { $rtFacs = []; }
+                                $rtImgs = json_decode($rt['images'] ?? '[]', true);
+                                if (!is_array($rtImgs) || empty($rtImgs)) { $rtImgs = []; }
+                                $rtMainImg = !empty($rtImgs) ? '/images/' . $rtImgs[0] : $lk_hero;
                             ?>
                                 <div class="flex flex-col md:flex-row gap-6 items-start border border-gray-100 rounded-2xl p-4 shadow-sm">
-                                    <div class="w-full md:w-1/3 h-44 rounded-xl overflow-hidden shrink-0 bg-gray-100">
-                                        <img src="<?= $e($lk_hero) ?>" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
+                                    <!-- Room type image with thumbnail strip -->
+                                    <div class="w-full md:w-1/3 shrink-0">
+                                        <div class="h-44 rounded-xl overflow-hidden bg-gray-100 mb-2">
+                                            <img src="<?= $e($rtMainImg) ?>" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
+                                        </div>
+                                        <?php if (count($rtImgs) > 1): ?>
+                                            <div class="grid grid-cols-4 gap-1">
+                                                <?php foreach (array_slice($rtImgs, 0, 4) as $idx => $img): ?>
+                                                    <div class="h-14 rounded-lg overflow-hidden bg-gray-100 cursor-pointer relative"
+                                                         onclick="openGallery('/images/<?= $e($img) ?>')">
+                                                        <img src="/images/<?= $e($img) ?>" class="w-full h-full object-cover hover:opacity-80 transition">
+                                                        <?php if ($idx === 3 && count($rtImgs) > 4): ?>
+                                                            <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-bold">+<?= count($rtImgs) - 4 ?></div>
+                                                        <?php endif; ?>
+                                                    </div>
+                                                <?php endforeach; ?>
+                                            </div>
+                                        <?php endif; ?>
                                     </div>
                                     <div class="flex-1 pt-1">
                                         <h3 class="text-lg font-bold text-gray-900 mb-2"><?= $e($rt['name']) ?></h3>
