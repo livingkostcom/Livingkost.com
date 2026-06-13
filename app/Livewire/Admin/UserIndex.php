@@ -93,7 +93,7 @@ class UserIndex extends Component
     {
         $actor = Auth::user();
 
-        $query = User::query()->with('roles');
+        $query = User::query()->with('roles', 'tenant');
 
         if (! $actor->isSuperAdmin()) {
             // Owners only see their own managers & tenants

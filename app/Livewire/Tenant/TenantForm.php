@@ -99,9 +99,9 @@ class TenantForm extends Component
             $data['updated_by'] = auth()->user()->name;
             $tenant->update($data);
 
-            // Keep the linked login account's name in sync
+            // Keep the linked login account's name & phone in sync
             if ($tenant->user_id && $tenant->user) {
-                $tenant->user->update(['name' => $this->name]);
+                $tenant->user->update(['name' => $this->name, 'phone' => $this->phone]);
             }
 
             $message = 'Penyewa berhasil diperbarui!';
@@ -119,6 +119,7 @@ class TenantForm extends Component
                 $user = User::create([
                     'name' => $this->name,
                     'email' => $this->email,
+                    'phone' => $this->phone,
                     'password' => Hash::make($plainPassword),
                     'owner_id' => $ownerId,
                     'email_verified_at' => now(),

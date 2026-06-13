@@ -84,7 +84,7 @@
                                 <p class="text-gray-600 text-sm">{{ $user->email }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <p class="text-gray-600 text-sm">{{ $user->phone ?: '-' }}</p>
+                                <p class="text-gray-600 text-sm">{{ $user->phone ?: ($user->tenant?->phone ?: '-') }}</p>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium {{ $roleBadges[$roleName]['class'] ?? 'bg-gray-100 text-gray-800' }}">

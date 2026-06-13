@@ -26,7 +26,8 @@ class UserForm extends Component
             $this->authorize('update', $user);
             $this->name = $user->name;
             $this->email = $user->email;
-            $this->phone = $user->phone ?? '';
+            // For tenant users the phone lives on the tenant record; fall back to it.
+            $this->phone = $user->phone ?: ($user->tenant?->phone ?? '');
             $this->role = $user->getRoleNames()->first() ?? '';
         } else {
             $this->authorize('create', User::class);
@@ -80,6 +81,11 @@ class UserForm extends Component
             $user->owner_id = $this->resolveOwnerId($actor, $user);
             $user->save();
             $user->syncRoles([$this->role]);
+
+            // Keep the linked tenant's phone in sync (single source of truth for tenants)
+            if ($user->tenant && $this->phone !== '') {
+                $user->tenant->update(['phone' => $this->phone]);
+            }
 
             session()->flash('message', 'User berhasil diperbarui!');
         } else {
