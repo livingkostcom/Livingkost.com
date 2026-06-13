@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\Invoice;
 use App\Models\Lease;
 use App\Models\Room;
 use Illuminate\Support\Facades\Auth;
@@ -70,6 +71,27 @@ class LeaseObserver
         // Prevent hard deletion - use soft delete only
         if ($lease->isForceDeleting()) {
             throw new \Exception('Hard deletion of leases is not allowed.');
+        }
+    }
+
+    /**
+     * Handle the Lease "deleted" event (soft delete).
+     */
+    public function deleted(Lease $lease): void
+    {
+        // Archive (soft-delete) any not-yet-settled invoices of this lease.
+        // Paid invoices are kept as financial records.
+        Invoice::withoutGlobalScopes()
+            ->where('lease_id', $lease->id)
+            ->whereIn('status', ['unpaid', 'pending'])
+            ->get()
+            ->each
+            ->delete();
+
+        // Free the room — the lease no longer occupies it.
+        $room = Room::withoutGlobalScopes()->find($lease->room_id);
+        if ($room) {
+            $room->update(['status' => 'available']);
         }
     }
 
