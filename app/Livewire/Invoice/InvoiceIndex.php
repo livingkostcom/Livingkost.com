@@ -209,10 +209,12 @@ class InvoiceIndex extends Component
             return;
         }
 
-        $user = $invoice->lease->tenant->user;
+        $tenant = $invoice->lease->tenant;
+        $user = $tenant->user;
+        $phone = $tenant->phone ?? null;
 
-        if (!$user) {
-            $this->errorMessage = "Tenant '{$invoice->lease->tenant->display_name}' tidak terhubung dengan akun user.";
+        if (!$user && !$phone) {
+            $this->errorMessage = "Tenant '{$tenant->display_name}' tidak memiliki akun user maupun nomor WA.";
             return;
         }
 
@@ -223,15 +225,15 @@ class InvoiceIndex extends Component
             default => 'upcoming',
         };
 
-        $user->notify(new PaymentReminderNotification($invoice, $reminderType));
+        if ($user) {
+            $user->notify(new PaymentReminderNotification($invoice, $reminderType));
+        }
 
-        // WhatsApp
-        $phone = $invoice->lease->tenant->phone ?? null;
         if ($phone) {
             WhatsAppService::send($phone, $this->buildWaMessage($invoice, $reminderType));
         }
 
-        $this->successMessage = "Pengingat berhasil dikirim ke {$invoice->lease->tenant->display_name}";
+        $this->successMessage = "Pengingat berhasil dikirim ke {$tenant->display_name}";
     }
 
     public function sendBulkReminders()
@@ -252,9 +254,11 @@ class InvoiceIndex extends Component
         $skipped = 0;
 
         foreach ($invoices as $invoice) {
-            $user = $invoice->lease->tenant->user;
+            $tenant = $invoice->lease->tenant;
+            $user = $tenant->user;
+            $phone = $tenant->phone ?? null;
 
-            if (!$user) {
+            if (!$user && !$phone) {
                 $skipped++;
                 continue;
             }
@@ -265,9 +269,10 @@ class InvoiceIndex extends Component
                 default => 'upcoming',
             };
 
-            $user->notify(new PaymentReminderNotification($invoice, $reminderType));
+            if ($user) {
+                $user->notify(new PaymentReminderNotification($invoice, $reminderType));
+            }
 
-            $phone = $invoice->lease->tenant->phone ?? null;
             if ($phone) {
                 WhatsAppService::send($phone, $this->buildWaMessage($invoice, $reminderType));
             }
