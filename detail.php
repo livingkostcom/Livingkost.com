@@ -177,8 +177,9 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
 
     <nav class="sticky top-0 z-50 bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <a href="/" class="text-2xl font-bold text-orange-600">Living<span class="text-gray-900">Kost</span></a>
-        <div class="hidden md:flex items-center space-x-6">
-            <button class="bg-orange-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-orange-700 transition"><a href="/mitra" class="hover:text-orange-600 transition">Jadi Mitra</a></button>
+        <div class="flex items-center gap-2 sm:gap-3">
+            <a href="/login" class="text-gray-700 hover:text-orange-600 font-semibold px-3 sm:px-4 py-2 rounded-full transition">Login</a>
+            <a href="/mitra" class="bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-orange-700 transition whitespace-nowrap">Jadi Mitra</a>
         </div>
     </nav>
 
