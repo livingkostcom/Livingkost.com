@@ -201,17 +201,7 @@ class Sidebar extends Component
 
     public function render()
     {
-        $user = Auth::user();
         $menuItems = $this->getMenuItems();
-        
-        // Debug logging
-        \Log::info('Sidebar render', [
-            'user_id' => $user?->id,
-            'user_roles' => $user?->getRoleNames(),
-            'user_permissions' => $user?->getPermissionNames(),
-            'menu_items_count' => count($menuItems),
-            'has_view_invoices' => $user?->hasPermissionTo('view-invoices'),
-        ]);
 
         return view('livewire.sidebar', [
             'menuItems' => $menuItems,

@@ -12,6 +12,12 @@ AddType application/x-httpd-php82 .php
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
+    # --- Security: block dotfiles (except .well-known), sensitive files & internal dirs ---
+    RewriteRule (^|/)\.(?!well-known) - [F,L]
+    RewriteRule \.(env|sql|log|bak|sh|ini|lock|yml|yaml)$ - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
+    RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|README\.md)$ - [F,L]
+
     # --- Static landing pages (clean URLs) ---
     RewriteRule ^$ index.php [L]
     RewriteRule ^mitra/?$ mitra.php [L]
