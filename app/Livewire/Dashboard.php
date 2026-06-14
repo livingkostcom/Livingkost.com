@@ -2,12 +2,14 @@
 
 namespace App\Livewire;
 
+use App\Models\CompanyTransaction;
 use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
 use App\Models\OwnerWallet;
 use App\Models\PaymentTransaction;
+use App\Models\WalletTransaction;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\Tenant;
@@ -193,6 +195,29 @@ class Dashboard extends Component
             'overdue_invoices' => Invoice::where('status', 'unpaid')->where('due_date', '<', now())->count(),
             'pending_maintenance' => MaintenanceRequest::where('status', 'pending')->count(),
         ];
+
+        // --- Platform's own net income (super-admin's earnings) this month ---
+        // Platform fee = online payments collected − amounts credited to owners.
+        $onlineGross = (float) PaymentTransaction::where('status', 'paid')
+            ->whereYear('paid_at', now()->year)->whereMonth('paid_at', now()->month)
+            ->sum('amount');
+        $creditedToOwners = (float) WalletTransaction::where('type', 'credit')->where('source', 'payment')
+            ->whereYear('created_at', now()->year)->whereMonth('created_at', now()->month)
+            ->sum('amount');
+        $feeIncome = round($onlineGross - $creditedToOwners, 2);
+
+        $otherIncome = (float) CompanyTransaction::income()
+            ->whereYear('transaction_date', now()->year)->whereMonth('transaction_date', now()->month)
+            ->sum('amount');
+
+        $companyExpense = (float) CompanyTransaction::expense()
+            ->whereYear('transaction_date', now()->year)->whereMonth('transaction_date', now()->month)
+            ->sum('amount');
+
+        $platform['fee_income'] = $feeIncome;
+        $platform['other_income'] = $otherIncome;
+        $platform['company_expense'] = $companyExpense;
+        $platform['net_income'] = $feeIncome + $otherIncome - $companyExpense;
 
         $rows = [];
         foreach (User::role('owner')->orderBy('name')->get() as $owner) {

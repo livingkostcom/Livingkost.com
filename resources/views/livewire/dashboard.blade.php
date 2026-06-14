@@ -106,9 +106,36 @@
             </div>
         </div>
 
+        <!-- Pendapatan Bersih Platform (super-admin's own earnings) -->
+        <div class="bg-gradient-to-br from-emerald-50 to-white rounded-2xl shadow-sm border border-emerald-200 p-6 mb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+                <div>
+                    <p class="text-sm text-gray-500">Pendapatan Bersih Platform (Bulan Ini)</p>
+                    <p class="text-3xl sm:text-4xl font-bold {{ $p['net_income'] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                        Rp {{ number_format($p['net_income'], 0, ',', '.') }}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">Fee dari owner + pendapatan lain − pengeluaran perusahaan</p>
+                </div>
+                <div class="grid grid-cols-3 gap-4 sm:gap-6 text-sm">
+                    <div>
+                        <p class="text-gray-500">Fee Platform</p>
+                        <p class="font-bold text-emerald-600 whitespace-nowrap">Rp {{ number_format($p['fee_income'], 0, ',', '.') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Pendapatan Lain</p>
+                        <p class="font-bold text-emerald-600 whitespace-nowrap">+ Rp {{ number_format($p['other_income'], 0, ',', '.') }}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">Pengeluaran</p>
+                        <p class="font-bold text-red-500 whitespace-nowrap">− Rp {{ number_format($p['company_expense'], 0, ',', '.') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Platform Income Chart -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Pendapatan Platform (6 Bulan Terakhir)</h3>
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Pendapatan Kotor Platform (6 Bulan Terakhir)</h3>
             <div class="h-64"><canvas id="incomeChart"></canvas></div>
         </div>
 

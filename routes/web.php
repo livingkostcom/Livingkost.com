@@ -150,6 +150,17 @@ Route::middleware('auth')->group(function () {
         return view('admin.disbursements.index');
     })->middleware(['auth'])->name('disbursements.index');
 
+    // Company ledger (super-admin only): other income & company expenses
+    Route::get('/company-income', function () {
+        abort_unless(Auth::user()?->isSuperAdmin(), 403);
+        return view('admin.company-income.index');
+    })->middleware(['auth'])->name('company-income.index');
+
+    Route::get('/company-expenses', function () {
+        abort_unless(Auth::user()?->isSuperAdmin(), 403);
+        return view('admin.company-expenses.index');
+    })->middleware(['auth'])->name('company-expenses.index');
+
     // Disbursement transfer proof — private file, streamed inline
     Route::get('/disbursements/{disbursement}/proof', function (\App\Models\Disbursement $disbursement) {
         $u = Auth::user();
