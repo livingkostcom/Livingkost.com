@@ -149,24 +149,55 @@
                 <!-- Galeri Foto (multi-foto untuk halaman detail) -->
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Galeri Foto (untuk halaman detail)</label>
-                    @if (count($existing_gallery) || count($gallery_uploads))
-                        <div class="grid grid-cols-3 gap-2 mb-3">
+
+                    {{-- Saved images: drag to reorder. Order is persisted on save. --}}
+                    @if (count($existing_gallery))
+                        <p class="text-xs text-gray-500 mb-2">
+                            <i class="fas fa-up-down-left-right text-gray-400"></i>
+                            Seret foto untuk mengatur urutan. Foto pertama jadi sampul.
+                        </p>
+                        <div class="grid grid-cols-3 gap-2 mb-3"
+                            x-data
+                            x-init="
+                                window.Sortable && window.Sortable.create($el, {
+                                    animation: 150,
+                                    ghostClass: 'opacity-40',
+                                    draggable: '[data-sortable]',
+                                    onEnd () {
+                                        const order = [...$el.querySelectorAll('[data-sortable]')]
+                                            .map(e => parseInt(e.dataset.index));
+                                        $wire.reorderGallery(order);
+                                    }
+                                });
+                            ">
                             @foreach ($existing_gallery as $i => $img)
-                                <div class="relative">
-                                    <img src="/images/{{ $img }}" class="w-full h-20 object-cover rounded-lg">
+                                <div wire:key="gallery-existing-{{ $img }}" data-sortable data-index="{{ $i }}"
+                                    class="relative cursor-move select-none group">
+                                    <img src="/images/{{ $img }}" class="w-full h-20 object-cover rounded-lg pointer-events-none">
+                                    @if ($i === 0)
+                                        <span class="absolute bottom-1 left-1 bg-orange-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">SAMPUL</span>
+                                    @endif
                                     <button type="button" wire:click="removeExistingImage({{ $i }})"
-                                        class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow">&times;</button>
-                                </div>
-                            @endforeach
-                            @foreach ($gallery_uploads as $i => $up)
-                                <div class="relative">
-                                    <img src="{{ $up->temporaryUrl() }}" class="w-full h-20 object-cover rounded-lg ring-2 ring-orange-400">
-                                    <button type="button" wire:click="removeUpload({{ $i }})"
-                                        class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow">&times;</button>
+                                        class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow z-10">&times;</button>
                                 </div>
                             @endforeach
                         </div>
                     @endif
+
+                    {{-- Newly selected uploads (appended after existing on save) --}}
+                    @if (count($gallery_uploads))
+                        <p class="text-xs text-gray-500 mb-2">Foto baru (akan ditambahkan di urutan akhir):</p>
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            @foreach ($gallery_uploads as $i => $up)
+                                <div wire:key="gallery-upload-{{ $i }}" class="relative">
+                                    <img src="{{ $up->temporaryUrl() }}" class="w-full h-20 object-cover rounded-lg ring-2 ring-orange-400">
+                                    <button type="button" wire:click="removeUpload({{ $i }})"
+                                        class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow z-10">&times;</button>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+
                     <input type="file" wire:model="gallery_uploads" accept="image/*" multiple
                         class="w-full text-sm text-gray-600 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-orange-600 file:text-white file:font-semibold hover:file:bg-orange-700">
                     <div wire:loading wire:target="gallery_uploads" class="text-xs text-orange-600 mt-1">Mengunggah...</div>
@@ -174,6 +205,10 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
+
+                @assets
+                    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
+                @endassets
             </div>
         @endif
     </div>

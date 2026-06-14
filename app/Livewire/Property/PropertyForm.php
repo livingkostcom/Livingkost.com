@@ -88,6 +88,28 @@ class PropertyForm extends Component
         }
     }
 
+    /**
+     * Reorder the saved gallery images. $order is the new sequence of the
+     * current existing_gallery indexes, produced by the drag-and-drop UI.
+     */
+    public function reorderGallery(array $order): void
+    {
+        $reordered = [];
+        foreach ($order as $idx) {
+            $idx = (int) $idx;
+            if (isset($this->existing_gallery[$idx])) {
+                $reordered[] = $this->existing_gallery[$idx];
+            }
+        }
+        // Safety: keep any image not represented in $order (no data loss).
+        foreach ($this->existing_gallery as $idx => $img) {
+            if (! in_array($idx, array_map('intval', $order), true)) {
+                $reordered[] = $img;
+            }
+        }
+        $this->existing_gallery = $reordered;
+    }
+
     public function removeUpload(int $index): void
     {
         if (isset($this->gallery_uploads[$index])) {
