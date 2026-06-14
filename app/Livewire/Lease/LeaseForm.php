@@ -117,21 +117,36 @@ class LeaseForm extends Component
     {
         $properties = Property::orderBy('name')->get();
         
-        // Filter tenants - tampilkan hanya penyewa yang belum punya lease aktif di PROPERTI MANAPUN
-        $tenants = Tenant::where('status', 'active')
-            ->whereDoesntHave('leases', function ($query) {
-                $query->whereIn('status', ['pending', 'active']);
+        // Selectable tenants: those without a pending/active lease — PLUS the lease's
+        // current tenant when editing (it already has this lease, so it would
+        // otherwise be filtered out and the dropdown would show nothing selected).
+        $tenants = Tenant::where(function ($query) {
+                $query->where(function ($q) {
+                        $q->where('status', 'active')
+                          ->whereDoesntHave('leases', function ($qq) {
+                              $qq->whereIn('status', ['pending', 'active']);
+                          });
+                    });
+                if ($this->tenant_id) {
+                    $query->orWhere('id', $this->tenant_id);
+                }
             })
             ->orderBy('name')
             ->get();
-        
+
         $rooms = collect();
         if ($this->property_id) {
             $rooms = Room::with('roomType')
                 ->whereHas('roomType', function ($query) {
                     $query->where('property_id', $this->property_id);
                 })
-                ->where('status', 'available')
+                // Available rooms — PLUS the lease's current (occupied) room when editing.
+                ->where(function ($query) {
+                    $query->where('status', 'available');
+                    if ($this->room_id) {
+                        $query->orWhere('id', $this->room_id);
+                    }
+                })
                 ->orderBy('room_number')
                 ->get();
         }
