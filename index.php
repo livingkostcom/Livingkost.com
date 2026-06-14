@@ -75,7 +75,7 @@ function lk_fa_icon($label)
 }
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -142,7 +142,7 @@ function lk_fa_icon($label)
         </div>
     </section>
 
-    <section class="bg-white py-20 px-6">
+    <section id="rekomendasi" class="bg-white py-20 px-6 scroll-mt-24">
         <div class="max-w-7xl mx-auto">
             <div class="flex justify-between items-end mb-10">
                 <div>
@@ -316,8 +316,8 @@ function lk_fa_icon($label)
                         </p>
                         
                         <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-                            <a href="https://wa.me/6285161180441?text=Halo%20Admin%2C%20boleh%20informasinya%20mengenai%20kosan%20yang%20tersedia%20dan%20promonya%3F" class="inline-flex items-center justify-center bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-600 transition shadow-lg shadow-green-900/20">
-                                <i class="fab fa-whatsapp text-2xl mr-3"></i>
+                            <a href="#rekomendasi" class="inline-flex items-center justify-center bg-green-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-green-600 transition shadow-lg shadow-green-900/20">
+                                <i class="fas fa-bed text-2xl mr-3"></i>
                                 Cek Ketersediaan
                             </a>
                         </div>
