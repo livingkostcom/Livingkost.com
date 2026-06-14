@@ -110,12 +110,40 @@ class PropertyForm extends Component
         $this->existing_gallery = $reordered;
     }
 
-    public function removeUpload(int $index): void
+    /**
+     * Remove a newly-selected (not yet saved) upload.
+     *
+     * NOTE: must NOT be named removeUpload() — that collides with the reserved
+     * WithFileUploads magic action `_removeUpload($name, $tmpFilename)`, which
+     * Livewire's JS routes to instead, causing "Property [$0] not found" (500).
+     */
+    public function removeNewUpload(int $index): void
     {
         if (isset($this->gallery_uploads[$index])) {
             unset($this->gallery_uploads[$index]);
             $this->gallery_uploads = array_values($this->gallery_uploads);
         }
+    }
+
+    /**
+     * Reorder the newly-selected uploads (drag-and-drop on unsaved photos).
+     * $order is the new sequence of the current gallery_uploads indexes.
+     */
+    public function reorderUploads(array $order): void
+    {
+        $reordered = [];
+        foreach ($order as $idx) {
+            $idx = (int) $idx;
+            if (isset($this->gallery_uploads[$idx])) {
+                $reordered[] = $this->gallery_uploads[$idx];
+            }
+        }
+        foreach ($this->gallery_uploads as $idx => $up) {
+            if (! in_array($idx, array_map('intval', $order), true)) {
+                $reordered[] = $up;
+            }
+        }
+        $this->gallery_uploads = $reordered;
     }
 
     public function save()

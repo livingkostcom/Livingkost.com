@@ -147,32 +147,50 @@
                 </div>
 
                 <!-- Galeri Foto (multi-foto untuk halaman detail) -->
-                <div>
+                {{-- Self-contained SortableJS loader (works reliably inside the modal,
+                     no dependency on @assets injection in nested components). --}}
+                <div x-data="{
+                        makeSortable(el, method) {
+                            const w = this.$wire;
+                            const start = () => window.Sortable && window.Sortable.create(el, {
+                                animation: 150,
+                                ghostClass: 'opacity-40',
+                                draggable: '[data-sortable]',
+                                filter: 'button',
+                                preventOnFilter: false,
+                                onEnd () {
+                                    const order = [...el.querySelectorAll('[data-sortable]')]
+                                        .map(e => parseInt(e.dataset.index));
+                                    w[method](order);
+                                }
+                            });
+                            if (window.Sortable) return start();
+                            let s = document.querySelector('script[data-sortable-lib]');
+                            if (!s) {
+                                s = document.createElement('script');
+                                s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';
+                                s.setAttribute('data-sortable-lib', '1');
+                                document.head.appendChild(s);
+                            }
+                            s.addEventListener('load', start);
+                        }
+                    }">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Galeri Foto (untuk halaman detail)</label>
+
+                    @if (count($existing_gallery) || count($gallery_uploads))
+                        <p class="text-xs text-gray-500 mb-2">
+                            <i class="fas fa-arrows-up-down-left-right text-gray-400"></i>
+                            Seret foto untuk mengatur urutan. Foto pertama jadi sampul.
+                        </p>
+                    @endif
 
                     {{-- Saved images: drag to reorder. Order is persisted on save. --}}
                     @if (count($existing_gallery))
-                        <p class="text-xs text-gray-500 mb-2">
-                            <i class="fas fa-up-down-left-right text-gray-400"></i>
-                            Seret foto untuk mengatur urutan. Foto pertama jadi sampul.
-                        </p>
                         <div class="grid grid-cols-3 gap-2 mb-3"
-                            x-data
-                            x-init="
-                                window.Sortable && window.Sortable.create($el, {
-                                    animation: 150,
-                                    ghostClass: 'opacity-40',
-                                    draggable: '[data-sortable]',
-                                    onEnd () {
-                                        const order = [...$el.querySelectorAll('[data-sortable]')]
-                                            .map(e => parseInt(e.dataset.index));
-                                        $wire.reorderGallery(order);
-                                    }
-                                });
-                            ">
+                            x-init="makeSortable($el, 'reorderGallery')">
                             @foreach ($existing_gallery as $i => $img)
                                 <div wire:key="gallery-existing-{{ $img }}" data-sortable data-index="{{ $i }}"
-                                    class="relative cursor-move select-none group">
+                                    class="relative cursor-move select-none">
                                     <img src="/images/{{ $img }}" class="w-full h-20 object-cover rounded-lg pointer-events-none">
                                     @if ($i === 0)
                                         <span class="absolute bottom-1 left-1 bg-orange-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">SAMPUL</span>
@@ -184,14 +202,21 @@
                         </div>
                     @endif
 
-                    {{-- Newly selected uploads (appended after existing on save) --}}
+                    {{-- Newly selected uploads: also drag-sortable (appended after existing on save) --}}
                     @if (count($gallery_uploads))
-                        <p class="text-xs text-gray-500 mb-2">Foto baru (akan ditambahkan di urutan akhir):</p>
-                        <div class="grid grid-cols-3 gap-2 mb-3">
+                        @if (count($existing_gallery))
+                            <p class="text-xs text-gray-500 mb-2">Foto baru (ditambahkan setelah foto tersimpan):</p>
+                        @endif
+                        <div class="grid grid-cols-3 gap-2 mb-3"
+                            x-init="makeSortable($el, 'reorderUploads')">
                             @foreach ($gallery_uploads as $i => $up)
-                                <div wire:key="gallery-upload-{{ $i }}" class="relative">
-                                    <img src="{{ $up->temporaryUrl() }}" class="w-full h-20 object-cover rounded-lg ring-2 ring-orange-400">
-                                    <button type="button" wire:click="removeUpload({{ $i }})"
+                                <div wire:key="gallery-upload-{{ $up->getFilename() }}" data-sortable data-index="{{ $i }}"
+                                    class="relative cursor-move select-none">
+                                    <img src="{{ $up->temporaryUrl() }}" class="w-full h-20 object-cover rounded-lg ring-2 ring-orange-400 pointer-events-none">
+                                    @if ($i === 0 && ! count($existing_gallery))
+                                        <span class="absolute bottom-1 left-1 bg-orange-600 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">SAMPUL</span>
+                                    @endif
+                                    <button type="button" wire:click="removeNewUpload({{ $i }})"
                                         class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow z-10">&times;</button>
                                 </div>
                             @endforeach
@@ -205,10 +230,6 @@
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-
-                @assets
-                    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
-                @endassets
             </div>
         @endif
     </div>

@@ -54,7 +54,9 @@ class RoomTypeForm extends Component
         }
     }
 
-    public function removeUpload(int $index): void
+    // Renamed from removeUpload() to avoid colliding with the reserved
+    // WithFileUploads magic action `_removeUpload` (caused a 500 in the browser).
+    public function removeNewUpload(int $index): void
     {
         if (isset($this->image_uploads[$index])) {
             unset($this->image_uploads[$index]);

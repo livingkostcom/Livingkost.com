@@ -70,9 +70,9 @@
                     </div>
                 @endforeach
                 @foreach ($image_uploads as $i => $up)
-                    <div class="relative">
+                    <div wire:key="rt-upload-{{ $up->getFilename() }}" class="relative">
                         <img src="{{ $up->temporaryUrl() }}" class="w-full h-24 object-cover rounded-lg ring-2 ring-orange-400">
-                        <button type="button" wire:click="removeUpload({{ $i }})"
+                        <button type="button" wire:click="removeNewUpload({{ $i }})"
                             class="absolute -top-1.5 -right-1.5 bg-red-600 text-white w-5 h-5 rounded-full text-xs leading-none flex items-center justify-center shadow">&times;</button>
                     </div>
                 @endforeach
