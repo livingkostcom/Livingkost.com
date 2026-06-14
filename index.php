@@ -124,6 +124,15 @@ function lk_fa_icon($label)
             background-size: cover;
             background-position: center;
         }
+        /* Rekomendasi Kost — filter pills */
+        .lk-pill {
+            padding: .5rem 1rem; border-radius: 9999px; font-size: .8rem; font-weight: 600;
+            border: 1px solid #e5e7eb; color: #374151; background: #fff;
+            transition: all .2s ease; cursor: pointer; white-space: nowrap;
+        }
+        .lk-pill:hover { border-color: #f97316; color: #f97316; }
+        .lk-pill-active, .lk-pill-active:hover { background: #f97316; border-color: #f97316; color: #fff; }
+        .lk-card { transition: opacity .2s ease; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-800">
@@ -212,14 +221,60 @@ function lk_fa_icon($label)
 
     <section id="rekomendasi" class="bg-white py-20 px-6 scroll-mt-24">
         <div class="max-w-7xl mx-auto">
-            <div class="flex justify-between items-end mb-10">
+            <?php
+                // --- Tier 2 filters: derive areas & gender types from the featured set ---
+                $lk_areas = [];
+                $lk_genders = [];
+                foreach ($lk_featured as $kost) {
+                    $loc = trim($kost['location_label'] ?? '');
+                    if ($loc !== '' && !in_array($loc, $lk_areas, true)) { $lk_areas[] = $loc; }
+                    $g = $kost['gender_type'] ?? '';
+                    if ($g !== '' && !in_array($g, $lk_genders, true)) { $lk_genders[] = $g; }
+                }
+                sort($lk_areas);
+                // Keep a sensible gender order
+                $lk_genders = array_values(array_intersect(['putra', 'putri', 'putra_putri'], $lk_genders));
+                $lk_show_filters = count($lk_featured) >= 3;
+                $lk_gender_labels = ['putra' => 'Putra', 'putri' => 'Putri', 'putra_putri' => 'Putra & Putri'];
+            ?>
+            <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-5 mb-8">
                 <div>
                     <h2 class="text-3xl font-bold">Rekomendasi Kost</h2>
                     <p class="text-gray-500">Pilihan terbaik untuk kenyamanan maksimal.</p>
                 </div>
+                <?php if ($lk_show_filters): ?>
+                    <div class="relative w-full md:w-72">
+                        <i class="fas fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm"></i>
+                        <input id="lk-search" type="text" placeholder="Cari nama atau lokasi kost..."
+                            class="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none text-sm">
+                    </div>
+                <?php endif; ?>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <?php if ($lk_show_filters && (count($lk_areas) >= 2 || count($lk_genders) >= 2)): ?>
+                <div class="mb-10 space-y-3">
+                    <?php if (count($lk_areas) >= 2): ?>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Area</span>
+                            <button type="button" data-filter="area" data-value="" class="lk-pill lk-pill-active">Semua</button>
+                            <?php foreach ($lk_areas as $area): ?>
+                                <button type="button" data-filter="area" data-value="<?= htmlspecialchars(mb_strtolower($area), ENT_QUOTES) ?>" class="lk-pill"><?= htmlspecialchars(trim(explode(',', $area)[0]), ENT_QUOTES) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (count($lk_genders) >= 2): ?>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Tipe</span>
+                            <button type="button" data-filter="gender" data-value="" class="lk-pill lk-pill-active">Semua</button>
+                            <?php foreach ($lk_genders as $g): ?>
+                                <button type="button" data-filter="gender" data-value="<?= htmlspecialchars($g, ENT_QUOTES) ?>" class="lk-pill"><?= htmlspecialchars($lk_gender_labels[$g] ?? $g, ENT_QUOTES) ?></button>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <div id="lk-grid" class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <?php if (!empty($lk_featured)): ?>
                     <?php foreach ($lk_featured as $kost): ?>
                         <?php
@@ -233,7 +288,10 @@ function lk_fa_icon($label)
                                 ? '/images/' . htmlspecialchars($kost['featured_image'], ENT_QUOTES)
                                 : 'https://placehold.co/800x600/f97316/ffffff?text=Living+Kost';
                         ?>
-                        <a href="/detail?id=<?= (int) $kost['id'] ?>" class="group block h-full">
+                        <a href="/detail?id=<?= (int) $kost['id'] ?>" class="lk-card group block h-full"
+                            data-name="<?= htmlspecialchars(mb_strtolower($kost['name'] ?? ''), ENT_QUOTES) ?>"
+                            data-area="<?= htmlspecialchars(mb_strtolower(trim($kost['location_label'] ?? '')), ENT_QUOTES) ?>"
+                            data-gender="<?= htmlspecialchars($kost['gender_type'] ?? '', ENT_QUOTES) ?>">
                         <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
                             <div class="relative overflow-hidden">
                                 <img src="<?= $img ?>" alt="<?= htmlspecialchars($kost['name'], ENT_QUOTES) ?>" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">
@@ -284,6 +342,16 @@ function lk_fa_icon($label)
                     </div>
                 <?php endif; ?>
             </div>
+
+            <?php if ($lk_show_filters): ?>
+                <div id="lk-empty" class="hidden text-center py-16">
+                    <i class="fas fa-magnifying-glass text-3xl text-gray-300 mb-4"></i>
+                    <p class="text-gray-500 mb-5">Tidak ada kost yang cocok dengan pilihanmu.</p>
+                    <a href="https://wa.me/6285161180441?text=Halo%20Admin%2C%20saya%20mencari%20kost%20dengan%20kriteria%20tertentu%2C%20boleh%20dibantu%3F" class="inline-flex items-center gap-2 bg-green-500 text-white px-6 py-3 rounded-full font-bold text-sm hover:bg-green-600 transition shadow-lg shadow-green-900/20">
+                        <i class="fab fa-whatsapp text-lg"></i> Tanya Admin untuk pilihan lain
+                    </a>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 
@@ -453,5 +521,49 @@ function lk_fa_icon($label)
         </div>
     </footer>
 
+    <script>
+        // Rekomendasi Kost — instant client-side filtering (area + tipe + search)
+        (function () {
+            var grid = document.getElementById('lk-grid');
+            if (!grid) return;
+            var cards = Array.prototype.slice.call(grid.querySelectorAll('.lk-card'));
+            if (!cards.length) return;
+            var searchInput = document.getElementById('lk-search');
+            var emptyBox = document.getElementById('lk-empty');
+            var state = { area: '', gender: '', q: '' };
+
+            function apply() {
+                var visible = 0;
+                cards.forEach(function (c) {
+                    var okArea = !state.area || c.dataset.area === state.area;
+                    var okGender = !state.gender || c.dataset.gender === state.gender;
+                    var okQ = !state.q || (c.dataset.name.indexOf(state.q) !== -1 || c.dataset.area.indexOf(state.q) !== -1);
+                    var show = okArea && okGender && okQ;
+                    c.style.display = show ? '' : 'none';
+                    if (show) visible++;
+                });
+                if (emptyBox) emptyBox.classList.toggle('hidden', visible > 0);
+            }
+
+            document.querySelectorAll('[data-filter]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var type = btn.dataset.filter;
+                    state[type] = btn.dataset.value;
+                    document.querySelectorAll('[data-filter="' + type + '"]').forEach(function (b) {
+                        b.classList.remove('lk-pill-active');
+                    });
+                    btn.classList.add('lk-pill-active');
+                    apply();
+                });
+            });
+
+            if (searchInput) {
+                searchInput.addEventListener('input', function () {
+                    state.q = searchInput.value.trim().toLowerCase();
+                    apply();
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
