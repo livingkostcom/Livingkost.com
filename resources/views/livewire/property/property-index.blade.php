@@ -56,6 +56,11 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
                             Alamat
                         </th>
+                        @if (auth()->user()->isSuperAdmin())
+                            <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
+                                Owner
+                            </th>
+                        @endif
                         <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wide whitespace-nowrap">
                             Ruangan
                         </th>
@@ -89,6 +94,17 @@
                             <td class="px-6 py-4">
                                 <p class="text-gray-600 text-sm">{{ $property->address }}</p>
                             </td>
+                            @if (auth()->user()->isSuperAdmin())
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if ($property->owner)
+                                        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                                            {{ $property->owner->name }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-400 italic">Belum ada</span>
+                                    @endif
+                                </td>
+                            @endif
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span
                                     class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium bg-orange-100 text-orange-800">
@@ -133,7 +149,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
+                            <td colspan="{{ auth()->user()->isSuperAdmin() ? 6 : 5 }}" class="px-6 py-12 text-center">
                                 <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

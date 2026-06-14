@@ -1,4 +1,25 @@
 <form wire:submit.prevent="save" class="space-y-4">
+    {{-- Owner assignment — super-admin only. Lets the Living Kost admin create a
+         property on behalf of an owner (e.g. owners who aren't tech-savvy). --}}
+    @if (auth()->user()->isSuperAdmin())
+        <div class="p-4 rounded-xl bg-orange-50 border border-orange-200">
+            <label for="owner_id" class="block text-sm font-semibold text-gray-700 mb-2">
+                Pemilik (Owner) <span class="text-red-600">*</span>
+            </label>
+            <select wire:model="owner_id" id="owner_id"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('owner_id') border-red-500 @enderror">
+                <option value="">— Pilih owner —</option>
+                @foreach ($owners as $owner)
+                    <option value="{{ $owner->id }}">{{ $owner->name }} ({{ $owner->email }})</option>
+                @endforeach
+            </select>
+            <p class="mt-1 text-xs text-gray-500">Property ini akan dibuatkan untuk owner yang dipilih.</p>
+            @error('owner_id')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+        </div>
+    @endif
+
     <!-- Name Input -->
     <div>
         <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">

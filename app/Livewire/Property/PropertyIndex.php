@@ -84,7 +84,7 @@ class PropertyIndex extends Component
 
     public function render()
     {
-        $query = Property::query();
+        $query = Property::query()->with('owner');
 
         if ($this->search) {
             $query->where('name', 'like', "%{$this->search}%")

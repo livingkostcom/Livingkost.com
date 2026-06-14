@@ -3,6 +3,9 @@
 namespace App\Livewire\Property;
 
 use App\Models\Property;
+use App\Models\RoomType;
+use App\Models\Room;
+use App\Models\User;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -11,6 +14,10 @@ class PropertyForm extends Component
     use WithFileUploads;
 
     public ?int $propertyId = null;
+
+    /** Owner this property belongs to. Only super-admins choose this; for owners
+     *  it is stamped automatically by the BelongsToOwner trait. */
+    public ?int $owner_id = null;
 
     #[\Livewire\Attributes\Validate('required|string|max:255')]
     public string $name = '';
@@ -57,6 +64,7 @@ class PropertyForm extends Component
         if ($propertyId) {
             $property = Property::findOrFail($propertyId);
             $this->authorize('update', $property);
+            $this->owner_id = $property->owner_id;
             $this->name = $property->name;
             $this->address = $property->address;
             $this->description = $property->description ?? '';
@@ -91,6 +99,14 @@ class PropertyForm extends Component
     public function save()
     {
         $this->validate();
+
+        // Super-admins must pick which owner this property belongs to.
+        $isSuperAdmin = auth()->user()->isSuperAdmin();
+        if ($isSuperAdmin) {
+            $this->validate([
+                'owner_id' => ['required', 'integer', \Illuminate\Validation\Rule::exists('users', 'id')],
+            ], [], ['owner_id' => 'pemilik (owner)']);
+        }
 
         if (!empty($this->gallery_uploads)) {
             $this->validate(['gallery_uploads.*' => 'image|max:2048']);
@@ -130,10 +146,27 @@ class PropertyForm extends Component
         }
         $data['gallery'] = !empty($gallery) ? array_values($gallery) : null;
 
+        // A super-admin explicitly assigns the owner; the BelongsToOwner trait
+        // preserves a pre-set owner_id and only auto-stamps for non-super-admins.
+        if ($isSuperAdmin) {
+            $data['owner_id'] = $this->owner_id;
+        }
+
         if ($this->propertyId) {
             $property = Property::findOrFail($this->propertyId);
             $this->authorize('update', $property);
+            $previousOwnerId = $property->owner_id;
             $property->update($data);
+
+            // If a super-admin reassigned the property to a different owner,
+            // cascade the new owner_id to its room types and rooms so they stay
+            // visible to (and owned by) the new owner under the tenant scope.
+            if ($isSuperAdmin && $this->owner_id != $previousOwnerId) {
+                RoomType::where('property_id', $property->id)->update(['owner_id' => $this->owner_id]);
+                Room::whereIn('room_type_id', RoomType::where('property_id', $property->id)->pluck('id'))
+                    ->update(['owner_id' => $this->owner_id]);
+            }
+
             session()->flash('message', 'Property berhasil diperbarui!');
         } else {
             $this->authorize('create', Property::class);
@@ -146,6 +179,14 @@ class PropertyForm extends Component
 
     public function render()
     {
-        return view('livewire.property.property-form');
+        // Owner picker is only relevant for super-admins creating/editing on
+        // behalf of an owner.
+        $owners = auth()->user()->isSuperAdmin()
+            ? User::role('owner')->orderBy('name')->get(['id', 'name', 'email'])
+            : collect();
+
+        return view('livewire.property.property-form', [
+            'owners' => $owners,
+        ]);
     }
 }

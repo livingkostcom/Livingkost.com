@@ -91,6 +91,14 @@ class RoomTypeForm extends Component
             'images' => !empty($images) ? array_values($images) : null,
         ];
 
+        // Inherit the owner from the parent property. Critical for super-admins:
+        // they aren't auto-stamped by BelongsToOwner, so without this the room
+        // type would have a null owner and be invisible under the tenant scope.
+        $parent = Property::find($this->property_id);
+        if ($parent) {
+            $data['owner_id'] = $parent->owner_id;
+        }
+
         if ($this->roomTypeId) {
             $roomType = RoomType::findOrFail($this->roomTypeId);
             $this->authorize('update', $roomType);

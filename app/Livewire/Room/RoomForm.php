@@ -61,24 +61,28 @@ class RoomForm extends Component
     {
         $this->validate();
 
+        $data = [
+            'room_type_id' => $this->room_type_id,
+            'room_number' => $this->room_number,
+            'floor' => $this->floor,
+            'status' => $this->status,
+        ];
+
+        // Inherit the owner from the room type (which inherits it from the
+        // property). Needed so super-admin-created rooms get a non-null owner.
+        $roomType = RoomType::find($this->room_type_id);
+        if ($roomType) {
+            $data['owner_id'] = $roomType->owner_id;
+        }
+
         if ($this->roomId) {
             $room = Room::findOrFail($this->roomId);
             $this->authorize('update', $room);
-            $room->update([
-                'room_type_id' => $this->room_type_id,
-                'room_number' => $this->room_number,
-                'floor' => $this->floor,
-                'status' => $this->status,
-            ]);
+            $room->update($data);
             $message = 'Ruangan berhasil diperbarui!';
         } else {
             $this->authorize('create', Room::class);
-            Room::create([
-                'room_type_id' => $this->room_type_id,
-                'room_number' => $this->room_number,
-                'floor' => $this->floor,
-                'status' => $this->status,
-            ]);
+            Room::create($data);
             $message = 'Ruangan berhasil dibuat!';
         }
 
