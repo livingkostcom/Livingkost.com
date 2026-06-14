@@ -42,27 +42,34 @@ if (is_readable($lk_envPath)) {
             if ($lk_stmt) {
                 $lk_featured = $lk_stmt->fetchAll(PDO::FETCH_ASSOC);
             }
-
-            // --- Trust band: real stats from the database (fail-safe) ---
-            $lk_stats['properties'] = (int) ($lk_pdo->query(
-                "SELECT COUNT(*) FROM properties WHERE status = 'active'"
-            )->fetchColumn() ?: 0);
-            $lk_stats['rooms_available'] = (int) ($lk_pdo->query(
-                "SELECT COUNT(*) FROM rooms r
-                 JOIN room_types rt ON r.room_type_id = rt.id
-                 JOIN properties p ON rt.property_id = p.id
-                 WHERE p.status = 'active' AND r.status = 'available'
-                 AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')"
-            )->fetchColumn() ?: 0);
-            $lk_stats['areas'] = (int) ($lk_pdo->query(
-                "SELECT COUNT(DISTINCT location_label) FROM properties
-                 WHERE status = 'active' AND location_label IS NOT NULL AND location_label <> ''"
-            )->fetchColumn() ?: 0);
-            $lk_stats['tenants'] = (int) ($lk_pdo->query(
-                "SELECT COUNT(*) FROM leases WHERE status = 'active'"
-            )->fetchColumn() ?: 0);
         } catch (\Throwable $e) {
             $lk_featured = [];
+        }
+
+        // --- Trust band: real stats from the DB. Kept in its OWN try/catch so a
+        // stats failure can never blank out the featured listings above. ---
+        if (isset($lk_pdo)) {
+            try {
+                $lk_stats['properties'] = (int) ($lk_pdo->query(
+                    "SELECT COUNT(*) FROM properties WHERE status = 'active'"
+                )->fetchColumn() ?: 0);
+                $lk_stats['rooms_available'] = (int) ($lk_pdo->query(
+                    "SELECT COUNT(*) FROM rooms r
+                     JOIN room_types rt ON r.room_type_id = rt.id
+                     JOIN properties p ON rt.property_id = p.id
+                     WHERE p.status = 'active' AND r.status = 'available'
+                     AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')"
+                )->fetchColumn() ?: 0);
+                $lk_stats['areas'] = (int) ($lk_pdo->query(
+                    "SELECT COUNT(DISTINCT location_label) FROM properties
+                     WHERE status = 'active' AND location_label IS NOT NULL AND location_label <> ''"
+                )->fetchColumn() ?: 0);
+                $lk_stats['tenants'] = (int) ($lk_pdo->query(
+                    "SELECT COUNT(*) FROM leases WHERE status = 'active'"
+                )->fetchColumn() ?: 0);
+            } catch (\Throwable $e) {
+                $lk_stats = [];
+            }
         }
     }
 }
