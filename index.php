@@ -42,10 +42,34 @@ if (is_readable($lk_envPath)) {
             if ($lk_stmt) {
                 $lk_featured = $lk_stmt->fetchAll(PDO::FETCH_ASSOC);
             }
+
+            // --- Trust band: real stats from the database (fail-safe) ---
+            $lk_stats['properties'] = (int) ($lk_pdo->query(
+                "SELECT COUNT(*) FROM properties WHERE status = 'active'"
+            )->fetchColumn() ?: 0);
+            $lk_stats['rooms_available'] = (int) ($lk_pdo->query(
+                "SELECT COUNT(*) FROM rooms r
+                 JOIN room_types rt ON r.room_type_id = rt.id
+                 JOIN properties p ON rt.property_id = p.id
+                 WHERE p.status = 'active' AND r.status = 'available'
+                 AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')"
+            )->fetchColumn() ?: 0);
+            $lk_stats['areas'] = (int) ($lk_pdo->query(
+                "SELECT COUNT(DISTINCT location_label) FROM properties
+                 WHERE status = 'active' AND location_label IS NOT NULL AND location_label <> ''"
+            )->fetchColumn() ?: 0);
+            $lk_stats['tenants'] = (int) ($lk_pdo->query(
+                "SELECT COUNT(*) FROM leases WHERE status = 'active'"
+            )->fetchColumn() ?: 0);
         } catch (\Throwable $e) {
             $lk_featured = [];
         }
     }
+}
+
+// Trust-band stats fall back to an empty set if the DB is unreachable.
+if (!isset($lk_stats)) {
+    $lk_stats = [];
 }
 
 // Map a facility label to a Font Awesome icon (kept in sync with detail.php).
@@ -110,10 +134,47 @@ function lk_fa_icon($label)
     </nav>
 
     <header class="hero-bg h-[85vh] flex flex-col justify-center items-center text-center px-4">
-        <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4">Kost Nyaman, Senyaman Di Rumah</h1>
+        <span class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-white text-xs sm:text-sm font-semibold px-4 py-1.5 rounded-full mb-6">
+            <i class="fas fa-circle-check text-green-400"></i> Properti terverifikasi &bull; Tanpa perantara
+        </span>
+        <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight">Kost Nyaman, Senyaman Di Rumah</h1>
         <p class="text-lg md:text-xl text-white opacity-90 mb-8 max-w-2xl">Hunian eksklusif dengan fasilitas lengkap di lokasi paling strategis</p>
-        
+
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <a href="#rekomendasi" class="inline-flex items-center justify-center bg-orange-600 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-orange-700 transition shadow-xl shadow-orange-900/30">
+                <i class="fas fa-bed mr-3"></i> Lihat Pilihan Kamar
+            </a>
+            <a href="https://wa.me/6285161180441?text=Halo%20Admin%2C%20boleh%20informasinya%20mengenai%20kosan%20yang%20tersedia%20dan%20promonya%3F" class="inline-flex items-center justify-center bg-white/10 backdrop-blur-sm border border-white/30 text-white px-8 py-4 rounded-full font-bold text-lg hover:bg-white/20 transition">
+                <i class="fab fa-whatsapp text-xl mr-3"></i> Tanya Admin
+            </a>
+        </div>
     </header>
+
+    <?php
+        // Build trust-band items from real data; only show stats that make sense.
+        $lk_band = [];
+        if (!empty($lk_stats['properties']))      $lk_band[] = ['icon' => 'fa-house', 'value' => $lk_stats['properties'] . '+', 'label' => 'Kost Aktif'];
+        if (!empty($lk_stats['rooms_available'])) $lk_band[] = ['icon' => 'fa-door-open', 'value' => $lk_stats['rooms_available'] . '+', 'label' => 'Kamar Tersedia'];
+        if (!empty($lk_stats['areas']))           $lk_band[] = ['icon' => 'fa-location-dot', 'value' => $lk_stats['areas'] . '+', 'label' => 'Lokasi Strategis'];
+        if (!empty($lk_stats['tenants']))         $lk_band[] = ['icon' => 'fa-users', 'value' => $lk_stats['tenants'] . '+', 'label' => 'Penghuni Aktif'];
+    ?>
+    <?php if (!empty($lk_band)): ?>
+    <section class="px-6 -mt-16 relative z-20">
+        <div class="max-w-5xl mx-auto bg-white rounded-3xl shadow-xl border border-gray-100 px-6 py-8">
+            <div class="grid grid-cols-2 md:grid-cols-<?= count($lk_band) ?> gap-6 md:divide-x md:divide-gray-100">
+                <?php foreach ($lk_band as $stat): ?>
+                    <div class="text-center px-2">
+                        <div class="w-12 h-12 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-3">
+                            <i class="fas <?= $stat['icon'] ?> text-orange-600 text-lg"></i>
+                        </div>
+                        <p class="text-2xl md:text-3xl font-extrabold text-gray-900"><?= htmlspecialchars($stat['value'], ENT_QUOTES) ?></p>
+                        <p class="text-xs uppercase tracking-wider text-gray-500 font-semibold mt-1"><?= htmlspecialchars($stat['label'], ENT_QUOTES) ?></p>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </section>
+    <?php endif; ?>
 
     <section class="py-20 px-6 max-w-7xl mx-auto">
         <h2 class="text-3xl font-bold text-center mb-12">Kenapa Pilih Living Kost?</h2>
@@ -165,20 +226,23 @@ function lk_fa_icon($label)
                                 ? '/images/' . htmlspecialchars($kost['featured_image'], ENT_QUOTES)
                                 : 'https://placehold.co/800x600/f97316/ffffff?text=Living+Kost';
                         ?>
-                        <a href="/detail?id=<?= (int) $kost['id'] ?>">
-                        <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition h-full">
-                            <div class="relative">
-                                <img src="<?= $img ?>" alt="<?= htmlspecialchars($kost['name'], ENT_QUOTES) ?>" class="w-full h-64 object-cover">
+                        <a href="/detail?id=<?= (int) $kost['id'] ?>" class="group block h-full">
+                        <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full flex flex-col">
+                            <div class="relative overflow-hidden">
+                                <img src="<?= $img ?>" alt="<?= htmlspecialchars($kost['name'], ENT_QUOTES) ?>" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500">
                                 <?php $avail = (int)($kost['available_rooms'] ?? 0); ?>
-                                <span class="absolute top-4 left-4 <?= $avail > 0 ? 'bg-green-600' : 'bg-gray-500' ?> text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                                <span class="absolute top-4 left-4 <?= $avail > 0 ? 'bg-green-600' : 'bg-gray-500' ?> text-white text-xs font-bold px-3 py-1 rounded-full uppercase shadow">
                                     <?= $avail > 0 ? 'Tersedia ' . $avail . ' Kamar' : 'Tidak Tersedia' ?>
                                 </span>
+                                <span class="absolute top-4 right-4 inline-flex items-center gap-1 bg-white/95 backdrop-blur text-gray-800 text-xs font-bold px-3 py-1 rounded-full shadow">
+                                    <i class="fas fa-circle-check text-green-600"></i> Terverifikasi
+                                </span>
                             </div>
-                            <div class="p-6">
+                            <div class="p-6 flex flex-col flex-1">
                                 <?php if (!empty($kost['location_label'])): ?>
-                                    <p class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-1"><?= htmlspecialchars($kost['location_label'], ENT_QUOTES) ?></p>
+                                    <p class="text-orange-600 font-bold text-xs uppercase tracking-widest mb-1"><i class="fas fa-location-dot mr-1"></i><?= htmlspecialchars($kost['location_label'], ENT_QUOTES) ?></p>
                                 <?php endif; ?>
-                                <h4 class="text-xl font-bold mb-2 text-gray-900"><?= htmlspecialchars($kost['name'], ENT_QUOTES) ?></h4>
+                                <h4 class="text-xl font-bold mb-2 text-gray-900 group-hover:text-orange-600 transition"><?= htmlspecialchars($kost['name'], ENT_QUOTES) ?></h4>
                                 <?php
                                     $gt = $kost['gender_type'] ?? '';
                                     $gtLabel = match($gt) { 'putra' => 'Putra', 'putri' => 'Putri', 'putra_putri' => 'Putra & Putri', default => '' };
@@ -194,8 +258,14 @@ function lk_fa_icon($label)
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
-                                <div class="flex justify-between items-center border-t pt-4">
-                                    <p class="text-gray-900 font-bold"><?= $price ?> <span class="text-gray-400 font-normal text-sm">/ bln</span></p>
+                                <div class="flex justify-between items-center border-t pt-4 mt-auto">
+                                    <div>
+                                        <p class="text-[11px] text-gray-400 uppercase tracking-wider font-semibold">Mulai dari</p>
+                                        <p class="text-gray-900 font-extrabold text-lg"><?= $price ?> <span class="text-gray-400 font-normal text-sm">/ bln</span></p>
+                                    </div>
+                                    <span class="inline-flex items-center text-orange-600 font-bold text-sm whitespace-nowrap">
+                                        Lihat Detail <i class="fas fa-arrow-right ml-1 group-hover:translate-x-1 transition-transform"></i>
+                                    </span>
                                 </div>
                             </div>
                         </div>
