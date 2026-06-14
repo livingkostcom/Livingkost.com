@@ -2,8 +2,11 @@
 
 namespace App\Livewire\Admin;
 
+use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Lease;
+use App\Models\OwnerWallet;
+use App\Models\PaymentTransaction;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\Tenant;
@@ -60,10 +63,30 @@ class ReportIndex extends Component
         $pending = $invoices->where('status', 'pending');
         $unpaid = $invoices->where('status', 'unpaid');
 
+        $paidAmount = (float) $paid->sum('amount');
+
+        // Net income for this month = collected − expenses − platform fee
+        $monthStart = Carbon::createFromFormat('Y-m', $this->monthYear)->startOfMonth();
+        $monthEnd = (clone $monthStart)->endOfMonth();
+        $expenses = (float) Expense::whereBetween('expense_date', [$monthStart, $monthEnd])->sum('amount');
+
+        $ownerId = Auth::user()->ownerId();
+        $feePercent = (float) (OwnerWallet::where('owner_id', $ownerId)->value('platform_fee_percent') ?? 0);
+        $onlineGross = $ownerId
+            ? (float) PaymentTransaction::where('owner_id', $ownerId)
+                ->where('status', 'paid')
+                ->whereBetween('paid_at', [$monthStart, $monthEnd])
+                ->sum('amount')
+            : 0;
+        $platformFee = round($onlineGross * $feePercent / 100, 2);
+
         return [
             'invoices' => $invoices,
             'total_amount' => $invoices->sum('amount'),
-            'paid_amount' => $paid->sum('amount'),
+            'paid_amount' => $paidAmount,
+            'expenses' => $expenses,
+            'platform_fee' => $platformFee,
+            'net_income' => $paidAmount - $expenses - $platformFee,
             'pending_amount' => $pending->sum('amount'),
             'unpaid_amount' => $unpaid->sum('amount'),
             'paid_count' => $paid->count(),

@@ -2,7 +2,10 @@
 
 namespace App\Livewire\Admin\Analytics;
 
+use App\Models\Expense;
 use App\Models\Invoice;
+use App\Models\OwnerWallet;
+use App\Models\PaymentTransaction;
 use Livewire\Component;
 use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
@@ -58,8 +61,27 @@ class IncomeAnalyticsIndex extends Component
 
         $totalQuery = Invoice::whereBetween('created_at', [$startDate, $endDate]);
 
+        $received = (float) $paidQuery->sum('amount');
+
+        // Expenses in the same period
+        $expenses = (float) Expense::whereBetween('expense_date', [$startDate, $endDate])->sum('amount');
+
+        // Platform fee on online (DOKU) payments settled in this period
+        $ownerId = Auth::user()->ownerId();
+        $feePercent = (float) (OwnerWallet::where('owner_id', $ownerId)->value('platform_fee_percent') ?? 0);
+        $onlineGross = $ownerId
+            ? (float) PaymentTransaction::where('owner_id', $ownerId)
+                ->where('status', 'paid')
+                ->whereBetween('paid_at', [$startDate, $endDate])
+                ->sum('amount')
+            : 0;
+        $platformFee = round($onlineGross * $feePercent / 100, 2);
+
         return [
-            'received' => $paidQuery->sum('amount'),
+            'received' => $received,
+            'expenses' => $expenses,
+            'platform_fee' => $platformFee,
+            'net_income' => $received - $expenses - $platformFee,
             'pending_count' => $pendingQuery->count(),
             'pending_amount' => $pendingQuery->sum('amount'),
             'unpaid_count' => $unpaidQuery->count(),

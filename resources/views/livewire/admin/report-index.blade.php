@@ -141,6 +141,23 @@
                 </div>
             </div>
 
+            {{-- Net Income --}}
+            <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-4 mb-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                    <div>
+                        <p class="text-xs text-gray-500 font-medium">Pendapatan Bersih Bulan Ini</p>
+                        <p class="text-2xl font-bold {{ $paymentRecap['net_income'] >= 0 ? 'text-emerald-600' : 'text-red-600' }} mt-1">
+                            Rp {{ number_format($paymentRecap['net_income'], 0, ',', '.') }}
+                        </p>
+                    </div>
+                    <div class="grid grid-cols-3 gap-4 text-xs">
+                        <div><p class="text-gray-500">Terkumpul</p><p class="font-bold text-gray-800 whitespace-nowrap">Rp {{ number_format($paymentRecap['paid_amount'], 0, ',', '.') }}</p></div>
+                        <div><p class="text-gray-500">Pengeluaran</p><p class="font-bold text-red-500 whitespace-nowrap">− Rp {{ number_format($paymentRecap['expenses'], 0, ',', '.') }}</p></div>
+                        <div><p class="text-gray-500">Fee platform</p><p class="font-bold text-red-500 whitespace-nowrap">− Rp {{ number_format($paymentRecap['platform_fee'], 0, ',', '.') }}</p></div>
+                    </div>
+                </div>
+            </div>
+
             {{-- Collection Rate --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
                 <div class="flex items-center justify-between mb-2">

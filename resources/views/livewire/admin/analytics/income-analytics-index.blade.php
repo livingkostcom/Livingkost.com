@@ -46,6 +46,33 @@
         </div>
     </div>
 
+    <!-- Net Income Banner -->
+    <div class="bg-white rounded-2xl shadow-md border border-emerald-200 p-6 mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+            <div>
+                <p class="text-sm text-gray-500">Pendapatan Bersih (periode dipilih)</p>
+                <p class="text-3xl sm:text-4xl font-bold {{ $summary['net_income'] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                    Rp {{ number_format($summary['net_income'], 0, ',', '.') }}
+                </p>
+                <p class="text-xs text-gray-400 mt-1">Pendapatan diterima dikurangi pengeluaran &amp; fee platform</p>
+            </div>
+            <div class="grid grid-cols-3 gap-4 sm:gap-6 text-sm">
+                <div>
+                    <p class="text-gray-500">Kotor</p>
+                    <p class="font-bold text-gray-900 whitespace-nowrap">Rp {{ number_format($summary['received'], 0, ',', '.') }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Pengeluaran</p>
+                    <p class="font-bold text-red-500 whitespace-nowrap">− Rp {{ number_format($summary['expenses'], 0, ',', '.') }}</p>
+                </div>
+                <div>
+                    <p class="text-gray-500">Fee platform</p>
+                    <p class="font-bold text-red-500 whitespace-nowrap">− Rp {{ number_format($summary['platform_fee'], 0, ',', '.') }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Summary Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Received -->
