@@ -46,6 +46,32 @@ if (is_readable($lk_envPath)) {
         }
     }
 }
+
+// Map a facility label to a Font Awesome icon (kept in sync with detail.php).
+function lk_fa_icon($label)
+{
+    $l = strtolower(trim($label));
+    $map = [
+        'ac' => 'fa-snowflake', 'pendingin' => 'fa-snowflake',
+        'wifi' => 'fa-wifi', 'internet' => 'fa-wifi',
+        'kasur' => 'fa-bed', 'bed' => 'fa-bed', 'tidur' => 'fa-bed',
+        'mandi' => 'fa-shower', 'shower' => 'fa-shower',
+        'kloset' => 'fa-toilet', 'toilet' => 'fa-toilet', 'wc' => 'fa-toilet',
+        'meja' => 'fa-briefcase', 'kerja' => 'fa-briefcase',
+        'lemari' => 'fa-box-archive',
+        'tv' => 'fa-tv',
+        'dapur' => 'fa-utensils',
+        'parkir' => 'fa-square-parking', 'garasi' => 'fa-square-parking',
+        'cuci' => 'fa-soap',
+        'air' => 'fa-droplet', 'kulkas' => 'fa-snowflake',
+    ];
+    foreach ($map as $kw => $icon) {
+        if (strpos($l, $kw) !== false) {
+            return $icon;
+        }
+    }
+    return 'fa-check';
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -159,7 +185,7 @@ if (is_readable($lk_envPath)) {
                                 <?php if (!empty($facs)): ?>
                                     <div class="flex flex-wrap items-center text-gray-500 text-sm mb-4 gap-x-4 gap-y-1">
                                         <?php foreach ($facs as $f): ?>
-                                            <span><i class="fas fa-check text-orange-500 mr-1"></i> <?= htmlspecialchars($f, ENT_QUOTES) ?></span>
+                                            <span><i class="fas <?= htmlspecialchars(lk_fa_icon($f), ENT_QUOTES) ?> text-orange-500 mr-1"></i> <?= htmlspecialchars($f, ENT_QUOTES) ?></span>
                                         <?php endforeach; ?>
                                     </div>
                                 <?php endif; ?>
