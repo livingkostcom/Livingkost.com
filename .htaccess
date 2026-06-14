@@ -29,5 +29,5 @@ AddType application/x-httpd-php82 .php
     RewriteRule ^ - [L]
 
     # --- Everything else -> Laravel (login, dashboard, livewire, etc.) ---
-    RewriteRule ^ public/index.php [L]
+    RewriteRule ^ /public/index.php [QSA,L]
 </IfModule>
