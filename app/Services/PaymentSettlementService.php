@@ -38,6 +38,9 @@ class PaymentSettlementService
                 'verified_at' => now(),
             ]);
 
+            // Successful online payment → auto-extend the contract end date by 1 month.
+            $invoice->lease?->extendByOneMonth();
+
             $pt->update([
                 'status' => 'paid',
                 'paid_at' => now(),
@@ -71,8 +74,14 @@ class PaymentSettlementService
                     ? "Receipt telah kami kirim ke email Anda: {$email}. Silakan cek email Anda."
                     : "Receipt telah kami kirim ke email Anda. Silakan cek email Anda.";
 
+                $endDate = $invoice->lease?->end_date;
+                $extendLine = $endDate
+                    ? "Kontrak sewa Anda otomatis diperpanjang hingga *{$endDate->format('d/m/Y')}*. \u{1F389}\n\n"
+                    : '';
+
                 $message = "Halo {$name},\n\n"
                     . "Pembayaran online Anda untuk tagihan *{$invoice->reference_number}* sebesar *{$amount}* telah *BERHASIL* dan terverifikasi otomatis. \u{2705}\n\n"
+                    . $extendLine
                     . "{$emailLine}\n\n"
                     . "Terima kasih.\n\n_Living Kost_";
 

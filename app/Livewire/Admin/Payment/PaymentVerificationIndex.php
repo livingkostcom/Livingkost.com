@@ -149,12 +149,20 @@ class PaymentVerificationIndex extends Component
             return;
         }
 
+        // Only a pending → paid transition should extend the lease (avoid double-counting).
+        $wasPending = $invoice->status === 'pending';
+
         try {
             $invoice->update([
                 'status' => 'paid',
                 'verified_at' => now(),
                 'verified_by' => Auth::id(),
             ]);
+
+            // Verified rent payment → auto-extend the contract end date by 1 month.
+            if ($wasPending) {
+                $invoice->lease?->extendByOneMonth();
+            }
 
             // Generate receipt (also e-mails the PDF receipt to the tenant)
             $invoice->generateReceipt(Auth::id());
@@ -192,8 +200,14 @@ class PaymentVerificationIndex extends Component
                 ? "Bukti pembayaran (receipt) telah kami kirim ke email Anda: {$email}. Silakan cek email Anda untuk melihat receipt-nya."
                 : "Bukti pembayaran (receipt) telah kami kirim ke email Anda. Silakan cek email Anda untuk melihat receipt-nya.";
 
+            $endDate = $invoice->lease?->end_date;
+            $extendLine = $endDate
+                ? "Kontrak sewa Anda otomatis diperpanjang hingga *{$endDate->format('d/m/Y')}*. \u{1F389}\n\n"
+                : '';
+
             $message = "Halo {$name},\n\n"
                 . "Pembayaran Anda untuk tagihan *{$invoice->reference_number}* sebesar *{$amount}* telah *DITERIMA* dan diverifikasi. \u{2705}\n\n"
+                . $extendLine
                 . "{$emailLine}\n\n"
                 . "Terima kasih.\n\n"
                 . "_Living Kost_";

@@ -44,4 +44,20 @@ class Lease extends Model
     {
         return $this->belongsTo(User::class, 'updated_by');
     }
+
+    /**
+     * Roll the contract end date forward by one month. Called when a monthly
+     * rent payment is verified (manual approval or online settlement) so the
+     * lease "paid until" date extends automatically. Uses no-overflow month
+     * math (e.g. Jan 31 + 1 month → Feb 28, not Mar 3). No-op if end_date unset.
+     */
+    public function extendByOneMonth(): void
+    {
+        if (! $this->end_date) {
+            return;
+        }
+
+        $this->end_date = $this->end_date->copy()->addMonthNoOverflow();
+        $this->save();
+    }
 }
