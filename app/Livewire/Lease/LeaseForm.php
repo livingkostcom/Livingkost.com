@@ -100,12 +100,12 @@ class LeaseForm extends Component
         if ($this->leaseId) {
             $lease = Lease::findOrFail($this->leaseId);
             $this->authorize('update', $lease);
-            $data['updated_by'] = auth()->user()->name;
+            // created_by/updated_by are user IDs (resolved via the creator/updater
+            // relationships) — LeaseObserver sets them from the auth user.
             $lease->update($data);
             $message = 'Kontrak berhasil diperbarui!';
         } else {
             $this->authorize('create', Lease::class);
-            $data['created_by'] = auth()->user()->name;
             Lease::create($data);
             $message = 'Kontrak berhasil dibuat!';
         }
