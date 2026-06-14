@@ -5,6 +5,8 @@ namespace App\Livewire\Room;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\Property;
+use Illuminate\Validation\Rule;
+use Illuminate\Database\QueryException;
 use Livewire\Component;
 
 class RoomForm extends Component
@@ -61,6 +63,19 @@ class RoomForm extends Component
     {
         $this->validate();
 
+        // Room number must be unique within its room type (matches the DB unique
+        // constraint on rooms[room_type_id, room_number]). Validating here turns
+        // a would-be 500 (QueryException) into a friendly field message.
+        $this->validate([
+            'room_number' => [
+                Rule::unique('rooms', 'room_number')
+                    ->where(fn ($q) => $q->where('room_type_id', $this->room_type_id))
+                    ->ignore($this->roomId),
+            ],
+        ], [
+            'room_number.unique' => 'Nomor ruangan "' . $this->room_number . '" sudah ada di tipe kamar ini. Silakan pakai nomor lain.',
+        ]);
+
         $data = [
             'room_type_id' => $this->room_type_id,
             'room_number' => $this->room_number,
@@ -75,15 +90,25 @@ class RoomForm extends Component
             $data['owner_id'] = $roomType->owner_id;
         }
 
-        if ($this->roomId) {
-            $room = Room::findOrFail($this->roomId);
-            $this->authorize('update', $room);
-            $room->update($data);
-            $message = 'Ruangan berhasil diperbarui!';
-        } else {
-            $this->authorize('create', Room::class);
-            Room::create($data);
-            $message = 'Ruangan berhasil dibuat!';
+        try {
+            if ($this->roomId) {
+                $room = Room::findOrFail($this->roomId);
+                $this->authorize('update', $room);
+                $room->update($data);
+                $message = 'Ruangan berhasil diperbarui!';
+            } else {
+                $this->authorize('create', Room::class);
+                Room::create($data);
+                $message = 'Ruangan berhasil dibuat!';
+            }
+        } catch (QueryException $e) {
+            // Safety net for a race condition slipping past validation (e.g. two
+            // submits at once): surface a field error instead of a 500.
+            if ($e->getCode() === '23000') {
+                $this->addError('room_number', 'Nomor ruangan "' . $this->room_number . '" sudah ada di tipe kamar ini. Silakan pakai nomor lain.');
+                return;
+            }
+            throw $e;
         }
 
         $this->dispatch('room-saved', message: $message);
