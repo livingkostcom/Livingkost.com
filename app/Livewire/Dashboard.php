@@ -244,6 +244,49 @@ class Dashboard extends Component
         return ['platform' => $platform, 'owners' => $rows];
     }
 
+    /**
+     * This month's payment status per tenant — who has paid vs not — so
+     * owner/manager can follow up on collection.
+     */
+    public function getMonthlyPaymentStatus(): array
+    {
+        $monthYear = now()->format('Y-m');
+
+        $invoices = Invoice::where('month_year', $monthYear)
+            ->with(['lease.tenant', 'lease.room'])
+            ->get();
+
+        $map = function ($invoice) {
+            $tenant = $invoice->lease?->tenant;
+            $phone = preg_replace('/[^0-9]/', '', (string) ($tenant->phone ?? ''));
+            if ($phone !== '' && str_starts_with($phone, '0')) {
+                $phone = '62' . substr($phone, 1);
+            }
+
+            return [
+                'name' => $tenant?->display_name ?? $tenant?->name ?? '-',
+                'room' => $invoice->lease?->room?->room_number ?? '-',
+                'amount' => (float) $invoice->amount,
+                'status' => $invoice->status,
+                'due_date' => $invoice->due_date,
+                'reference' => $invoice->reference_number,
+                'wa' => $phone,
+            ];
+        };
+
+        $paid = $invoices->where('status', 'paid')->map($map)->values();
+        $unpaid = $invoices->whereIn('status', ['unpaid', 'pending'])
+            ->sortBy('due_date')
+            ->map($map)
+            ->values();
+
+        return [
+            'month_label' => now()->translatedFormat('F Y'),
+            'paid' => $paid,
+            'unpaid' => $unpaid,
+        ];
+    }
+
     public function getUpcomingExpiringLeases()
     {
         return Lease::where('status', 'active')
@@ -278,6 +321,7 @@ class Dashboard extends Component
             $data['recentInvoices'] = $this->getRecentInvoices();
             $data['recentMaintenance'] = $this->getRecentMaintenance();
             $data['expiringLeases'] = $this->getUpcomingExpiringLeases();
+            $data['paymentStatus'] = $this->getMonthlyPaymentStatus();
         }
 
         if ($isTenant) {

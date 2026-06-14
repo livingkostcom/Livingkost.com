@@ -342,6 +342,72 @@
             </div>
         </div>
 
+        <!-- Status Pembayaran Bulan Ini -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Belum Bayar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h2 class="text-lg font-bold text-gray-800">Belum Bayar — {{ $paymentStatus['month_label'] }}</h2>
+                        <p class="text-sm text-gray-500">Bantu tagih lewat WhatsApp</p>
+                    </div>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold {{ $paymentStatus['unpaid']->count() > 0 ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700' }}">{{ $paymentStatus['unpaid']->count() }}</span>
+                </div>
+                <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                    @forelse ($paymentStatus['unpaid'] as $row)
+                        <div class="px-6 py-3 flex items-center justify-between gap-3 hover:bg-red-50/40 transition">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-gray-900 truncate">{{ $row['name'] }}</p>
+                                <p class="text-xs text-gray-500">Kamar {{ $row['room'] }} · Rp {{ number_format($row['amount'], 0, ',', '.') }}
+                                    @if ($row['status'] === 'pending')
+                                        · <span class="text-yellow-600 font-medium">menunggu verifikasi</span>
+                                    @elseif ($row['due_date'])
+                                        · jatuh tempo {{ $row['due_date']->translatedFormat('d M') }}
+                                    @endif
+                                </p>
+                            </div>
+                            @if ($row['wa'])
+                                <a href="https://wa.me/{{ $row['wa'] }}?text={{ rawurlencode('Halo ' . $row['name'] . ', mengingatkan tagihan kos ' . $row['reference'] . ' sebesar Rp ' . number_format($row['amount'], 0, ',', '.') . ' untuk ' . $paymentStatus['month_label'] . '. Terima kasih.') }}"
+                                    target="_blank"
+                                    class="inline-flex items-center gap-1 px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg text-xs font-semibold whitespace-nowrap shrink-0">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163a11.867 11.867 0 01-1.587-5.945C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 018.413 3.488 11.824 11.824 0 013.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 01-5.688-1.448L.057 24zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884a9.86 9.86 0 001.51 5.26l-.999 3.648 3.978-1.04z"/></svg>
+                                    WA
+                                </a>
+                            @else
+                                <span class="text-xs text-gray-400 shrink-0">no. WA -</span>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="px-6 py-8 text-center text-sm text-gray-500">🎉 Semua sudah bayar bulan ini.</div>
+                    @endforelse
+                </div>
+            </div>
+
+            <!-- Sudah Bayar -->
+            <div class="bg-white rounded-2xl shadow-sm border border-green-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-gray-800">Sudah Bayar — {{ $paymentStatus['month_label'] }}</h2>
+                    <span class="px-3 py-1 rounded-full text-sm font-bold bg-green-100 text-green-700">{{ $paymentStatus['paid']->count() }}</span>
+                </div>
+                <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+                    @forelse ($paymentStatus['paid'] as $row)
+                        <div class="px-6 py-3 flex items-center justify-between gap-3">
+                            <div class="min-w-0">
+                                <p class="font-semibold text-gray-900 truncate">{{ $row['name'] }}</p>
+                                <p class="text-xs text-gray-500">Kamar {{ $row['room'] }}</p>
+                            </div>
+                            <span class="inline-flex items-center gap-1 text-green-600 text-sm font-medium whitespace-nowrap shrink-0">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                                Rp {{ number_format($row['amount'], 0, ',', '.') }}
+                            </span>
+                        </div>
+                    @empty
+                        <div class="px-6 py-8 text-center text-sm text-gray-500">Belum ada pembayaran bulan ini.</div>
+                    @endforelse
+                </div>
+            </div>
+        </div>
+
         <!-- Chart + Activity Row -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
             <!-- Income Chart -->
