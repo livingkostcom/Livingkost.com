@@ -2,10 +2,12 @@
 
 namespace App\Livewire\Admin\Analytics;
 
+use App\Models\CompanyTransaction;
 use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\OwnerWallet;
 use App\Models\PaymentTransaction;
+use App\Models\WalletTransaction;
 use Livewire\Component;
 use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
@@ -89,6 +91,34 @@ class IncomeAnalyticsIndex extends Component
             'total_invoices' => $totalQuery->count(),
             'total_amount' => $totalQuery->sum('amount'),
             'paid_count' => $paidQuery->count(),
+        ];
+    }
+
+    /**
+     * Platform's own net income over the selected range (super-admin only):
+     * platform fees + other income − company expenses.
+     */
+    public function getPlatformSummary(): array
+    {
+        $startDate = Carbon::createFromFormat('Y-m-d', $this->startDate)->startOfDay();
+        $endDate = Carbon::createFromFormat('Y-m-d', $this->endDate)->endOfDay();
+
+        $onlineGross = (float) PaymentTransaction::where('status', 'paid')
+            ->whereBetween('paid_at', [$startDate, $endDate])->sum('amount');
+        $creditedToOwners = (float) WalletTransaction::where('type', 'credit')->where('source', 'payment')
+            ->whereBetween('created_at', [$startDate, $endDate])->sum('amount');
+        $feeIncome = round($onlineGross - $creditedToOwners, 2);
+
+        $otherIncome = (float) CompanyTransaction::income()
+            ->whereBetween('transaction_date', [$startDate, $endDate])->sum('amount');
+        $companyExpense = (float) CompanyTransaction::expense()
+            ->whereBetween('transaction_date', [$startDate, $endDate])->sum('amount');
+
+        return [
+            'fee_income' => $feeIncome,
+            'other_income' => $otherIncome,
+            'company_expense' => $companyExpense,
+            'net_income' => $feeIncome + $otherIncome - $companyExpense,
         ];
     }
 
@@ -198,10 +228,14 @@ class IncomeAnalyticsIndex extends Component
             statusBreakdown: $statusBreakdown,
         );
 
+        $isSuperAdmin = Auth::user()?->isSuperAdmin() ?? false;
+
         return view('livewire.admin.analytics.income-analytics-index', [
             'summary' => $summary,
             'revenueData' => $revenueData,
             'statusBreakdown' => $statusBreakdown,
+            'isSuperAdmin' => $isSuperAdmin,
+            'platformSummary' => $isSuperAdmin ? $this->getPlatformSummary() : null,
         ]);
     }
 }
