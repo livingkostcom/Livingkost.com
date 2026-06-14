@@ -252,24 +252,23 @@ function lk_fa_icon($label)
             </div>
 
             <?php if ($lk_show_filters && (count($lk_areas) >= 2 || count($lk_genders) >= 2)): ?>
-                <div class="mb-10 space-y-3">
+                <div class="mb-10 flex flex-wrap items-center gap-2 bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 md:px-5 md:py-4">
                     <?php if (count($lk_areas) >= 2): ?>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Area</span>
-                            <button type="button" data-filter="area" data-value="" class="lk-pill lk-pill-active">Semua</button>
-                            <?php foreach ($lk_areas as $area): ?>
-                                <button type="button" data-filter="area" data-value="<?= htmlspecialchars(mb_strtolower($area), ENT_QUOTES) ?>" class="lk-pill"><?= htmlspecialchars(trim(explode(',', $area)[0]), ENT_QUOTES) ?></button>
-                            <?php endforeach; ?>
-                        </div>
+                        <span class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Area</span>
+                        <button type="button" data-filter="area" data-value="" class="lk-pill lk-pill-active">Semua</button>
+                        <?php foreach ($lk_areas as $area): ?>
+                            <button type="button" data-filter="area" data-value="<?= htmlspecialchars(mb_strtolower($area), ENT_QUOTES) ?>" class="lk-pill"><?= htmlspecialchars(trim(explode(',', $area)[0]), ENT_QUOTES) ?></button>
+                        <?php endforeach; ?>
+                        <?php if (count($lk_genders) >= 2): ?>
+                            <span class="hidden md:inline-block w-px h-6 bg-gray-200 mx-2"></span>
+                        <?php endif; ?>
                     <?php endif; ?>
                     <?php if (count($lk_genders) >= 2): ?>
-                        <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1">Tipe</span>
-                            <button type="button" data-filter="gender" data-value="" class="lk-pill lk-pill-active">Semua</button>
-                            <?php foreach ($lk_genders as $g): ?>
-                                <button type="button" data-filter="gender" data-value="<?= htmlspecialchars($g, ENT_QUOTES) ?>" class="lk-pill"><?= htmlspecialchars($lk_gender_labels[$g] ?? $g, ENT_QUOTES) ?></button>
-                            <?php endforeach; ?>
-                        </div>
+                        <span class="w-full md:w-auto text-[11px] font-bold text-gray-400 uppercase tracking-wider mr-1">Tipe</span>
+                        <button type="button" data-filter="gender" data-value="" class="lk-pill lk-pill-active">Semua</button>
+                        <?php foreach ($lk_genders as $g): ?>
+                            <button type="button" data-filter="gender" data-value="<?= htmlspecialchars($g, ENT_QUOTES) ?>" class="lk-pill"><?= htmlspecialchars($lk_gender_labels[$g] ?? $g, ENT_QUOTES) ?></button>
+                        <?php endforeach; ?>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>
@@ -309,12 +308,15 @@ function lk_fa_icon($label)
                                 <?php endif; ?>
                                 <h4 class="text-xl font-bold mb-2 text-gray-900 group-hover:text-orange-600 transition"><?= htmlspecialchars($kost['name'], ENT_QUOTES) ?></h4>
                                 <?php
+                                    // Gender badge — same design as the detail page (flex wrapper + soft colors).
                                     $gt = $kost['gender_type'] ?? '';
                                     $gtLabel = match($gt) { 'putra' => 'Putra', 'putri' => 'Putri', 'putra_putri' => 'Putra & Putri', default => '' };
-                                    $gtClass = match($gt) { 'putra' => 'bg-blue-100 text-blue-700', 'putri' => 'bg-pink-100 text-pink-700', 'putra_putri' => 'bg-purple-100 text-purple-700', default => '' };
+                                    $gtClass = match($gt) { 'putra' => 'bg-blue-50 text-blue-600', 'putri' => 'bg-pink-50 text-pink-600', 'putra_putri' => 'bg-purple-50 text-purple-600', default => '' };
                                 ?>
                                 <?php if ($gtLabel): ?>
-                                    <span class="inline-block mb-3 px-2 py-0.5 rounded-full text-xs font-bold uppercase <?= $gtClass ?>"><?= htmlspecialchars($gtLabel, ENT_QUOTES) ?></span>
+                                    <div class="flex flex-wrap gap-2 mb-3">
+                                        <span class="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide <?= $gtClass ?>"><?= htmlspecialchars($gtLabel, ENT_QUOTES) ?></span>
+                                    </div>
                                 <?php endif; ?>
                                 <?php if (!empty($facs)): ?>
                                     <div class="flex flex-wrap items-center text-gray-500 text-sm mb-4 gap-x-4 gap-y-1">
