@@ -51,12 +51,14 @@ class TenantForm extends Component
             $tenant = Tenant::findOrFail($tenantId);
             $this->authorize('update', $tenant);
             
-            $this->name = $tenant->name;
+            // Coalesce nullable columns — the typed string properties cannot
+            // accept null (would throw TypeError when opening the edit form).
+            $this->name = $tenant->name ?? '';
             $this->email = $tenant->email ?? '';
-            $this->nik = $tenant->nik;
-            $this->phone = $tenant->phone;
+            $this->nik = $tenant->nik ?? '';
+            $this->phone = $tenant->phone ?? '';
             $this->emergency_contact = $tenant->emergency_contact ?? '';
-            $this->status = $tenant->status;
+            $this->status = $tenant->status ?? 'active';
         }
     }
 
