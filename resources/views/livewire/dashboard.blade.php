@@ -196,7 +196,7 @@
                 </div>
             </div>
 
-            <!-- Pendapatan Bulan Ini -->
+            <!-- Pendapatan Bersih Bulan Ini -->
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition">
                 <div class="flex items-center justify-between mb-3">
                     <div class="p-2.5 bg-emerald-100 rounded-xl">
@@ -207,9 +207,16 @@
                         </svg>
                     </div>
                 </div>
-                <p class="text-xl sm:text-2xl font-bold text-gray-900">Rp
-                    {{ number_format($metrics['income_this_month'], 0, ',', '.') }}</p>
-                <p class="text-sm text-gray-500 mt-1">Pendapatan Bulan Ini</p>
+                <p class="text-xl sm:text-2xl font-bold {{ $metrics['net_income_this_month'] >= 0 ? 'text-gray-900' : 'text-red-600' }}">Rp
+                    {{ number_format($metrics['net_income_this_month'], 0, ',', '.') }}</p>
+                <p class="text-sm text-gray-500 mt-1">Pendapatan Bersih Bulan Ini</p>
+                <div class="mt-3 pt-3 border-t border-gray-100 space-y-1 text-xs">
+                    <div class="flex justify-between"><span class="text-gray-500">Pendapatan kotor</span><span class="font-medium text-gray-700">Rp {{ number_format($metrics['income_this_month'], 0, ',', '.') }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-500">Pengeluaran</span><span class="font-medium text-red-500">− Rp {{ number_format($metrics['expense_this_month'], 0, ',', '.') }}</span></div>
+                    @if ($metrics['platform_fee_this_month'] > 0)
+                        <div class="flex justify-between"><span class="text-gray-500">Fee platform</span><span class="font-medium text-red-500">− Rp {{ number_format($metrics['platform_fee_this_month'], 0, ',', '.') }}</span></div>
+                    @endif
+                </div>
             </div>
 
             <!-- Tagihan Tertunggak -->

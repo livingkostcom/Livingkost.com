@@ -6,6 +6,8 @@ use App\Models\Expense;
 use App\Models\Invoice;
 use App\Models\Lease;
 use App\Models\MaintenanceRequest;
+use App\Models\OwnerWallet;
+use App\Models\PaymentTransaction;
 use App\Models\Property;
 use App\Models\Room;
 use App\Models\Tenant;
@@ -39,6 +41,20 @@ class Dashboard extends Component
             ->whereMonth('expense_date', now()->month)
             ->sum('amount');
 
+        // Platform fee charged on this month's online (DOKU) payments.
+        $ownerId = Auth::user()->ownerId();
+        $feePercent = (float) (OwnerWallet::where('owner_id', $ownerId)->value('platform_fee_percent') ?? 0);
+        $onlineGrossThisMonth = $ownerId
+            ? (float) PaymentTransaction::where('owner_id', $ownerId)
+                ->where('status', 'paid')
+                ->whereYear('paid_at', now()->year)
+                ->whereMonth('paid_at', now()->month)
+                ->sum('amount')
+            : 0;
+        $platformFeeThisMonth = round($onlineGrossThisMonth * $feePercent / 100, 2);
+
+        $netIncomeThisMonth = (float) $incomeThisMonth - (float) $expenseThisMonth - $platformFeeThisMonth;
+
         return [
             'total_properties' => Property::count(),
             'total_rooms' => $totalRooms,
@@ -52,6 +68,8 @@ class Dashboard extends Component
             'active_tenants' => Tenant::where('status', 'active')->count(),
             'active_leases' => Lease::where('status', 'active')->count(),
             'expense_this_month' => $expenseThisMonth,
+            'platform_fee_this_month' => $platformFeeThisMonth,
+            'net_income_this_month' => $netIncomeThisMonth,
         ];
     }
 
