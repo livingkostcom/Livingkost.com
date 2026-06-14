@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/lk_auth.php';
 // --- Dynamic "Rekomendasi Kost": featured properties from all owners ---
 // Reads the database directly (read-only) so the static landing can show
 // listings that owners toggle from their dashboard. Fails silently.
@@ -99,8 +100,12 @@ function lk_fa_icon($label)
     <nav class="sticky top-0 z-50 bg-white shadow-sm px-6 py-4 flex justify-between items-center">
         <div class="text-2xl font-bold text-orange-600"><a href="/">Living<span class="text-gray-900">Kost</span></a></div>
         <div class="flex items-center gap-2 sm:gap-3">
-            <a href="/login" class="text-gray-700 hover:text-orange-600 font-semibold px-3 sm:px-4 py-2 rounded-full transition">Login</a>
-            <a href="/mitra" class="bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-orange-700 transition whitespace-nowrap">Jadi Mitra</a>
+            <?php if (lk_logged_in()): ?>
+                <a href="/dashboard" class="bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-orange-700 transition whitespace-nowrap">Dashboard</a>
+            <?php else: ?>
+                <a href="/login" class="text-gray-700 hover:text-orange-600 font-semibold px-3 sm:px-4 py-2 rounded-full transition">Login</a>
+                <a href="/mitra" class="bg-orange-600 text-white px-4 sm:px-6 py-2 rounded-full font-semibold hover:bg-orange-700 transition whitespace-nowrap">Jadi Mitra</a>
+            <?php endif; ?>
         </div>
     </nav>
 
