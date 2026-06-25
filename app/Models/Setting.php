@@ -11,10 +11,12 @@ class Setting extends Model
     protected $fillable = ['key', 'value', 'group', 'owner_id'];
 
     /**
-     * Keys that are platform-wide (shared across all owners), e.g. branding.
-     * Everything else is scoped per owner with a fallback to the global value.
+     * Keys that are platform-wide (shared across all owners). All other keys —
+     * including app_name/app_tagline — are scoped per owner so each owner sets
+     * their own kos name/tagline (used in their dashboard, receipts & reports),
+     * falling back to the super-admin's global value when not customised.
      */
-    public const GLOBAL_KEYS = ['app_name', 'app_tagline'];
+    public const GLOBAL_KEYS = [];
 
     /**
      * The owner scope for settings: null for global keys / unauthenticated /
