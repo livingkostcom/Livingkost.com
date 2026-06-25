@@ -31,7 +31,7 @@ if ($lk_id > 0 && is_readable($lk_envPath)) {
                 $lk_env['DB_PASSWORD'] ?? '',
                 [PDO::ATTR_ERRMODE => PDO::ERRMODE_SILENT, PDO::ATTR_TIMEOUT => 3]
             );
-            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, featured_image, gallery, owner_id, gender_type, common_facilities
+            $st = $pdo->prepare("SELECT id, name, address, description, location_label, badge_text, maps_url, featured_image, gallery, owner_id, gender_type, common_facilities
                                  FROM properties WHERE id = ? AND is_featured = 1 AND status = 'active' LIMIT 1");
             $st->execute([$lk_id]);
             $lk_kost = $st->fetch(PDO::FETCH_ASSOC) ?: null;
@@ -359,10 +359,18 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                 <div class="py-10 border-b">
                     <h2 class="text-xl font-bold mb-4">Lokasi Kost</h2>
                     <p class="text-gray-600 mb-4"><i class="fas fa-location-dot text-orange-600 mr-2"></i><?= $e($lk_kost['address']) ?></p>
-                    <a href="https://www.google.com/maps/search/?api=1&query=<?= urlencode($lk_kost['address']) ?>" target="_blank"
-                       class="inline-flex items-center gap-2 text-orange-600 font-semibold hover:text-orange-700">
-                        <i class="fas fa-map"></i> Lihat di Google Maps
-                    </a>
+                    <?php
+                        // Use the owner-provided Google Maps link; only show the button
+                        // when it is a valid http(s) URL.
+                        $lk_maps = trim($lk_kost['maps_url'] ?? '');
+                        $lk_maps_ok = $lk_maps !== '' && preg_match('#^https?://#i', $lk_maps);
+                    ?>
+                    <?php if ($lk_maps_ok): ?>
+                        <a href="<?= $e($lk_maps) ?>" target="_blank" rel="noopener nofollow"
+                           class="inline-flex items-center gap-2 text-orange-600 font-semibold hover:text-orange-700">
+                            <i class="fas fa-map"></i> Lihat di Google Maps
+                        </a>
+                    <?php endif; ?>
                 </div>
             </div>
 

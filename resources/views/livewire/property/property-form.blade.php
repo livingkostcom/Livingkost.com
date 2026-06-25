@@ -44,6 +44,19 @@
         @enderror
     </div>
 
+    <!-- Google Maps link -->
+    <div>
+        <label for="maps_url" class="block text-sm font-semibold text-gray-700 mb-2">
+            Link Google Maps
+        </label>
+        <input wire:model="maps_url" type="url" id="maps_url" placeholder="https://maps.app.goo.gl/..."
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('maps_url') border-red-500 @enderror">
+        <p class="mt-1 text-xs text-gray-500">Buka lokasi kost di Google Maps → Bagikan → Salin tautan, lalu tempel di sini. Tombol "Lihat di Google Maps" di halaman detail akan memakai tautan ini.</p>
+        @error('maps_url')
+            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+        @enderror
+    </div>
+
     <!-- Description Input -->
     <div>
         <label for="description" class="block text-sm font-semibold text-gray-700 mb-2">

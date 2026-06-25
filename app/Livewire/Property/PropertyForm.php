@@ -51,6 +51,9 @@ class PropertyForm extends Component
     #[\Livewire\Attributes\Validate('nullable|string|max:50')]
     public string $badge_text = '';
 
+    #[\Livewire\Attributes\Validate('nullable|url|max:2000')]
+    public string $maps_url = '';
+
     /** @var array<int,\Livewire\Features\SupportFileUploads\TemporaryUploadedFile> */
     public array $gallery_uploads = [];
 
@@ -73,6 +76,7 @@ class PropertyForm extends Component
             $this->existing_featured_image = $property->featured_image;
             $this->location_label = $property->location_label ?? '';
             $this->badge_text = $property->badge_text ?? '';
+            $this->maps_url = $property->maps_url ?? '';
             $this->existing_gallery = is_array($property->gallery) ? $property->gallery : [];
             $this->gender_type = $property->gender_type ?? '';
             $facs = is_array($property->common_facilities) ? $property->common_facilities : [];
@@ -176,6 +180,7 @@ class PropertyForm extends Component
             'is_featured' => $this->is_featured,
             'location_label' => $this->location_label ?: null,
             'badge_text' => $this->badge_text ?: null,
+            'maps_url' => $this->maps_url ?: null,
         ];
 
         // Store newly uploaded featured image on the public "landing" disk (/images)
