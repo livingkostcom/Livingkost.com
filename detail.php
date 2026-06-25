@@ -204,7 +204,7 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                     <div class="relative h-[300px] md:h-[550px] overflow-hidden rounded-2xl shadow-sm bg-gray-100">
                         <img id="mainView" src="<?= $e($lk_gallery[0]) ?>"
                              class="w-full h-full object-cover cursor-zoom-in transition-all duration-500"
-                             onclick="openGallery(this.src)" alt="<?= $e($lk_kost['name']) ?>">
+                             onclick="openGalleryMain()" alt="<?= $e($lk_kost['name']) ?>">
                         <?php if (count($lk_gallery) > 1): ?>
                             <div class="absolute bottom-4 right-4 bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs">
                                 <span id="currentImgIdx">1</span> / <?= count($lk_gallery) ?>
@@ -229,9 +229,17 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
             .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         </style>
 
-        <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/90 items-center justify-center p-4 backdrop-blur-sm" style="display:none;">
-            <button onclick="closeGallery()" class="absolute top-6 right-6 text-white text-4xl hover:text-orange-500 transition">&times;</button>
-            <img id="modalImage" src="" class="max-w-full max-h-[90vh] rounded-lg shadow-2xl">
+        <div id="galleryModal" class="fixed inset-0 z-[100] hidden bg-black/95 items-center justify-center p-4 backdrop-blur-sm" style="display:none;">
+            <button onclick="closeGallery()" aria-label="Tutup" class="absolute top-5 right-6 text-white text-4xl hover:text-orange-500 transition z-20">&times;</button>
+            <div id="lbCounter" class="absolute top-7 left-6 text-white/80 text-sm font-semibold z-20"></div>
+
+            <button id="lbPrev" onclick="lbNav(-1)" aria-label="Sebelumnya" class="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-orange-500 text-white text-2xl transition">&#10094;</button>
+
+            <img id="modalImage" src="" alt="" class="max-w-full max-h-[78vh] rounded-lg shadow-2xl object-contain select-none">
+
+            <button id="lbNext" onclick="lbNav(1)" aria-label="Berikutnya" class="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-orange-500 text-white text-2xl transition">&#10095;</button>
+
+            <div id="lbThumbs" class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 overflow-x-auto max-w-[92vw] no-scrollbar px-2 z-20"></div>
         </div>
 
         <div class="flex flex-col md:flex-row gap-10">
@@ -307,13 +315,13 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                                     <!-- Room type image with thumbnail strip -->
                                     <div class="w-full md:w-1/3 shrink-0">
                                         <div class="h-44 rounded-xl overflow-hidden bg-gray-100 mb-2">
-                                            <img src="<?= $e($rtMainImg) ?>" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onclick="openGallery(this.src)">
+                                            <img src="<?= $e($rtMainImg) ?>" class="w-full h-full object-cover cursor-pointer hover:opacity-90 transition" onclick="openSingle(this.src)">
                                         </div>
                                         <?php if (count($rtImgs) > 1): ?>
                                             <div class="grid grid-cols-4 gap-1">
                                                 <?php foreach (array_slice($rtImgs, 0, 4) as $idx => $img): ?>
                                                     <div class="h-14 rounded-lg overflow-hidden bg-gray-100 cursor-pointer relative"
-                                                         onclick="openGallery('/images/<?= $e($img) ?>')">
+                                                         onclick="openSingle('/images/<?= $e($img) ?>')">
                                                         <img src="/images/<?= $e($img) ?>" class="w-full h-full object-cover hover:opacity-80 transition">
                                                         <?php if ($idx === 3 && count($rtImgs) > 4): ?>
                                                             <div class="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-bold">+<?= count($rtImgs) - 4 ?></div>
@@ -454,6 +462,7 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
     </script>
     <script>
         function changeImage(element, src, idx) {
+            lkMainIdx = idx - 1;
             const mainImg = document.getElementById('mainView');
             mainImg.style.opacity = '0.5';
             setTimeout(() => { mainImg.src = src; mainImg.style.opacity = '1'; }, 150);
@@ -468,21 +477,71 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
             element.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
         }
 
-        function openGallery(src) {
+        // --- Lightbox with prev/next arrows + thumbnail strip ---
+        const lkGallery = <?= json_encode(array_values($lk_gallery), JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+        let lkLbImages = lkGallery;
+        let lkLbIdx = 0;
+        let lkMainIdx = 0; // index of the photo currently shown in the main viewer
+
+        function renderLightbox() {
+            if (!lkLbImages.length) return;
+            document.getElementById('modalImage').src = lkLbImages[lkLbIdx];
+            const multi = lkLbImages.length > 1;
+            document.getElementById('lbPrev').style.display = multi ? 'flex' : 'none';
+            document.getElementById('lbNext').style.display = multi ? 'flex' : 'none';
+            document.getElementById('lbCounter').textContent = multi ? (lkLbIdx + 1) + ' / ' + lkLbImages.length : '';
+            const thumbs = document.getElementById('lbThumbs');
+            thumbs.innerHTML = '';
+            if (multi) {
+                lkLbImages.forEach(function (src, i) {
+                    const t = document.createElement('img');
+                    t.src = src;
+                    t.className = 'h-14 w-20 object-cover rounded-md cursor-pointer border-2 transition shrink-0 ' +
+                        (i === lkLbIdx ? 'border-orange-500 opacity-100' : 'border-transparent opacity-50 hover:opacity-100');
+                    t.addEventListener('click', function () { lkLbIdx = i; renderLightbox(); });
+                    thumbs.appendChild(t);
+                });
+                const active = thumbs.children[lkLbIdx];
+                if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        }
+
+        function lbNav(dir) {
+            lkLbIdx = (lkLbIdx + dir + lkLbImages.length) % lkLbImages.length;
+            renderLightbox();
+        }
+
+        function openLightbox(images, startIdx) {
+            lkLbImages = (images && images.length) ? images : lkGallery;
+            lkLbIdx = startIdx || 0;
+            renderLightbox();
             const modal = document.getElementById('galleryModal');
-            document.getElementById('modalImage').src = src;
             modal.style.display = 'flex';
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
         }
+
+        // Open the main property gallery at the currently-viewed photo.
+        function openGalleryMain() { openLightbox(lkGallery, lkMainIdx); }
+        // Open a one-off image (e.g. a room-type photo) without arrows/thumbnails.
+        function openSingle(src) { openLightbox([src], 0); }
+
         function closeGallery() {
             const modal = document.getElementById('galleryModal');
             modal.style.display = 'none';
             modal.classList.add('hidden');
             document.body.style.overflow = 'auto';
         }
+
         document.getElementById('galleryModal').addEventListener('click', function (e) {
             if (e.target === this) closeGallery();
+        });
+        document.addEventListener('keydown', function (e) {
+            const modal = document.getElementById('galleryModal');
+            if (modal.style.display !== 'flex') return;
+            if (e.key === 'Escape') closeGallery();
+            else if (e.key === 'ArrowRight' && lkLbImages.length > 1) lbNav(1);
+            else if (e.key === 'ArrowLeft' && lkLbImages.length > 1) lbNav(-1);
         });
     </script>
 </body>

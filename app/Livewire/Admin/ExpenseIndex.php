@@ -103,7 +103,7 @@ class ExpenseIndex extends Component
         ];
 
         if ($this->receipt_image) {
-            $rules['receipt_image'] = 'mimes:jpeg,jpg,png,gif,webp,avif|max:8192';
+            $rules['receipt_image'] = 'mimes:jpeg,jpg,png,gif,webp,avif|max:2048';
         }
 
         $this->validate($rules);

@@ -40,7 +40,7 @@ class PropertyForm extends Component
     // --- Landing "Rekomendasi Kost" fields ---
     public bool $is_featured = false;
 
-    #[\Livewire\Attributes\Validate('nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:8192')]
+    #[\Livewire\Attributes\Validate('nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048')]
     public $featured_image = null;
 
     public ?string $existing_featured_image = null;
@@ -159,7 +159,7 @@ class PropertyForm extends Component
         }
 
         if (!empty($this->gallery_uploads)) {
-            $this->validate(['gallery_uploads.*' => 'mimes:jpeg,jpg,png,gif,webp,avif|max:8192']);
+            $this->validate(['gallery_uploads.*' => 'mimes:jpeg,jpg,png,gif,webp,avif|max:2048']);
         }
 
         $commonFacs = array_values(array_filter(

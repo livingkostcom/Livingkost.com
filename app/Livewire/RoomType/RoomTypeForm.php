@@ -69,7 +69,7 @@ class RoomTypeForm extends Component
         $this->validate();
 
         if (!empty($this->image_uploads)) {
-            $this->validate(['image_uploads.*' => 'mimes:jpeg,jpg,png,gif,webp,avif|max:8192']);
+            $this->validate(['image_uploads.*' => 'mimes:jpeg,jpg,png,gif,webp,avif|max:2048']);
         }
 
         $facilitiesArray = array_values(array_filter(
