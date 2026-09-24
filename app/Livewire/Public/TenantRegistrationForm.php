@@ -50,7 +50,7 @@ class TenantRegistrationForm extends Component
             'phone' => 'required|string|max:20',
             'nik' => 'required|string|digits:16',
             'emergency_contact' => 'nullable|string|max:100',
-            'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,webp,avif|max:2048',
+            'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,webp,avif|max:10240',
             'note' => 'nullable|string|max:500',
         ];
 

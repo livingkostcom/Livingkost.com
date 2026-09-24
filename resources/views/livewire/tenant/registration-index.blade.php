@@ -96,7 +96,7 @@
                                 @else
                                     <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold">Transfer Manual</span>
                                     @if ($reg->dp_proof)
-                                        <a href="{{ \Illuminate\Support\Facades\Storage::url($reg->dp_proof) }}" target="_blank" class="text-orange-600 font-semibold hover:underline">Lihat Bukti DP</a>
+                                        <a href="{{ asset('storage/' . $reg->dp_proof) }}" target="_blank" class="text-orange-600 font-semibold hover:underline">Lihat Bukti DP</a>
                                     @endif
                                 @endif
                             </div>
@@ -105,7 +105,7 @@
                         <div class="mt-2 flex items-center gap-4 text-xs text-gray-400">
                             <span>{{ $reg->created_at->format('d/m/Y H:i') }}</span>
                             @if ($reg->ktp_photo)
-                                <a href="{{ \Illuminate\Support\Facades\Storage::url($reg->ktp_photo) }}" target="_blank" class="text-orange-600 font-semibold hover:underline">Lihat Foto KTP</a>
+                                <a href="{{ asset('storage/' . $reg->ktp_photo) }}" target="_blank" class="text-orange-600 font-semibold hover:underline">Lihat Foto KTP</a>
                             @endif
                         </div>
                     </div>

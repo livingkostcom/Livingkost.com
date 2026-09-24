@@ -21,6 +21,8 @@ class TenantIndex extends Component
     public bool $showDeleteModal = false;
     public ?int $deletingTenantId = null;
     public ?Tenant $deletingTenant = null;
+    public bool $showViewModal = false;
+    public ?Tenant $viewingTenant = null;
     public string $successMessage = '';
     public string $errorMessage = '';
 
@@ -56,6 +58,19 @@ class TenantIndex extends Component
     {
         $this->showModal = false;
         $this->editingId = null;
+    }
+
+    public function openViewModal(Tenant $tenant)
+    {
+        // Route-model binding already scopes to the current owner; a foreign id 404s.
+        $this->viewingTenant = $tenant;
+        $this->showViewModal = true;
+    }
+
+    public function closeViewModal()
+    {
+        $this->showViewModal = false;
+        $this->viewingTenant = null;
     }
 
     #[\Livewire\Attributes\On('tenant-saved')]

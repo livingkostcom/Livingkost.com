@@ -119,10 +119,15 @@
                         <tr class="hover:bg-orange-50 transition duration-200">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div
-                                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-100 flex items-center justify-center font-semibold text-orange-600 shadow-sm">
-                                        {{ substr($tenant->display_name, 0, 1) }}
-                                    </div>
+                                    @if ($tenant->avatar)
+                                        <img src="{{ asset('storage/' . $tenant->avatar) }}" alt="{{ $tenant->display_name }}"
+                                            class="w-10 h-10 rounded-lg object-cover shadow-sm">
+                                    @else
+                                        <div
+                                            class="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-100 to-orange-100 flex items-center justify-center font-semibold text-orange-600 shadow-sm">
+                                            {{ substr($tenant->display_name, 0, 1) }}
+                                        </div>
+                                    @endif
                                     <div class="ml-3">
                                         <p class="font-semibold text-gray-900">{{ $tenant->display_name }}</p>
                                     </div>
@@ -156,6 +161,13 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex gap-2">
+                                    <button wire:click="openViewModal({{ $tenant->id }})"
+                                        class="inline-flex items-center p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition font-medium text-sm border border-gray-200 shadow-sm hover:shadow-md" title="Lihat detail & foto">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </button>
                                     <button wire:click="openEditModal({{ $tenant->id }})"
                                         class="inline-flex items-center p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition font-medium text-sm border border-orange-200 shadow-sm hover:shadow-md" title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor"
@@ -267,6 +279,70 @@
                         class="flex-1 px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl transition duration-300 transform hover:scale-105 active:scale-95">
                         Hapus
                     </button>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- View Detail + Photos Modal -->
+    @if ($showViewModal && $viewingTenant)
+        <div class="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4 backdrop-blur-sm" wire:click.self="closeViewModal">
+            <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full overflow-y-auto max-h-[90vh]">
+                <div class="bg-gradient-to-r from-orange-600 to-orange-600 px-6 py-4 flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-white">Detail Penyewa</h2>
+                    <button wire:click="closeViewModal" class="text-white/80 hover:text-white text-2xl leading-none">&times;</button>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <!-- Profile -->
+                    <div class="flex items-center gap-4">
+                        @if ($viewingTenant->avatar)
+                            <a href="{{ asset('storage/' . $viewingTenant->avatar) }}" target="_blank">
+                                <img src="{{ asset('storage/' . $viewingTenant->avatar) }}" alt="Foto profil"
+                                    class="w-20 h-20 rounded-2xl object-cover border border-gray-200 shadow-sm hover:opacity-90 transition">
+                            </a>
+                        @else
+                            <div class="w-20 h-20 rounded-2xl bg-orange-100 flex items-center justify-center text-3xl font-bold text-orange-600">
+                                {{ substr($viewingTenant->display_name, 0, 1) }}
+                            </div>
+                        @endif
+                        <div>
+                            <p class="text-xl font-bold text-gray-900">{{ $viewingTenant->display_name }}</p>
+                            <span class="inline-flex items-center mt-1 px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                @if ($viewingTenant->status === 'active') bg-green-100 text-green-700
+                                @elseif ($viewingTenant->status === 'inactive') bg-yellow-100 text-yellow-700
+                                @else bg-red-100 text-red-700 @endif">
+                                {{ ['active' => 'Aktif', 'inactive' => 'Tidak Aktif', 'evicted' => 'Keluar'][$viewingTenant->status] ?? $viewingTenant->status }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Info -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                        <div><p class="text-gray-400">NIK</p><p class="font-semibold text-gray-900 font-mono">{{ $viewingTenant->nik ?: '-' }}</p></div>
+                        <div><p class="text-gray-400">No. HP</p><p class="font-semibold text-gray-900">{{ $viewingTenant->phone ?: '-' }}</p></div>
+                        <div class="sm:col-span-2"><p class="text-gray-400">Email</p><p class="font-semibold text-gray-900 break-all">{{ $viewingTenant->email ?: '-' }}</p></div>
+                        <div class="sm:col-span-2"><p class="text-gray-400">Kontak Darurat</p><p class="font-semibold text-gray-900">{{ $viewingTenant->emergency_contact ?: '-' }}</p></div>
+                    </div>
+
+                    <!-- KTP -->
+                    <div>
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Foto KTP</p>
+                        @if ($viewingTenant->ktp_photo)
+                            <a href="{{ asset('storage/' . $viewingTenant->ktp_photo) }}" target="_blank" class="block">
+                                <img src="{{ asset('storage/' . $viewingTenant->ktp_photo) }}" alt="Foto KTP"
+                                    class="w-full max-h-80 object-contain rounded-xl border border-gray-200 bg-gray-50 hover:opacity-90 transition">
+                                <span class="mt-1 inline-block text-xs text-orange-600 font-semibold">Klik untuk perbesar / buka penuh</span>
+                            </a>
+                        @else
+                            <div class="w-full py-10 text-center text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">Belum ada foto KTP diunggah.</div>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 px-6 py-4 flex justify-end">
+                    <button wire:click="closeViewModal"
+                        class="px-5 py-2.5 bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold rounded-xl transition">Tutup</button>
                 </div>
             </div>
         </div>

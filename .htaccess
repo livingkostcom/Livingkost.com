@@ -15,6 +15,11 @@ AddType application/x-httpd-php82 .php
     # --- Security: block dotfiles (except .well-known), sensitive files & internal dirs ---
     RewriteRule (^|/)\.(?!well-known) - [F,L]
     RewriteRule \.(env|sql|log|bak|sh|ini|lock|yml|yaml)$ - [F,L]
+
+    # --- Public uploads: serve /storage/* from the public/storage symlink (storage/app/public) ---
+    # Must come BEFORE the storage block below so tenant KTP/avatar, DP & receipt images load.
+    RewriteRule ^storage/(.+)$ public/storage/$1 [L]
+
     RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor)/ - [F,L]
     RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|README\.md)$ - [F,L]
 

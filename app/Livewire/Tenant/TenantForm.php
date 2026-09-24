@@ -37,7 +37,7 @@ class TenantForm extends Component
     #[\Livewire\Attributes\Validate('nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048')]
     public $avatar = null;
 
-    #[\Livewire\Attributes\Validate('nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048')]
+    #[\Livewire\Attributes\Validate('nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:10240')]
     public $ktp_photo = null;
 
     #[\Livewire\Attributes\Validate('required|string|in:active,inactive,evicted')]
@@ -73,7 +73,7 @@ class TenantForm extends Component
                 'phone' => 'required|string|max:20',
                 'emergency_contact' => 'nullable|string|max:100',
                 'avatar' => 'nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048',
-                'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048',
+                'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:10240',
                 'status' => 'required|string|in:active,inactive,evicted',
             ] : $this->getValidationRules()
         );
@@ -196,7 +196,7 @@ class TenantForm extends Component
             'phone' => 'required|string|max:20',
             'emergency_contact' => 'nullable|string|max:100',
             'avatar' => 'nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048',
-            'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:2048',
+            'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,gif,webp,avif|max:10240',
             'status' => 'required|string|in:active,inactive,evicted',
         ];
     }
