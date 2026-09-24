@@ -45,6 +45,12 @@ class MaintenanceRequestIndex extends Component
         ]);
 
         $tenant = Auth::user()->tenant;
+
+        if (!$tenant) {
+            session()->flash('error', 'Akun Anda belum tertaut ke data penyewa. Hubungi pengelola kos.');
+            return;
+        }
+
         $activeLease = $tenant->leases()->where('status', 'active')->first();
 
         if (!$activeLease) {
@@ -140,7 +146,10 @@ class MaintenanceRequestIndex extends Component
     {
         $tenant = Auth::user()->tenant;
 
-        $query = MaintenanceRequest::where('tenant_id', $tenant->id)
+        // Guard: a user with the 'tenant' role but no active Tenant record
+        // (e.g. their tenant was deleted) would otherwise hit a null error.
+        $query = MaintenanceRequest::query()
+            ->when($tenant, fn ($q) => $q->where('tenant_id', $tenant->id), fn ($q) => $q->whereRaw('1 = 0'))
             ->with(['room'])
             ->latest();
 
@@ -150,6 +159,7 @@ class MaintenanceRequestIndex extends Component
 
         return view('livewire.tenant.maintenance-request-index', [
             'requests' => $query->paginate(10),
+            'noTenant' => ! $tenant,
         ]);
     }
 }
