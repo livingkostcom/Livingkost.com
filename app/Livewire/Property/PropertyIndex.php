@@ -3,6 +3,8 @@
 namespace App\Livewire\Property;
 
 use App\Models\Property;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -84,11 +86,25 @@ class PropertyIndex extends Component
 
     public function render()
     {
-        $query = Property::query()->with('owner');
+        $user = Auth::user();
+
+        if ($user->isSuperAdmin()) {
+            $query = Property::query()->with('owner', 'owners');
+        } else {
+            // Own (managed) properties + properties this owner co-owns (read-only).
+            $ownerId = $user->ownerId();
+            $coOwnedIds = DB::table('property_owners')->where('owner_id', $ownerId)->pluck('property_id');
+            $query = Property::withoutGlobalScopes()->with('owner', 'owners')
+                ->where(function ($q) use ($ownerId, $coOwnedIds) {
+                    $q->where('owner_id', $ownerId)->orWhereIn('id', $coOwnedIds);
+                });
+        }
 
         if ($this->search) {
-            $query->where('name', 'like', "%{$this->search}%")
+            $query->where(function ($q) {
+                $q->where('name', 'like', "%{$this->search}%")
                   ->orWhere('address', 'like', "%{$this->search}%");
+            });
         }
 
         $properties = $query->paginate(10);
