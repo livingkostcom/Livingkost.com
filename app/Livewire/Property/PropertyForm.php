@@ -19,6 +19,12 @@ class PropertyForm extends Component
      *  it is stamped automatically by the BelongsToOwner trait. */
     public ?int $owner_id = null;
 
+    /** Per-property Living Kost fee % (super-admin only). Deducted before the split. */
+    public float $platform_fee_percent = 0;
+
+    /** Revenue split: [['owner_id'=>id, 'share_percent'=>n], ...] (super-admin only). */
+    public array $revenueOwners = [];
+
     #[\Livewire\Attributes\Validate('required|string|max:255')]
     public string $name = '';
 
@@ -81,7 +87,27 @@ class PropertyForm extends Component
             $this->gender_type = $property->gender_type ?? '';
             $facs = is_array($property->common_facilities) ? $property->common_facilities : [];
             $this->common_facilities_text = implode(', ', $facs);
+            $this->platform_fee_percent = (float) ($property->platform_fee_percent ?? 0);
+            $this->revenueOwners = $property->owners()
+                ->get()
+                ->map(fn ($o) => ['owner_id' => (string) $o->id, 'share_percent' => (float) $o->pivot->share_percent])
+                ->toArray();
         }
+
+        if (auth()->user()->isSuperAdmin() && empty($this->revenueOwners)) {
+            $this->revenueOwners = [['owner_id' => (string) ($this->owner_id ?? ''), 'share_percent' => 100]];
+        }
+    }
+
+    public function addRevenueOwner(): void
+    {
+        $this->revenueOwners[] = ['owner_id' => '', 'share_percent' => 0];
+    }
+
+    public function removeRevenueOwner(int $i): void
+    {
+        unset($this->revenueOwners[$i]);
+        $this->revenueOwners = array_values($this->revenueOwners);
     }
 
     public function removeExistingImage(int $index): void
@@ -159,7 +185,21 @@ class PropertyForm extends Component
         if ($isSuperAdmin) {
             $this->validate([
                 'owner_id' => ['required', 'integer', \Illuminate\Validation\Rule::exists('users', 'id')],
-            ], [], ['owner_id' => 'pemilik (owner)']);
+                'platform_fee_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+                'revenueOwners' => ['required', 'array', 'min:1'],
+                'revenueOwners.*.owner_id' => ['required', \Illuminate\Validation\Rule::exists('users', 'id')],
+                'revenueOwners.*.share_percent' => ['required', 'numeric', 'min:0', 'max:100'],
+            ], [], [
+                'owner_id' => 'pemilik utama (operasional)',
+                'platform_fee_percent' => 'fee Living Kost',
+            ]);
+
+            // Shares must total exactly 100%.
+            $totalShare = collect($this->revenueOwners)->sum(fn ($r) => (float) ($r['share_percent'] ?? 0));
+            if (round($totalShare, 2) != 100.0) {
+                $this->addError('revenueOwners', 'Total persentase bagi hasil harus tepat 100% (sekarang ' . rtrim(rtrim(number_format($totalShare, 2), '0'), '.') . '%).');
+                return;
+            }
         }
 
         if (!empty($this->gallery_uploads)) {
@@ -205,6 +245,7 @@ class PropertyForm extends Component
         // preserves a pre-set owner_id and only auto-stamps for non-super-admins.
         if ($isSuperAdmin) {
             $data['owner_id'] = $this->owner_id;
+            $data['platform_fee_percent'] = $this->platform_fee_percent;
         }
 
         if ($this->propertyId) {
@@ -212,6 +253,7 @@ class PropertyForm extends Component
             $this->authorize('update', $property);
             $previousOwnerId = $property->owner_id;
             $property->update($data);
+            $this->syncRevenueOwners($property, $isSuperAdmin);
 
             // If a super-admin reassigned the property to a different owner,
             // cascade the new owner_id to its room types and rooms so they stay
@@ -225,11 +267,34 @@ class PropertyForm extends Component
             session()->flash('message', 'Property berhasil diperbarui!');
         } else {
             $this->authorize('create', Property::class);
-            Property::create($data);
+            $property = Property::create($data);
+            $this->syncRevenueOwners($property, $isSuperAdmin);
             session()->flash('message', 'Property berhasil dibuat!');
         }
 
         $this->dispatch('property-saved');
+    }
+
+    /** Sync the property_owners pivot (revenue split). */
+    private function syncRevenueOwners(Property $property, bool $isSuperAdmin): void
+    {
+        if ($isSuperAdmin && !empty($this->revenueOwners)) {
+            $rows = [];
+            foreach ($this->revenueOwners as $r) {
+                if (!empty($r['owner_id'])) {
+                    $rows[(int) $r['owner_id']] = ['share_percent' => (float) ($r['share_percent'] ?? 0)];
+                }
+            }
+            if (!empty($rows)) {
+                $property->owners()->sync($rows);
+                return;
+            }
+        }
+
+        // Default (owner-created, or no explicit split): the property owner gets 100%.
+        if ($property->owner_id) {
+            $property->owners()->sync([$property->owner_id => ['share_percent' => 100]]);
+        }
     }
 
     public function render()

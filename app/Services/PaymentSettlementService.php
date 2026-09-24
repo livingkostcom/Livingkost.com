@@ -48,9 +48,8 @@ class PaymentSettlementService
                 'raw' => $payload ?: $pt->raw,
             ]);
 
-            if ($ownerId) {
-                WalletService::credit($ownerId, (float) $invoice->amount, $invoice);
-            }
+            // Split the payment among the property's owners (fee first, then shares).
+            RevenueSplitService::creditOnlineInvoice($invoice);
         });
 
         // Receipt PDF + email to tenant (created_by must be a real user → owner).

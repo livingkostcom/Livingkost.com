@@ -27,11 +27,31 @@ class Dashboard extends Component
         $occupiedRooms = Room::where('status', 'occupied')->count();
         $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100, 1) : 0;
 
-        $currentMonth = now()->format('Y-m');
-        $incomeThisMonth = Invoice::where('status', 'paid')
-            ->whereYear('verified_at', now()->year)
-            ->whereMonth('verified_at', now()->month)
-            ->sum('amount');
+        $ownerId = Auth::user()->ownerId();
+
+        // Income is this owner's SHARE of property income: for every property they
+        // (co-)own, the platform fee is deducted per-property, then their share%
+        // of the net is theirs. These are the final numbers the owner receives.
+        $myProps = DB::table('property_owners as po')
+            ->join('properties as p', 'p.id', '=', 'po.property_id')
+            ->where('po.owner_id', $ownerId)
+            ->get(['po.property_id', 'po.share_percent', 'p.platform_fee_percent']);
+
+        $incomeThisMonth = 0.0;      // owner's share of gross rent
+        $platformFeeThisMonth = 0.0; // owner's share of the platform fee
+        foreach ($myProps as $mp) {
+            $gross = (float) Invoice::withoutGlobalScopes()
+                ->where('status', 'paid')
+                ->whereYear('verified_at', now()->year)
+                ->whereMonth('verified_at', now()->month)
+                ->whereHas('lease.room.roomType', fn ($q) => $q->where('property_id', $mp->property_id))
+                ->sum('amount');
+            $share = (float) $mp->share_percent / 100;
+            $incomeThisMonth += $gross * $share;
+            $platformFeeThisMonth += $gross * ((float) $mp->platform_fee_percent / 100) * $share;
+        }
+        $incomeThisMonth = round($incomeThisMonth, 2);
+        $platformFeeThisMonth = round($platformFeeThisMonth, 2);
 
         $overdueInvoices = Invoice::where('status', 'unpaid')
             ->where('due_date', '<', now())
@@ -43,19 +63,7 @@ class Dashboard extends Component
             ->whereMonth('expense_date', now()->month)
             ->sum('amount');
 
-        // Platform fee charged on this month's online (DOKU) payments.
-        $ownerId = Auth::user()->ownerId();
-        $feePercent = (float) (OwnerWallet::where('owner_id', $ownerId)->value('platform_fee_percent') ?? 0);
-        $onlineGrossThisMonth = $ownerId
-            ? (float) PaymentTransaction::where('owner_id', $ownerId)
-                ->where('status', 'paid')
-                ->whereYear('paid_at', now()->year)
-                ->whereMonth('paid_at', now()->month)
-                ->sum('amount')
-            : 0;
-        $platformFeeThisMonth = round($onlineGrossThisMonth * $feePercent / 100, 2);
-
-        $netIncomeThisMonth = (float) $incomeThisMonth - (float) $expenseThisMonth - $platformFeeThisMonth;
+        $netIncomeThisMonth = round((float) $incomeThisMonth - (float) $expenseThisMonth - $platformFeeThisMonth, 2);
 
         return [
             'total_properties' => Property::count(),
