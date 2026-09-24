@@ -50,7 +50,7 @@ class TenantRegistrationForm extends Component
             'phone' => 'required|string|max:20',
             'nik' => 'required|string|digits:16',
             'emergency_contact' => 'nullable|string|max:100',
-            'ktp_photo' => 'nullable|mimes:jpeg,jpg,png,webp,avif|max:10240',
+            'ktp_photo' => 'required|mimes:jpeg,jpg,png,webp,avif|max:10240',
             'note' => 'nullable|string|max:500',
         ];
 
@@ -67,6 +67,7 @@ class TenantRegistrationForm extends Component
         return [
             'nik.digits' => 'NIK harus 16 angka.',
             'email.required' => 'Email wajib diisi (untuk akun login penyewa).',
+            'ktp_photo.required' => 'Foto KTP wajib diunggah.',
             'dp_proof.required' => 'Bukti transfer DP wajib diunggah.',
         ];
     }

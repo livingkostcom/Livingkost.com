@@ -70,17 +70,19 @@
         @enderror
     </div>
 
-    <!-- End Date -->
-    <div>
-        <label for="end_date" class="block text-sm font-semibold text-gray-700 mb-2">
-            Tanggal Selesai <span class="text-red-600">*</span>
-        </label>
-        <input wire:model="end_date" type="date" id="end_date"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('end_date') border-red-500 @enderror">
-        @error('end_date')
-            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-        @enderror
-    </div>
+    <!-- End Date — only when editing; on create it follows the contract lifecycle -->
+    @if ($leaseId)
+        <div>
+            <label for="end_date" class="block text-sm font-semibold text-gray-700 mb-2">
+                Tanggal Selesai <span class="text-red-600">*</span>
+            </label>
+            <input wire:model="end_date" type="date" id="end_date"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('end_date') border-red-500 @enderror">
+            @error('end_date')
+                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+            @enderror
+        </div>
+    @endif
 
     <!-- Due Date Per Month -->
     <div>
@@ -102,6 +104,11 @@
         <input wire:model="deposit_amount" type="number" id="deposit_amount" step="0.01" min="0"
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition @error('deposit_amount') border-red-500 @enderror"
             placeholder="Contoh: 1000000">
+        @if ($depositAutoFromDp)
+            <p class="mt-1 text-xs text-green-600 font-medium">Terisi otomatis dari DP yang sudah dibayar penyewa. Bisa diubah bila perlu.</p>
+        @else
+            <p class="mt-1 text-xs text-gray-400">Terisi otomatis jika penyewa sudah membayar DP; jika belum, isi manual.</p>
+        @endif
         @error('deposit_amount')
             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
         @enderror

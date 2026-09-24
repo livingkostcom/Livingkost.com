@@ -77,7 +77,7 @@
                     </div>
 
                     <div>
-                        <label for="ktp_photo" class="block text-sm font-semibold text-gray-700 mb-1.5">Foto KTP</label>
+                        <label for="ktp_photo" class="block text-sm font-semibold text-gray-700 mb-1.5">Foto KTP <span class="text-red-600">*</span></label>
                         <input wire:model="ktp_photo" type="file" id="ktp_photo" accept="image/*"
                             class="w-full text-sm text-gray-600 file:mr-3 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:bg-orange-600 file:text-white file:font-semibold file:cursor-pointer">
                         <div wire:loading wire:target="ktp_photo" class="mt-1 text-xs text-orange-600">Mengunggah…</div>

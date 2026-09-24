@@ -23,7 +23,8 @@ class LeaseForm extends Component
     #[\Livewire\Attributes\Validate('required|date')]
     public string $start_date = '';
 
-    #[\Livewire\Attributes\Validate('required|date|after:start_date')]
+    // End date is not entered on create — it follows the contract lifecycle
+    // (auto-extends on payment / is set when the owner ends the contract).
     public string $end_date = '';
 
     #[\Livewire\Attributes\Validate('required|integer|min:1|max:31')]
@@ -31,6 +32,9 @@ class LeaseForm extends Component
 
     #[\Livewire\Attributes\Validate('required|numeric|min:0')]
     public string $deposit_amount = '0';
+
+    // True when deposit_amount was auto-filled from the tenant's paid DP.
+    public bool $depositAutoFromDp = false;
 
     #[\Livewire\Attributes\Validate('required|string|in:pending,active,completed,terminated,cancelled')]
     public string $status = 'pending';
@@ -60,8 +64,35 @@ class LeaseForm extends Component
         $this->room_id = 0;
     }
 
+    /** When a tenant is picked, prefill the deposit from the DP they already paid. */
+    public function updatedTenantId(): void
+    {
+        $this->depositAutoFromDp = false;
+
+        if (! $this->tenant_id) {
+            return;
+        }
+
+        $reg = \App\Models\TenantRegistration::where('tenant_id', $this->tenant_id)
+            ->whereIn('dp_status', ['paid', 'submitted'])
+            ->where('dp_amount', '>', 0)
+            ->latest()
+            ->first();
+
+        if ($reg) {
+            $this->deposit_amount = (string) (float) $reg->dp_amount;
+            $this->depositAutoFromDp = true;
+        }
+    }
+
     public function save()
     {
+        // On create, default the end date to one month from start — it then
+        // auto-extends on each payment, or is finalised when the owner ends it.
+        if (! $this->leaseId && $this->start_date) {
+            $this->end_date = \Carbon\Carbon::parse($this->start_date)->addMonthNoOverflow()->format('Y-m-d');
+        }
+
         $validationRules = [
             'tenant_id' => 'required|integer|exists:tenants,id',
             'room_id' => 'required|integer|exists:rooms,id',
