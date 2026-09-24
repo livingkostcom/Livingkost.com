@@ -66,6 +66,12 @@ class Sidebar extends Component
                 'route' => 'tenants.index',
                 'active' => request()->route()->getName() === 'tenants.index',
             ];
+            $items[] = [
+                'label' => 'Pendaftaran',
+                'icon' => 'M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2m3-1h2a1 1 0 011 1v2a1 1 0 01-1 1h-2a1 1 0 01-1-1V4a1 1 0 011-1zM9 14l2 2 4-4',
+                'route' => 'tenant-registrations.index',
+                'active' => request()->route()->getName() === 'tenant-registrations.index',
+            ];
         }
 
         if ($user->hasPermissionTo('view-leases')) {

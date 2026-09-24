@@ -4,12 +4,16 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DokuWebhookController;
 use App\Http\Controllers\PaymentController;
 use App\Livewire\Auth\Login;
+use App\Livewire\Public\TenantRegistrationForm;
 use Illuminate\Support\Facades\Auth;
 
 // Public Routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
 });
+
+// Public tenant self-registration form (per-owner token link, no auth)
+Route::get('/daftar/{token}', TenantRegistrationForm::class)->name('tenant.register');
 
 // DOKU payment notification (webhook) — public, no auth/CSRF
 Route::post('/doku/notification', [DokuWebhookController::class, 'handle'])->name('doku.notification');
@@ -39,6 +43,11 @@ Route::middleware('auth')->group(function () {
     Route::get('/tenants', function () {
         return view('tenants.index');
     })->middleware('can:viewAny,App\Models\Tenant')->name('tenants.index');
+
+    // Tenant self-registration submissions (owner review & approve)
+    Route::get('/tenant-registrations', function () {
+        return view('tenant-registrations.index');
+    })->middleware('can:view-tenants')->name('tenant-registrations.index');
 
     // Lease Management Routes
     Route::get('/leases', function () {
