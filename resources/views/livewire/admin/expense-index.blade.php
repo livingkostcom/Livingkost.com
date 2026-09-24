@@ -15,6 +15,7 @@
                 </h1>
                 <p class="mt-2 text-gray-600">Kelola semua pengeluaran operasional kos</p>
             </div>
+            @unless ($readOnly ?? false)
             <button wire:click="openCreateModal"
                 class="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white font-medium rounded-xl shadow-sm transition">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -22,6 +23,7 @@
                 </svg>
                 Tambah Pengeluaran
             </button>
+            @endunless
         </div>
     </div>
 
@@ -176,6 +178,7 @@
                                 Rp {{ number_format($expense->amount, 0, ',', '.') }}
                             </td>
                             <td class="px-5 py-4 text-center" wire:click.stop>
+                                @unless ($readOnly ?? false)
                                 <div class="flex items-center justify-center gap-2">
                                     <button wire:click="openEditModal({{ $expense->id }})"
                                         class="p-1.5 text-orange-600 hover:bg-orange-50 rounded-lg transition"
@@ -198,6 +201,9 @@
                                         </svg>
                                     </button>
                                 </div>
+                                @else
+                                    <span class="text-xs text-gray-400">Hanya lihat</span>
+                                @endunless
                             </td>
                         </tr>
                     @empty

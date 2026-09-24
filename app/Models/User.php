@@ -78,6 +78,30 @@ class User extends Authenticatable
         return $this->hasRole('owner');
     }
 
+    /** Property ids this user co-owns (revenue-share, not primary/managed). */
+    public function coOwnedPropertyIds(): array
+    {
+        return \Illuminate\Support\Facades\DB::table('property_owners')
+            ->where('owner_id', $this->id)
+            ->pluck('property_id')
+            ->all();
+    }
+
+    /**
+     * A "co-owner viewer": an owner-role user who does NOT primarily manage any
+     * property but co-owns at least one. They get a restricted, read-only view.
+     */
+    public function isCoOwnerViewer(): bool
+    {
+        if ($this->isSuperAdmin() || ! $this->hasRole('owner')) {
+            return false;
+        }
+
+        $managesAny = \App\Models\Property::withoutGlobalScopes()->where('owner_id', $this->id)->exists();
+
+        return ! $managesAny && ! empty($this->coOwnedPropertyIds());
+    }
+
     /**
      * The owner scope key for this user:
      * - super-admin: null (no scoping, sees everything)

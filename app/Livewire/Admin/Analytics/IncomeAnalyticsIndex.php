@@ -52,21 +52,31 @@ class IncomeAnalyticsIndex extends Component
         $startDate = Carbon::createFromFormat('Y-m-d', $this->startDate)->startOfDay();
         $endDate = Carbon::createFromFormat('Y-m-d', $this->endDate)->endOfDay();
 
-        $paidQuery = Invoice::where('status', 'paid')
+        // Co-owner viewers see (read-only) figures for their co-owned properties.
+        $user = Auth::user();
+        $coView = $user->isCoOwnerViewer();
+        $coIds = $coView ? $user->coOwnedPropertyIds() : [];
+        $inv = fn () => $coView
+            ? Invoice::withoutGlobalScopes()->whereHas('lease.room.roomType', fn ($q) => $q->whereIn('property_id', $coIds))
+            : Invoice::query();
+
+        $paidQuery = $inv()->where('status', 'paid')
             ->whereBetween('verified_at', [$startDate, $endDate]);
 
-        $pendingQuery = Invoice::where('status', 'pending')
+        $pendingQuery = $inv()->where('status', 'pending')
             ->whereBetween('created_at', [$startDate, $endDate]);
 
-        $unpaidQuery = Invoice::where('status', 'unpaid')
+        $unpaidQuery = $inv()->where('status', 'unpaid')
             ->whereBetween('created_at', [$startDate, $endDate]);
 
-        $totalQuery = Invoice::whereBetween('created_at', [$startDate, $endDate]);
+        $totalQuery = $inv()->whereBetween('created_at', [$startDate, $endDate]);
 
         $received = (float) $paidQuery->sum('amount');
 
         // Expenses in the same period
-        $expenses = (float) Expense::whereBetween('expense_date', [$startDate, $endDate])->sum('amount');
+        $expenses = (float) ($coView
+            ? Expense::withoutGlobalScopes()->whereIn('property_id', $coIds)
+            : Expense::query())->whereBetween('expense_date', [$startDate, $endDate])->sum('amount');
 
         // Platform fee on online (DOKU) payments settled in this period
         $ownerId = Auth::user()->ownerId();

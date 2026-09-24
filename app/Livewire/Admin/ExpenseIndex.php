@@ -159,7 +159,10 @@ class ExpenseIndex extends Component
 
     public function getSummary(): array
     {
-        $query = Expense::query();
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $query = $user->isCoOwnerViewer()
+            ? Expense::withoutGlobalScopes()->whereIn('property_id', $user->coOwnedPropertyIds())
+            : Expense::query();
 
         if ($this->monthFilter) {
             $query->whereYear('expense_date', substr($this->monthFilter, 0, 4))
@@ -183,7 +186,16 @@ class ExpenseIndex extends Component
 
     public function render()
     {
-        $query = Expense::with(['property', 'creator']);
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $coView = $user->isCoOwnerViewer();
+
+        if ($coView) {
+            // Co-owner: read-only expenses of their co-owned properties.
+            $query = Expense::withoutGlobalScopes()->with(['property', 'creator'])
+                ->whereIn('property_id', $user->coOwnedPropertyIds());
+        } else {
+            $query = Expense::with(['property', 'creator']);
+        }
 
         if ($this->search) {
             $query->where(function ($q) {
@@ -207,8 +219,11 @@ class ExpenseIndex extends Component
 
         return view('livewire.admin.expense-index', [
             'expenses' => $query->orderByDesc('expense_date')->paginate(10),
-            'properties' => Property::orderBy('name')->get(),
+            'properties' => $coView
+                ? Property::withoutGlobalScopes()->whereIn('id', $user->coOwnedPropertyIds())->orderBy('name')->get()
+                : Property::orderBy('name')->get(),
             'summary' => $this->getSummary(),
+            'readOnly' => $coView,
         ]);
     }
 }

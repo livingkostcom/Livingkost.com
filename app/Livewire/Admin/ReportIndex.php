@@ -48,7 +48,15 @@ class ReportIndex extends Component
      */
     public function getPaymentRecap(): array
     {
-        $query = Invoice::where('month_year', $this->monthYear)
+        // Co-owner viewers get a read-only recap for their co-owned properties.
+        $user = Auth::user();
+        $coView = $user->isCoOwnerViewer();
+        $coIds = $coView ? $user->coOwnedPropertyIds() : [];
+
+        $query = ($coView
+                ? Invoice::withoutGlobalScopes()->whereHas('lease.room.roomType', fn ($q) => $q->whereIn('property_id', $coIds))
+                : Invoice::query())
+            ->where('month_year', $this->monthYear)
             ->with(['lease.tenant.user', 'lease.room.roomType.property']);
 
         if ($this->propertyFilter) {
@@ -68,7 +76,9 @@ class ReportIndex extends Component
         // Net income for this month = collected − expenses − platform fee
         $monthStart = Carbon::createFromFormat('Y-m', $this->monthYear)->startOfMonth();
         $monthEnd = (clone $monthStart)->endOfMonth();
-        $expenses = (float) Expense::whereBetween('expense_date', [$monthStart, $monthEnd])->sum('amount');
+        $expenses = (float) ($coView
+            ? Expense::withoutGlobalScopes()->whereIn('property_id', $coIds)
+            : Expense::query())->whereBetween('expense_date', [$monthStart, $monthEnd])->sum('amount');
 
         $ownerId = Auth::user()->ownerId();
         $feePercent = (float) (OwnerWallet::where('owner_id', $ownerId)->value('platform_fee_percent') ?? 0);

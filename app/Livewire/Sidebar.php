@@ -202,6 +202,12 @@ class Sidebar extends Component
             ];
         }
 
+        // Co-owner viewers get a restricted, read-only menu.
+        if ($user->isCoOwnerViewer()) {
+            $allowed = ['dashboard', 'properties.index', 'rooms.index', 'analytics.income', 'reports.index', 'expenses.index', 'wallet.index', 'settings.index'];
+            $items = array_values(array_filter($items, fn ($item) => in_array($item['route'] ?? null, $allowed, true)));
+        }
+
         return $items;
     }
 

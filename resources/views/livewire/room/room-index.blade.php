@@ -8,6 +8,7 @@
                     Ruangan</h1>
                 <p class="mt-2 text-gray-600">Kelola semua ruangan di properti Anda</p>
             </div>
+            @unless ($readOnly ?? false)
             <button wire:click="openCreateModal"
                 class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-orange-600 to-orange-600 hover:from-orange-700 hover:to-orange-700 text-white font-semibold rounded-xl transition duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl whitespace-nowrap">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -15,6 +16,7 @@
                 </svg>
                 Tambah Ruangan
             </button>
+            @endunless
         </div>
     </div>
 
@@ -173,6 +175,7 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                @unless ($readOnly ?? false)
                                 <div class="flex gap-2">
                                     <button wire:click="openEditModal({{ $room->id }})"
                                         class="inline-flex items-center p-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition font-medium text-sm border border-orange-200 shadow-sm hover:shadow-md" title="Edit">
@@ -193,6 +196,9 @@
                                         </svg>
                                     </button>
                                 </div>
+                                @else
+                                    <span class="text-xs text-gray-400">Hanya lihat</span>
+                                @endunless
                             </td>
                         </tr>
                     @empty

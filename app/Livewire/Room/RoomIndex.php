@@ -136,7 +136,17 @@ class RoomIndex extends Component
 
     public function render()
     {
-        $query = Room::with('roomType.property');
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $coView = $user->isCoOwnerViewer();
+
+        if ($coView) {
+            // Co-owner: read-only view of rooms in their co-owned properties.
+            $coIds = $user->coOwnedPropertyIds();
+            $query = Room::withoutGlobalScopes()->with('roomType.property')
+                ->whereHas('roomType', fn ($q) => $q->whereIn('property_id', $coIds));
+        } else {
+            $query = Room::with('roomType.property');
+        }
 
         if ($this->search) {
             $query->where('room_number', 'like', "%{$this->search}%");
@@ -153,11 +163,14 @@ class RoomIndex extends Component
         }
 
         $rooms = $query->paginate(10);
-        $properties = Property::where('status', 'active')->get();
+        $properties = $coView
+            ? Property::withoutGlobalScopes()->whereIn('id', $user->coOwnedPropertyIds())->get()
+            : Property::where('status', 'active')->get();
 
         return view('livewire.room.room-index', [
             'rooms' => $rooms,
             'properties' => $properties,
+            'readOnly' => $coView,
         ]);
     }
 }
