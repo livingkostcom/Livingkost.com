@@ -57,9 +57,24 @@ class LeaseObserver
      */
     public function updated(Lease $lease): void
     {
-        // Handle room status update when lease is terminated or closed
-        if ($lease->isDirty('status') && in_array($lease->status, ['closed', 'terminated'])) {
-            $lease->room->update(['status' => 'available']);
+        // Keep the room's stored status in sync with the lease lifecycle.
+        if (! $lease->isDirty('status')) {
+            return;
+        }
+
+        $room = $lease->room;
+        if (! $room) {
+            return;
+        }
+
+        if ($lease->status === 'active') {
+            $room->update(['status' => 'occupied']);
+        } elseif (in_array($lease->status, ['completed', 'terminated', 'cancelled'], true)) {
+            // Free the room once no active lease holds it (prev bug: only handled
+            // 'closed'/'terminated', so completed/cancelled left rooms stuck occupied).
+            if (! $room->activeLease()) {
+                $room->update(['status' => 'available']);
+            }
         }
     }
 
