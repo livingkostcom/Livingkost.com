@@ -140,22 +140,25 @@ class RoomIndex extends Component
         $coView = $user->isCoOwnerViewer();
 
         if ($coView) {
-            // Co-owner: read-only view of rooms in their co-owned properties.
+            // Co-owner: read-only rooms in their co-owned properties. Resolve the
+            // room-type ids without owner scopes (the related roomType is scoped).
             $coIds = $user->coOwnedPropertyIds();
-            $query = Room::withoutGlobalScopes()->with('roomType.property')
-                ->whereHas('roomType', fn ($q) => $q->whereIn('property_id', $coIds));
+            $propIds = ($this->filterProperty && in_array((int) $this->filterProperty, array_map('intval', $coIds), true))
+                ? [(int) $this->filterProperty]
+                : $coIds;
+            $rtIds = \App\Models\RoomType::withoutGlobalScopes()->whereIn('property_id', $propIds)->pluck('id');
+            $query = Room::withoutGlobalScopes()->with('roomType.property')->whereIn('room_type_id', $rtIds);
         } else {
             $query = Room::with('roomType.property');
+            if ($this->filterProperty) {
+                $query->whereHas('roomType', function ($q) {
+                    $q->where('property_id', $this->filterProperty);
+                });
+            }
         }
 
         if ($this->search) {
             $query->where('room_number', 'like', "%{$this->search}%");
-        }
-
-        if ($this->filterProperty) {
-            $query->whereHas('roomType', function ($q) {
-                $q->where('property_id', $this->filterProperty);
-            });
         }
 
         if ($this->filterStatus) {

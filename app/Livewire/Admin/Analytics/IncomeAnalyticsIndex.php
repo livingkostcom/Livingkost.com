@@ -56,8 +56,9 @@ class IncomeAnalyticsIndex extends Component
         $user = Auth::user();
         $coView = $user->isCoOwnerViewer();
         $coIds = $coView ? $user->coOwnedPropertyIds() : [];
+        $leaseIds = $coView ? $user->coOwnedLeaseIds() : [];
         $inv = fn () => $coView
-            ? Invoice::withoutGlobalScopes()->whereHas('lease.room.roomType', fn ($q) => $q->whereIn('property_id', $coIds))
+            ? Invoice::withoutGlobalScopes()->whereIn('lease_id', $leaseIds)
             : Invoice::query();
 
         $paidQuery = $inv()->where('status', 'paid')

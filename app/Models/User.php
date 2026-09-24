@@ -87,6 +87,29 @@ class User extends Authenticatable
             ->all();
     }
 
+    /** Room ids inside this user's co-owned properties (bypasses owner scopes). */
+    public function coOwnedRoomIds(): array
+    {
+        $coIds = $this->coOwnedPropertyIds();
+        if (empty($coIds)) {
+            return [];
+        }
+        $rtIds = \App\Models\RoomType::withoutGlobalScopes()->whereIn('property_id', $coIds)->pluck('id');
+
+        return \App\Models\Room::withoutGlobalScopes()->whereIn('room_type_id', $rtIds)->pluck('id')->all();
+    }
+
+    /** Lease ids inside this user's co-owned properties (bypasses owner scopes). */
+    public function coOwnedLeaseIds(): array
+    {
+        $roomIds = $this->coOwnedRoomIds();
+        if (empty($roomIds)) {
+            return [];
+        }
+
+        return \App\Models\Lease::withoutGlobalScopes()->whereIn('room_id', $roomIds)->pluck('id')->all();
+    }
+
     /**
      * A "co-owner viewer": an owner-role user who does NOT primarily manage any
      * property but co-owns at least one. They get a restricted, read-only view.

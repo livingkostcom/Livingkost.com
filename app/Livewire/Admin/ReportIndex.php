@@ -52,9 +52,10 @@ class ReportIndex extends Component
         $user = Auth::user();
         $coView = $user->isCoOwnerViewer();
         $coIds = $coView ? $user->coOwnedPropertyIds() : [];
+        $leaseIds = $coView ? $user->coOwnedLeaseIds() : [];
 
         $query = ($coView
-                ? Invoice::withoutGlobalScopes()->whereHas('lease.room.roomType', fn ($q) => $q->whereIn('property_id', $coIds))
+                ? Invoice::withoutGlobalScopes()->whereIn('lease_id', $leaseIds)
                 : Invoice::query())
             ->where('month_year', $this->monthYear)
             ->with(['lease.tenant.user', 'lease.room.roomType.property']);
