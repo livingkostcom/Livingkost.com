@@ -147,7 +147,12 @@ class RoomIndex extends Component
                 ? [(int) $this->filterProperty]
                 : $coIds;
             $rtIds = \App\Models\RoomType::withoutGlobalScopes()->whereIn('property_id', $propIds)->pluck('id');
-            $query = Room::withoutGlobalScopes()->with('roomType.property')->whereIn('room_type_id', $rtIds);
+            // Eager-load the related roomType/property WITHOUT their owner scopes,
+            // otherwise they resolve to null for a co-owner (blade reads ->name).
+            $query = Room::withoutGlobalScopes()
+                ->with(['roomType' => fn ($q) => $q->withoutGlobalScopes()
+                    ->with(['property' => fn ($p) => $p->withoutGlobalScopes()])])
+                ->whereIn('room_type_id', $rtIds);
         } else {
             $query = Room::with('roomType.property');
             if ($this->filterProperty) {
