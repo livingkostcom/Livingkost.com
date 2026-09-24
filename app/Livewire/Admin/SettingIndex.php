@@ -78,7 +78,9 @@ class SettingIndex extends Component
             'bank_account_number' => 'nullable|string|max:50',
             'bank_account_holder' => 'nullable|string|max:255',
             'payment_instructions' => 'nullable|string',
-            'dp_amount' => 'required|numeric|min:0',
+            'dp_amount' => 'required|numeric|min:0|max:500000',
+        ], [
+            'dp_amount.max' => 'Nominal DP maksimal Rp 500.000.',
         ]);
 
         $keys = ['bank_name', 'bank_account_number', 'bank_account_holder', 'payment_instructions', 'dp_amount'];

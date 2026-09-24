@@ -74,7 +74,8 @@ class DokuWebhookController extends Controller
             }
             $reg->update(['dp_status' => 'paid', 'dp_paid_at' => now()]);
             if ($reg->dp_amount > 0) {
-                WalletService::credit($reg->owner_id, (float) $reg->dp_amount, null, "DP pendaftaran: {$reg->name}");
+                // Deposit is credited in full (no platform fee).
+                WalletService::credit($reg->owner_id, (float) $reg->dp_amount, null, "DP pendaftaran: {$reg->name}", applyFee: false);
             }
         } elseif (in_array($status, ['FAILED', 'EXPIRED'], true)) {
             $reg->update(['dp_status' => strtolower($status) === 'expired' ? 'expired' : 'failed']);

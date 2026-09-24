@@ -22,12 +22,14 @@ class WalletService
      * Credit an owner's wallet (e.g. a tenant paid online). Returns the wallet.
      * Applies the configured platform fee; the net amount is what's credited.
      */
-    public static function credit(int $ownerId, float $grossAmount, ?Invoice $invoice = null, ?string $description = null): OwnerWallet
+    public static function credit(int $ownerId, float $grossAmount, ?Invoice $invoice = null, ?string $description = null, bool $applyFee = true): OwnerWallet
     {
-        return DB::transaction(function () use ($ownerId, $grossAmount, $invoice, $description) {
+        return DB::transaction(function () use ($ownerId, $grossAmount, $invoice, $description, $applyFee) {
             $wallet = OwnerWallet::lockForUpdate()->firstOrCreate(['owner_id' => $ownerId]);
 
-            $fee = round($grossAmount * ((float) $wallet->platform_fee_percent / 100), 2);
+            // Deposits (DP) are credited in full — the platform fee only applies
+            // to rent/invoice payments, not to the tenant's deposit.
+            $fee = $applyFee ? round($grossAmount * ((float) $wallet->platform_fee_percent / 100), 2) : 0.0;
             $net = round($grossAmount - $fee, 2);
 
             $wallet->balance = (float) $wallet->balance + $net;
