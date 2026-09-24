@@ -117,6 +117,7 @@ class Setting extends Model
             'bank_account_number' => '',
             'bank_account_holder' => '',
             'payment_instructions' => '',
+            'dp_amount' => '0', // down-payment nominal for tenant self-registration (0 = none)
 
             // Late Fee
             'late_fee_enabled' => '0',

@@ -83,6 +83,25 @@
                         @if ($reg->note)
                             <p class="mt-2 text-sm text-gray-500 italic">"{{ $reg->note }}"</p>
                         @endif
+
+                        @if ($reg->dp_method)
+                            <div class="mt-2.5 flex flex-wrap items-center gap-2 text-xs">
+                                <span class="font-semibold text-gray-600">DP Rp {{ number_format((float) $reg->dp_amount, 0, ',', '.') }}</span>
+                                @if ($reg->dp_method === 'online')
+                                    @if ($reg->dp_status === 'paid')
+                                        <span class="px-2 py-0.5 rounded-full bg-green-50 text-green-600 font-bold">Online · Lunas ✓</span>
+                                    @else
+                                        <span class="px-2 py-0.5 rounded-full bg-yellow-50 text-yellow-700 font-bold">Online · Belum bayar</span>
+                                    @endif
+                                @else
+                                    <span class="px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 font-bold">Transfer Manual</span>
+                                    @if ($reg->dp_proof)
+                                        <a href="{{ \Illuminate\Support\Facades\Storage::url($reg->dp_proof) }}" target="_blank" class="text-orange-600 font-semibold hover:underline">Lihat Bukti DP</a>
+                                    @endif
+                                @endif
+                            </div>
+                        @endif
+
                         <div class="mt-2 flex items-center gap-4 text-xs text-gray-400">
                             <span>{{ $reg->created_at->format('d/m/Y H:i') }}</span>
                             @if ($reg->ktp_photo)

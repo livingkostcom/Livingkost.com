@@ -3,8 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\PaymentTransaction;
+use App\Models\TenantRegistration;
 use App\Services\DokuService;
 use App\Services\PaymentSettlementService;
+use App\Services\WalletService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -32,6 +34,12 @@ class DokuWebhookController extends Controller
             return response()->json(['message' => 'no invoice_number'], 200);
         }
 
+        // Tenant self-registration DP payments use a DPREG-* reference (no invoice).
+        if (str_starts_with($invoiceNumber, 'DPREG-')) {
+            $this->settleRegistrationDp($invoiceNumber, $status, $payload);
+            return response()->json(['message' => 'ok'], 200);
+        }
+
         $pt = PaymentTransaction::where('reference', $invoiceNumber)->first();
         if (! $pt) {
             Log::warning('DOKU webhook: transaction not found', ['invoice_number' => $invoiceNumber]);
@@ -49,5 +57,27 @@ class DokuWebhookController extends Controller
 
         // Always 200 on a verified notification so DOKU stops retrying.
         return response()->json(['message' => 'ok'], 200);
+    }
+
+    /** Settle a tenant self-registration DP payment (marks paid + credits owner wallet). */
+    private function settleRegistrationDp(string $reference, string $status, array $payload): void
+    {
+        $reg = TenantRegistration::withoutGlobalScopes()->where('dp_reference', $reference)->first();
+        if (! $reg) {
+            Log::warning('DOKU webhook: registration DP not found', ['reference' => $reference]);
+            return;
+        }
+
+        if ($status === 'SUCCESS') {
+            if ($reg->dp_status === 'paid') {
+                return; // idempotent
+            }
+            $reg->update(['dp_status' => 'paid', 'dp_paid_at' => now()]);
+            if ($reg->dp_amount > 0) {
+                WalletService::credit($reg->owner_id, (float) $reg->dp_amount, null, "DP pendaftaran: {$reg->name}");
+            }
+        } elseif (in_array($status, ['FAILED', 'EXPIRED'], true)) {
+            $reg->update(['dp_status' => strtolower($status) === 'expired' ? 'expired' : 'failed']);
+        }
     }
 }

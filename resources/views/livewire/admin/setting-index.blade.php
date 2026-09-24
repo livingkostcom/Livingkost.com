@@ -157,6 +157,19 @@
                     @enderror
                 </div>
 
+                <div class="border-t border-gray-100 pt-5">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nominal DP Pendaftaran (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-sm">Rp</span>
+                        <input wire:model="dp_amount" type="number" min="0" step="1000" placeholder="0"
+                            class="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 transition">
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">DP yang harus dibayar calon penyewa saat mengisi formulir pendaftaran mandiri. Isi <b>0</b> untuk menonaktifkan DP. Jika kos Anda bermitra pembayaran online, calon penyewa diarahkan ke pembayaran DOKU; jika tidak, mereka transfer ke rekening di atas & unggah bukti.</p>
+                    @error('dp_amount')
+                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 {{-- Preview Card --}}
                 @if ($bank_name || $bank_account_number)
                     <div class="bg-gradient-to-r from-orange-600 to-orange-700 rounded-xl p-5 text-white">

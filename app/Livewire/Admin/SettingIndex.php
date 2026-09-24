@@ -20,6 +20,7 @@ class SettingIndex extends Component
     public string $bank_account_number = '';
     public string $bank_account_holder = '';
     public string $payment_instructions = '';
+    public string $dp_amount = '0';
 
     // Late Fee
     public string $late_fee_enabled = '0';
@@ -77,9 +78,10 @@ class SettingIndex extends Component
             'bank_account_number' => 'nullable|string|max:50',
             'bank_account_holder' => 'nullable|string|max:255',
             'payment_instructions' => 'nullable|string',
+            'dp_amount' => 'required|numeric|min:0',
         ]);
 
-        $keys = ['bank_name', 'bank_account_number', 'bank_account_holder', 'payment_instructions'];
+        $keys = ['bank_name', 'bank_account_number', 'bank_account_holder', 'payment_instructions', 'dp_amount'];
         foreach ($keys as $key) {
             Setting::set($key, $this->$key, 'payment');
         }

@@ -12,10 +12,13 @@ class TenantRegistration extends Model
     protected $fillable = [
         'owner_id', 'name', 'email', 'phone', 'nik', 'emergency_contact',
         'ktp_photo', 'note', 'status', 'reviewed_at', 'reviewed_by', 'tenant_id',
+        'dp_amount', 'dp_method', 'dp_status', 'dp_reference', 'dp_proof', 'dp_paid_at',
     ];
 
     protected $casts = [
         'reviewed_at' => 'datetime',
+        'dp_paid_at' => 'datetime',
+        'dp_amount' => 'decimal:2',
     ];
 
     public function reviewer(): BelongsTo
