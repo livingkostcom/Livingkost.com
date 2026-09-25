@@ -44,6 +44,29 @@ class ReportIndex extends Component
     }
 
     /**
+     * Eager-load spec for an invoice's related lease/tenant/room/property.
+     * For co-owner viewers every related model carries its own owner global
+     * scope, which would null it out for a co-owner, so we strip the scopes.
+     */
+    private function invoiceRelations(bool $coView): array
+    {
+        if (! $coView) {
+            return ['lease.tenant.user', 'lease.room.roomType.property'];
+        }
+
+        return [
+            'lease' => fn ($q) => $q->withoutGlobalScopes()->with([
+                'tenant' => fn ($t) => $t->withoutGlobalScopes()->with(['user']),
+                'room' => fn ($r) => $r->withoutGlobalScopes()->with([
+                    'roomType' => fn ($rt) => $rt->withoutGlobalScopes()->with([
+                        'property' => fn ($p) => $p->withoutGlobalScopes(),
+                    ]),
+                ]),
+            ]),
+        ];
+    }
+
+    /**
      * Rekap Pembayaran Bulanan
      */
     public function getPaymentRecap(): array
@@ -58,7 +81,7 @@ class ReportIndex extends Component
                 ? Invoice::withoutGlobalScopes()->whereIn('lease_id', $leaseIds)
                 : Invoice::query())
             ->where('month_year', $this->monthYear)
-            ->with(['lease.tenant.user', 'lease.room.roomType.property']);
+            ->with($this->invoiceRelations($coView));
 
         if ($this->propertyFilter) {
             $query->whereHas('lease.room.roomType.property', function ($q) {
@@ -114,7 +137,14 @@ class ReportIndex extends Component
      */
     public function getOccupancyReport(): array
     {
-        $properties = Property::with(['roomTypes.rooms'])->get();
+        $user = Auth::user();
+        $coView = $user->isCoOwnerViewer();
+
+        $properties = ($coView
+            ? Property::withoutGlobalScopes()->whereIn('id', $user->coOwnedPropertyIds())
+                ->with(['roomTypes' => fn ($q) => $q->withoutGlobalScopes()
+                    ->with(['rooms' => fn ($r) => $r->withoutGlobalScopes()])])
+            : Property::with(['roomTypes.rooms']))->get();
 
         $report = [];
         foreach ($properties as $property) {
@@ -152,8 +182,14 @@ class ReportIndex extends Component
      */
     public function getOutstandingInvoices()
     {
-        $query = Invoice::whereIn('status', ['unpaid', 'pending'])
-            ->with(['lease.tenant.user', 'lease.room.roomType.property'])
+        $user = Auth::user();
+        $coView = $user->isCoOwnerViewer();
+
+        $query = ($coView
+                ? Invoice::withoutGlobalScopes()->whereIn('lease_id', $user->coOwnedLeaseIds())
+                : Invoice::query())
+            ->whereIn('status', ['unpaid', 'pending'])
+            ->with($this->invoiceRelations($coView))
             ->orderBy('due_date', 'asc');
 
         if ($this->propertyFilter) {
@@ -170,12 +206,35 @@ class ReportIndex extends Component
      */
     public function getTenantReport(): array
     {
-        $active = Tenant::where('status', 'active')->count();
-        $inactive = Tenant::where('status', 'inactive')->count();
-        $evicted = Tenant::where('status', 'evicted')->count();
+        $user = Auth::user();
+        $coView = $user->isCoOwnerViewer();
+        $leaseIds = $coView ? $user->coOwnedLeaseIds() : [];
 
-        $tenants = Tenant::with(['user', 'leases' => function ($q) {
-            $q->with(['room.roomType.property', 'invoices'])->latest('start_date');
+        if ($coView) {
+            $tenantIds = Lease::withoutGlobalScopes()->whereIn('id', $leaseIds)
+                ->pluck('tenant_id')->unique()->all();
+            $base = fn () => Tenant::withoutGlobalScopes()->whereIn('id', $tenantIds);
+        } else {
+            $base = fn () => Tenant::query();
+        }
+
+        $active = $base()->where('status', 'active')->count();
+        $inactive = $base()->where('status', 'inactive')->count();
+        $evicted = $base()->where('status', 'evicted')->count();
+
+        $tenants = $base()->with(['user', 'leases' => function ($q) use ($coView, $leaseIds) {
+            if ($coView) {
+                $q->withoutGlobalScopes()->whereIn('id', $leaseIds)->with([
+                    'room' => fn ($r) => $r->withoutGlobalScopes()->with([
+                        'roomType' => fn ($rt) => $rt->withoutGlobalScopes()->with([
+                            'property' => fn ($p) => $p->withoutGlobalScopes(),
+                        ]),
+                    ]),
+                    'invoices' => fn ($i) => $i->withoutGlobalScopes(),
+                ])->latest('start_date');
+            } else {
+                $q->with(['room.roomType.property', 'invoices'])->latest('start_date');
+            }
         }])
             ->orderBy('status')
             ->get()
@@ -237,7 +296,11 @@ class ReportIndex extends Component
 
     public function render()
     {
-        $properties = Property::orderBy('name')->get();
+        $user = Auth::user();
+        $properties = $user->isCoOwnerViewer()
+            ? Property::withoutGlobalScopes()->whereIn('id', $user->coOwnedPropertyIds())
+                ->orderBy('name')->get()
+            : Property::orderBy('name')->get();
 
         $data = match ($this->tab) {
             'payment' => ['paymentRecap' => $this->getPaymentRecap()],

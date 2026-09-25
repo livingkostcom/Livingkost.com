@@ -141,7 +141,12 @@ class IncomeAnalyticsIndex extends Component
         $startDate = Carbon::createFromFormat('Y-m-d', $this->startDate)->startOfDay();
         $endDate = Carbon::createFromFormat('Y-m-d', $this->endDate)->endOfDay();
 
-        $data = Invoice::where('status', 'paid')
+        $user = Auth::user();
+        $base = $user->isCoOwnerViewer()
+            ? Invoice::withoutGlobalScopes()->whereIn('lease_id', $user->coOwnedLeaseIds())
+            : Invoice::query();
+
+        $data = $base->where('status', 'paid')
             ->whereBetween('verified_at', [$startDate, $endDate])
             ->select(
                 DB::raw('DATE(verified_at) as date'),
@@ -170,15 +175,22 @@ class IncomeAnalyticsIndex extends Component
         $startDate = Carbon::createFromFormat('Y-m-d', $this->startDate)->startOfDay();
         $endDate = Carbon::createFromFormat('Y-m-d', $this->endDate)->endOfDay();
 
-        $paid = Invoice::where('status', 'paid')
+        $user = Auth::user();
+        $coView = $user->isCoOwnerViewer();
+        $leaseIds = $coView ? $user->coOwnedLeaseIds() : [];
+        $inv = fn () => $coView
+            ? Invoice::withoutGlobalScopes()->whereIn('lease_id', $leaseIds)
+            : Invoice::query();
+
+        $paid = $inv()->where('status', 'paid')
             ->whereBetween('verified_at', [$startDate, $endDate])
             ->count();
 
-        $pending = Invoice::where('status', 'pending')
+        $pending = $inv()->where('status', 'pending')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
-        $unpaid = Invoice::where('status', 'unpaid')
+        $unpaid = $inv()->where('status', 'unpaid')
             ->whereBetween('created_at', [$startDate, $endDate])
             ->count();
 
