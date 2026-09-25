@@ -23,6 +23,12 @@ class Dashboard extends Component
 {
     public function getOwnerMetrics(): array
     {
+        // Co-owner viewers: metrics for their co-owned properties (bypasses the
+        // single-owner scope; the data belongs to the primary owner).
+        if (Auth::user()->isCoOwnerViewer()) {
+            return $this->coOwnerMetrics(Auth::user());
+        }
+
         $totalRooms = Room::count();
         $occupiedRooms = Room::where('status', 'occupied')->count();
         $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100, 1) : 0;
@@ -80,6 +86,67 @@ class Dashboard extends Component
             'expense_this_month' => $expenseThisMonth,
             'platform_fee_this_month' => $platformFeeThisMonth,
             'net_income_this_month' => $netIncomeThisMonth,
+        ];
+    }
+
+    /** Dashboard metrics for a co-owner (read-only, their co-owned properties). */
+    private function coOwnerMetrics(User $user): array
+    {
+        $propIds = $user->coOwnedPropertyIds();
+        $roomIds = $user->coOwnedRoomIds();
+        $leaseIds = $user->coOwnedLeaseIds();
+
+        $totalRooms = count($roomIds);
+        $occupiedRooms = Room::withoutGlobalScopes()->whereIn('id', $roomIds)->where('status', 'occupied')->count();
+        $availableRooms = Room::withoutGlobalScopes()->whereIn('id', $roomIds)->where('status', 'available')->count();
+        $occupancyRate = $totalRooms > 0 ? round(($occupiedRooms / $totalRooms) * 100, 1) : 0;
+
+        $activeLeasesQuery = Lease::withoutGlobalScopes()->whereIn('id', $leaseIds)->where('status', 'active');
+        $activeLeases = (clone $activeLeasesQuery)->count();
+        $activeTenants = (clone $activeLeasesQuery)->distinct()->count('tenant_id');
+
+        // Income = this owner's SHARE of net income for each co-owned property.
+        $shares = DB::table('property_owners as po')
+            ->join('properties as p', 'p.id', '=', 'po.property_id')
+            ->where('po.owner_id', $user->id)
+            ->get(['po.property_id', 'po.share_percent', 'p.platform_fee_percent']);
+
+        $income = 0.0;
+        $platformFee = 0.0;
+        foreach ($shares as $mp) {
+            $rtIds = \App\Models\RoomType::withoutGlobalScopes()->where('property_id', $mp->property_id)->pluck('id');
+            $rIds = Room::withoutGlobalScopes()->whereIn('room_type_id', $rtIds)->pluck('id');
+            $lIds = Lease::withoutGlobalScopes()->whereIn('room_id', $rIds)->pluck('id');
+            $gross = (float) Invoice::withoutGlobalScopes()
+                ->whereIn('lease_id', $lIds)
+                ->where('status', 'paid')
+                ->whereYear('verified_at', now()->year)->whereMonth('verified_at', now()->month)
+                ->sum('amount');
+            $share = (float) $mp->share_percent / 100;
+            $income += $gross * $share;
+            $platformFee += $gross * ((float) $mp->platform_fee_percent / 100) * $share;
+        }
+        $income = round($income, 2);
+        $platformFee = round($platformFee, 2);
+
+        $expense = (float) Expense::withoutGlobalScopes()->whereIn('property_id', $propIds)
+            ->whereYear('expense_date', now()->year)->whereMonth('expense_date', now()->month)->sum('amount');
+
+        return [
+            'total_properties' => count($propIds),
+            'total_rooms' => $totalRooms,
+            'occupied_rooms' => $occupiedRooms,
+            'available_rooms' => $availableRooms,
+            'occupancy_rate' => $occupancyRate,
+            'income_this_month' => $income,
+            'overdue_invoices' => Invoice::withoutGlobalScopes()->whereIn('lease_id', $leaseIds)->where('status', 'unpaid')->where('due_date', '<', now())->count(),
+            'pending_payments' => Invoice::withoutGlobalScopes()->whereIn('lease_id', $leaseIds)->where('status', 'pending')->count(),
+            'pending_maintenance' => MaintenanceRequest::withoutGlobalScopes()->whereIn('room_id', $roomIds)->where('status', 'pending')->count(),
+            'active_tenants' => $activeTenants,
+            'active_leases' => $activeLeases,
+            'expense_this_month' => $expense,
+            'platform_fee_this_month' => $platformFee,
+            'net_income_this_month' => round($income - $expense - $platformFee, 2),
         ];
     }
 
