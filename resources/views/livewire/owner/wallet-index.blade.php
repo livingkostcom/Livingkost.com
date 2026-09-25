@@ -14,22 +14,41 @@
     </div>
 
     <!-- Balance cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
         <div class="bg-gradient-to-br from-orange-600 to-orange-500 text-white rounded-2xl shadow-lg p-6">
             <p class="text-sm text-orange-100">Saldo Tersedia</p>
-            <p class="text-3xl font-bold mt-1">Rp {{ number_format($wallet->balance, 0, ',', '.') }}</p>
-            <p class="text-xs text-orange-100 mt-2">Akan dicairkan oleh admin ke rekening Anda</p>
+            <p class="text-3xl font-bold mt-1">Rp {{ number_format($figures['available'], 0, ',', '.') }}</p>
+            <p class="text-xs text-orange-100 mt-2">Bagian bersih Anda, akan dicairkan oleh admin ke rekening Anda</p>
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <p class="text-sm text-gray-500">Total Masuk</p>
-            <p class="text-2xl font-bold text-green-600 mt-1">Rp {{ number_format($wallet->total_earned, 0, ',', '.') }}</p>
-            <p class="text-xs text-gray-400 mt-2">Sepanjang waktu (setelah fee platform)</p>
+            <p class="text-2xl font-bold text-green-600 mt-1">Rp {{ number_format($figures['total_earned'], 0, ',', '.') }}</p>
+            <p class="text-xs text-gray-400 mt-2">Total bagian bersih Anda sepanjang waktu</p>
         </div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <p class="text-sm text-gray-500">Total Dicairkan</p>
-            <p class="text-2xl font-bold text-gray-700 mt-1">Rp {{ number_format($wallet->total_disbursed, 0, ',', '.') }}</p>
+            <p class="text-2xl font-bold text-gray-700 mt-1">Rp {{ number_format($figures['total_disbursed'], 0, ',', '.') }}</p>
             <p class="text-xs text-gray-400 mt-2">Sudah ditransfer ke rekening Anda</p>
         </div>
+    </div>
+
+    <!-- Breakdown of the available balance -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-8">
+        <p class="text-sm font-semibold text-gray-700 mb-3">Rincian Saldo Tersedia</p>
+        <div class="space-y-2 text-sm">
+            <div class="flex justify-between"><span class="text-gray-500">Total Pemasukan (bagian Anda)</span><span class="font-medium text-gray-900">Rp {{ number_format($figures['income'], 0, ',', '.') }}</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Fee Living Kost</span><span class="font-medium text-red-600">− Rp {{ number_format($figures['platform_fee'], 0, ',', '.') }}</span></div>
+            <div class="flex justify-between"><span class="text-gray-500">Total Pengeluaran (bagian Anda)</span><span class="font-medium text-red-600">− Rp {{ number_format($figures['expense'], 0, ',', '.') }}</span></div>
+            <div class="flex justify-between border-t border-gray-100 pt-2"><span class="text-gray-600 font-medium">Pendapatan Bersih (bagian Anda)</span><span class="font-semibold text-gray-900">Rp {{ number_format($figures['profit_share'], 0, ',', '.') }}</span></div>
+            @unless ($isCoOwner)
+                @if ($figures['deposits'] > 0)
+                    <div class="flex justify-between"><span class="text-gray-500">Deposit / DP diterima</span><span class="font-medium text-green-600">+ Rp {{ number_format($figures['deposits'], 0, ',', '.') }}</span></div>
+                @endif
+            @endunless
+            <div class="flex justify-between"><span class="text-gray-500">Sudah dicairkan</span><span class="font-medium text-red-600">− Rp {{ number_format($figures['total_disbursed'], 0, ',', '.') }}</span></div>
+            <div class="flex justify-between border-t border-gray-200 pt-2"><span class="text-gray-800 font-semibold">Saldo Tersedia</span><span class="font-bold text-orange-600">Rp {{ number_format($figures['available'], 0, ',', '.') }}</span></div>
+        </div>
+        <p class="text-xs text-gray-400 mt-3">Perhitungan mengikuti persentase bagi hasil Anda pada tiap properti.</p>
     </div>
 
     @if (!$wallet->online_payment_enabled)

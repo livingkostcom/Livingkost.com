@@ -21,10 +21,18 @@ class WalletIndex extends Component
 
     public function render()
     {
-        $ownerId = Auth::user()->ownerId() ?? Auth::id();
+        $user = Auth::user();
+        $ownerId = $user->ownerId() ?? $user->id;
         $wallet = WalletService::forOwner($ownerId);
 
+        // Available balance & totals are computed from source data so each owner
+        // sees their exact final share (income − fee − expense) × share.
+        $figures = WalletService::figuresFor($user);
+
         $transactions = WalletTransaction::where('owner_id', $ownerId)
+            // DP deposits belong to the registration owner only; never show them
+            // to a co-owner viewer.
+            ->when($user->isCoOwnerViewer(), fn ($q) => $q->where('description', 'not like', 'DP pendaftaran%'))
             ->latest()
             ->paginate(15);
 
@@ -35,6 +43,8 @@ class WalletIndex extends Component
 
         return view('livewire.owner.wallet-index', [
             'wallet' => $wallet,
+            'figures' => $figures,
+            'isCoOwner' => $user->isCoOwnerViewer(),
             'transactions' => $transactions,
             'disbursements' => $disbursements,
         ]);
