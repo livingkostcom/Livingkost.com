@@ -24,6 +24,11 @@ class RegistrationIndex extends Component
     public bool $showShare = false;
     public string $notice = '';
 
+    /** After an approval, the welcome message + phone for the click-to-send button. */
+    public string $welcomePhone = '';
+    public string $welcomeMessage = '';
+    public string $welcomeName = '';
+
     public function mount(): void
     {
         abort_unless(Auth::user()->can('view-tenants'), 403);
@@ -132,18 +137,82 @@ class RegistrationIndex extends Component
             'tenant_id' => $tenant->id,
         ]);
 
+        // Build the WhatsApp welcome message and expose it for the click-to-send
+        // button (so the owner can always send it, even without an auto-send gateway).
+        $welcome = $this->buildWelcomeMessage($reg->name, $reg->email, $plainPassword);
+        $this->welcomeName = $reg->name;
+        $this->welcomePhone = $this->normalizePhone($reg->phone);
+        $this->welcomeMessage = $welcome;
+
         if ($plainPassword) {
-            $this->sendCredentials($reg->name, $reg->email, $reg->phone, $plainPassword);
-            $message = "Disetujui — penyewa & akun login dibuat, kredensial dikirim. (Email: {$reg->email} · Password: {$plainPassword})";
+            $this->sendCredentials($reg->name, $reg->email, $reg->phone, $plainPassword, $welcome);
+            $message = "Disetujui — penyewa & akun login dibuat. Kirim pesan selamat datang lewat tombol WhatsApp di bawah. (Email: {$reg->email} · Password: {$plainPassword})";
         } else {
-            $message = 'Disetujui — penyewa ditambahkan.';
+            // Existing account: no new password to show; still offer the welcome message.
+            if ($reg->phone) {
+                try {
+                    WhatsAppService::send($reg->phone, $welcome);
+                } catch (\Throwable $e) {
+                    Log::error('Registration welcome WhatsApp failed', ['phone' => $reg->phone, 'error' => $e->getMessage()]);
+                }
+            }
+            $message = 'Disetujui — penyewa ditambahkan (akun sudah ada sebelumnya). Kirim pesan selamat datang lewat tombol WhatsApp di bawah.';
         }
 
         $this->notice = $message;
     }
 
-    /** Send login credentials to the new tenant (best-effort). */
-    private function sendCredentials(string $name, string $email, string $phone, string $plainPassword): void
+    /** Normalize an Indonesian phone number to WhatsApp format (62xxxxxxxx). */
+    private function normalizePhone(?string $phone): string
+    {
+        $phone = preg_replace('/[^0-9]/', '', (string) $phone);
+        if ($phone === '') {
+            return '';
+        }
+        if (str_starts_with($phone, '0')) {
+            $phone = '62' . substr($phone, 1);
+        } elseif (! str_starts_with($phone, '62')) {
+            $phone = '62' . $phone;
+        }
+
+        return $phone;
+    }
+
+    /** The Living Kost WhatsApp welcome message for a newly approved tenant. */
+    private function buildWelcomeMessage(string $name, ?string $email, ?string $plainPassword): string
+    {
+        $passwordLine = $plainPassword
+            ? "🔑 *Password:* {$plainPassword}"
+            : "🔑 *Password:* (gunakan password akun Anda sebelumnya)";
+        $emailLine = $email ?: '(hubungi admin)';
+
+        return "🎉 *SELAMAT DATANG DI LIVING KOST* 🏡\n\n"
+            . "Halo Kak {$name} 👋\n\n"
+            . "Terima kasih sudah memilih Living Kost sebagai tempat tinggal.\n\n"
+            . "📱 *AKSES LAYANAN LIVING KOST*\n\n"
+            . "Untuk melakukan *pembayaran, pengaduan, dan melihat pengumuman kost*, silakan login melalui website Living Kost:\n\n"
+            . "www.livingkost.com\n\n"
+            . "Silakan login menggunakan:\n"
+            . "📧 *Email:* {$emailLine}\n"
+            . "{$passwordLine}\n\n"
+            . "📶 *INFORMASI WI-FI*\n\n"
+            . "*Nama Wi-Fi:* living kost (lantai kamu)\n"
+            . "*Password:* S3nen\n\n"
+            . "👨‍🔧 *KONTAK PENJAGA*\n\n"
+            . "*Rudi:* +62 821-1315-5861\n\n"
+            . "Jika ada kendala di kamar, fasilitas, atau membutuhkan bantuan selama tinggal di Living Kost, dapat mengisi form pengaduan pada website / langsung menghubungi Pak Rudi.\n\n"
+            . "📌 *MOHON DIPERHATIKAN*\n"
+            . "• Jaga kebersihan dan kenyamanan bersama\n"
+            . "• Patuhi peraturan kost yang berlaku\n"
+            . "• Jaga fasilitas yang tersedia dengan baik\n"
+            . "• Segera laporkan jika terdapat kerusakan atau kendala\n\n"
+            . "Sekali lagi, *selamat datang di Living Kost!* 🤝\n\n"
+            . "Semoga betah dan nyaman selama tinggal bersama kami.\n\n"
+            . "*Living Kost* 🧡";
+    }
+
+    /** Send login credentials + welcome message to the new tenant (best-effort). */
+    private function sendCredentials(string $name, string $email, string $phone, string $plainPassword, string $welcomeMessage): void
     {
         $loginUrl = route('login');
 
@@ -157,13 +226,7 @@ class RegistrationIndex extends Component
 
         try {
             if ($phone) {
-                $waMessage = "Halo {$name},\n\n"
-                    . "Selamat datang di *Living Kost*! Akun login Anda telah dibuat.\n\n"
-                    . "Email: {$email}\n"
-                    . "Password: {$plainPassword}\n\n"
-                    . "Login: {$loginUrl}\n\n"
-                    . "Demi keamanan, segera ganti password setelah login pertama.";
-                WhatsAppService::send($phone, $waMessage);
+                WhatsAppService::send($phone, $welcomeMessage);
             }
         } catch (\Throwable $e) {
             Log::error('Registration welcome WhatsApp failed', ['phone' => $phone, 'error' => $e->getMessage()]);
