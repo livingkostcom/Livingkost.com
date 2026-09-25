@@ -40,12 +40,14 @@ class DisbursementIndex extends Component
         abort_unless(Auth::user()?->isSuperAdmin(), 403);
 
         $owner = User::findOrFail($ownerId);
-        $wallet = WalletService::forOwner($ownerId);
+        // Available balance = each owner's net share (income − fee − expense) × share
+        // + deposits − already disbursed, same figure they see on their wallet.
+        $available = (float) WalletService::figuresFor($owner)['available'];
 
         $this->createOwnerId = $ownerId;
         $this->createOwnerName = $owner->name;
-        $this->maxAmount = (float) $wallet->balance;
-        $this->amount = (string) (int) $wallet->balance;
+        $this->maxAmount = $available;
+        $this->amount = (string) (int) $available;
         $this->bankName = (string) Setting::getForOwner('bank_name', $ownerId);
         $this->bankAccountNumber = (string) Setting::getForOwner('bank_account_number', $ownerId);
         $this->bankAccountHolder = (string) Setting::getForOwner('bank_account_holder', $ownerId);
@@ -67,14 +69,15 @@ class DisbursementIndex extends Component
         abort_unless(Auth::user()?->isSuperAdmin(), 403);
 
         $amount = (float) $this->amount;
-        $wallet = WalletService::forOwner($this->createOwnerId);
+        $owner = User::findOrFail($this->createOwnerId);
+        $available = (float) WalletService::figuresFor($owner)['available'];
 
         if ($amount <= 0) {
             $this->errorMessage = 'Jumlah pencairan harus lebih dari 0.';
             return;
         }
-        if ($amount > (float) $wallet->balance) {
-            $this->errorMessage = 'Jumlah melebihi saldo owner (Rp ' . number_format($wallet->balance, 0, ',', '.') . ').';
+        if ($amount > $available) {
+            $this->errorMessage = 'Jumlah melebihi saldo owner (Rp ' . number_format($available, 0, ',', '.') . ').';
             return;
         }
 
@@ -122,8 +125,9 @@ class DisbursementIndex extends Component
         }
 
         if ($status === 'completed') {
-            $wallet = WalletService::forOwner($disbursement->owner_id);
-            if ((float) $disbursement->amount > (float) $wallet->balance) {
+            $owner = User::findOrFail($disbursement->owner_id);
+            $available = (float) WalletService::figuresFor($owner)['available'];
+            if ((float) $disbursement->amount > $available) {
                 $this->errorMessage = 'Saldo owner tidak cukup untuk menyelesaikan pencairan ini.';
                 return;
             }
@@ -149,9 +153,8 @@ class DisbursementIndex extends Component
 
     public function render()
     {
-        $owners = User::role('owner')->with('wallet')->orderBy('name')->get()->map(function ($o) {
-            $wallet = $o->wallet ?: WalletService::forOwner($o->id);
-            return ['id' => $o->id, 'name' => $o->name, 'balance' => (float) $wallet->balance];
+        $owners = User::role('owner')->orderBy('name')->get()->map(function ($o) {
+            return ['id' => $o->id, 'name' => $o->name, 'balance' => (float) WalletService::figuresFor($o)['available']];
         });
 
         $disbursements = Disbursement::with('owner')->latest()->paginate(15);
