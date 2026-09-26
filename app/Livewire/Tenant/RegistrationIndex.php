@@ -242,9 +242,23 @@ class RegistrationIndex extends Component
 
         $pendingCount = TenantRegistration::where('status', 'pending')->count();
 
+        // Prepare a persistent welcome-message + wa.me phone for each approved row,
+        // so the owner can (re-)send the welcome message any time. The original
+        // password is not recoverable here, so it uses the "existing password" line.
+        $welcomeLinks = [];
+        foreach ($registrations as $reg) {
+            if ($reg->status === 'approved' && $reg->phone) {
+                $welcomeLinks[$reg->id] = [
+                    'phone' => $this->normalizePhone($reg->phone),
+                    'message' => $this->buildWelcomeMessage($reg->name, $reg->email, null),
+                ];
+            }
+        }
+
         return view('livewire.tenant.registration-index', [
             'registrations' => $registrations,
             'pendingCount' => $pendingCount,
+            'welcomeLinks' => $welcomeLinks,
         ]);
     }
 }
