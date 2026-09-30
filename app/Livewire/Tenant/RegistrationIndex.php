@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -24,10 +25,11 @@ class RegistrationIndex extends Component
     public bool $showShare = false;
     public string $notice = '';
 
-    /** After an approval, the welcome message + phone for the click-to-send button. */
+    /** After an approval, show a preview of the server-generated resend message. */
     public string $welcomePhone = '';
     public string $welcomeMessage = '';
     public string $welcomeName = '';
+    public ?int $welcomeRegistrationId = null;
 
     public function mount(): void
     {
@@ -137,12 +139,12 @@ class RegistrationIndex extends Component
             'tenant_id' => $tenant->id,
         ]);
 
-        // Build the WhatsApp welcome message and expose it for the click-to-send
-        // button (so the owner can always send it, even without an auto-send gateway).
+        // Credentials are sent on approval; later resends use the existing account.
         $welcome = $this->buildWelcomeMessage($reg->name, $reg->email, $plainPassword);
+        $this->welcomeRegistrationId = $reg->id;
         $this->welcomeName = $reg->name;
         $this->welcomePhone = $this->normalizePhone($reg->phone);
-        $this->welcomeMessage = $welcome;
+        $this->welcomeMessage = $this->buildWelcomeMessage($reg->name, $reg->email, null);
 
         if ($plainPassword) {
             $this->sendCredentials($reg->name, $reg->email, $reg->phone, $plainPassword, $welcome);
@@ -160,6 +162,36 @@ class RegistrationIndex extends Component
         }
 
         $this->notice = $message;
+    }
+
+    public function sendWelcome(int $id): void
+    {
+        abort_unless(Auth::user()?->can('view-tenants'), 403);
+        $reg = TenantRegistration::findOrFail($id);
+        abort_unless($reg->status === 'approved', 403);
+
+        $phone = $this->normalizePhone($reg->phone);
+        if ($phone === '') {
+            $this->notice = 'Gagal: nomor WhatsApp penyewa belum tersedia.';
+            return;
+        }
+
+        $key = 'registration-welcome:' . $reg->id;
+        if (RateLimiter::tooManyAttempts($key, 1)) {
+            $this->notice = 'Pesan baru saja dikirim. Tunggu 30 detik sebelum mengirim ulang.';
+            return;
+        }
+        RateLimiter::hit($key, 30);
+
+        // Build the recipient and message from owner-scoped server data.
+        // Existing account passwords are never reset or recovered for a resend.
+        $sent = WhatsAppService::send($phone, $this->buildWelcomeMessage($reg->name, $reg->email, null));
+        if (! $sent) {
+            RateLimiter::clear($key);
+        }
+        $this->notice = $sent
+            ? "Pesan selamat datang untuk {$reg->name} diterima Fonnte untuk dikirim."
+            : 'Gagal mengirim WhatsApp. Periksa token, koneksi perangkat, dan kuota Fonnte, lalu coba lagi.';
     }
 
     /** Normalize an Indonesian phone number to WhatsApp format (62xxxxxxxx). */
@@ -242,23 +274,9 @@ class RegistrationIndex extends Component
 
         $pendingCount = TenantRegistration::where('status', 'pending')->count();
 
-        // Prepare a persistent welcome-message + wa.me phone for each approved row,
-        // so the owner can (re-)send the welcome message any time. The original
-        // password is not recoverable here, so it uses the "existing password" line.
-        $welcomeLinks = [];
-        foreach ($registrations as $reg) {
-            if ($reg->status === 'approved' && $reg->phone) {
-                $welcomeLinks[$reg->id] = [
-                    'phone' => $this->normalizePhone($reg->phone),
-                    'message' => $this->buildWelcomeMessage($reg->name, $reg->email, null),
-                ];
-            }
-        }
-
         return view('livewire.tenant.registration-index', [
             'registrations' => $registrations,
             'pendingCount' => $pendingCount,
-            'welcomeLinks' => $welcomeLinks,
         ]);
     }
 }
