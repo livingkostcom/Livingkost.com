@@ -21,13 +21,13 @@ class WhatsAppService
         }
 
         try {
-            $response = Http::withHeaders(['Authorization' => $token])
+            $response = Http::withHeaders(['Authorization' => $token])->asForm()->timeout(15)
                 ->post('https://api.fonnte.com/send', [
                     'target' => $phone,
                     'message' => $message,
                 ]);
 
-            if (!$response->successful()) {
+            if (!$response->successful() || $response->json('status') !== true) {
                 Log::warning('WhatsApp send failed', ['phone' => $phone, 'status' => $response->status()]);
                 return false;
             }
