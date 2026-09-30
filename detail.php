@@ -37,13 +37,21 @@ if ($lk_id > 0 && is_readable($lk_envPath)) {
             $lk_kost = $st->fetch(PDO::FETCH_ASSOC) ?: null;
 
             if ($lk_kost) {
-                $st2 = $pdo->prepare("SELECT id, name, price, facilities, images FROM room_types WHERE property_id = ? ORDER BY price ASC");
+                // Only offer types with a room that can actually be rented.
+                $st2 = $pdo->prepare("SELECT rt.id, rt.name, rt.price, rt.facilities, rt.images
+                                      FROM room_types rt WHERE rt.property_id = ?
+                                      AND EXISTS (SELECT 1 FROM rooms r WHERE r.room_type_id = rt.id
+                                          AND r.status = 'available'
+                                          AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id
+                                              AND l.status = 'active' AND l.deleted_at IS NULL))
+                                      ORDER BY rt.price ASC");
                 $st2->execute([$lk_id]);
                 $lk_roomtypes = $st2->fetchAll(PDO::FETCH_ASSOC) ?: [];
 
                 $st3 = $pdo->prepare("SELECT COUNT(*) FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id
                                       WHERE rt.property_id = ? AND r.status = 'available'
-                                      AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')");
+                                      AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id
+                                          AND l.status = 'active' AND l.deleted_at IS NULL)");
                 $st3->execute([$lk_id]);
                 $lk_available = (int) $st3->fetchColumn();
 
@@ -351,7 +359,7 @@ $e = fn($s) => htmlspecialchars((string) $s, ENT_QUOTES);
                             <?php endforeach; ?>
                         </div>
                     <?php else: ?>
-                        <p class="text-gray-500">Informasi tipe kamar belum tersedia. Hubungi kami untuk detail.</p>
+                        <p class="text-gray-500">Saat ini belum ada kamar tersedia. Hubungi kami untuk informasi ketersediaan berikutnya.</p>
                     <?php endif; ?>
                 </div>
 
