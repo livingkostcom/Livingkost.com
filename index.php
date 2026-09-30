@@ -29,11 +29,19 @@ if (is_readable($lk_envPath)) {
             );
             $lk_stmt = $lk_pdo->query(
                 "SELECT p.id, p.name, p.location_label, p.featured_image, p.gender_type,
-                        (SELECT MIN(rt.price) FROM room_types rt WHERE rt.property_id = p.id) AS price_from,
-                        (SELECT rt.facilities FROM room_types rt WHERE rt.property_id = p.id ORDER BY rt.price ASC LIMIT 1) AS facilities,
+                        (SELECT MIN(rt.price) FROM room_types rt JOIN rooms r ON r.room_type_id = rt.id
+                         WHERE rt.property_id = p.id AND r.status = 'available'
+                         AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id
+                             AND l.status = 'active' AND l.deleted_at IS NULL)) AS price_from,
+                        (SELECT rt.facilities FROM room_types rt WHERE rt.property_id = p.id
+                         AND EXISTS (SELECT 1 FROM rooms r WHERE r.room_type_id = rt.id AND r.status = 'available'
+                             AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id
+                                 AND l.status = 'active' AND l.deleted_at IS NULL))
+                         ORDER BY rt.price ASC LIMIT 1) AS facilities,
                         (SELECT COUNT(*) FROM rooms r JOIN room_types rt ON r.room_type_id = rt.id
                          WHERE rt.property_id = p.id AND r.status = 'available'
-                         AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')) AS available_rooms
+                         AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id
+                             AND l.status = 'active' AND l.deleted_at IS NULL)) AS available_rooms
                  FROM properties p
                  WHERE p.is_featured = 1 AND p.status = 'active'
                  ORDER BY p.updated_at DESC
@@ -58,7 +66,8 @@ if (is_readable($lk_envPath)) {
                      JOIN room_types rt ON r.room_type_id = rt.id
                      JOIN properties p ON rt.property_id = p.id
                      WHERE p.status = 'active' AND r.status = 'available'
-                     AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active')"
+                     AND NOT EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id
+                         AND l.status = 'active' AND l.deleted_at IS NULL)"
                 )->fetchColumn() ?: 0);
                 $lk_stats['areas'] = (int) ($lk_pdo->query(
                     "SELECT COUNT(DISTINCT location_label) FROM properties
