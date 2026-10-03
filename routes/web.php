@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DokuWebhookController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ResidentDirectoryController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Public\TenantRegistrationForm;
 use Illuminate\Support\Facades\Auth;
@@ -14,6 +15,12 @@ Route::middleware('guest')->group(function () {
 
 // Public tenant self-registration form (per-owner token link, no auth)
 Route::get('/daftar/{token}', TenantRegistrationForm::class)->name('tenant.register');
+
+// Owner-shared resident document, opened using an explicitly registered phone.
+Route::get('/penghuni/{token}', [ResidentDirectoryController::class, 'show'])->name('resident-directory.show');
+Route::post('/penghuni/{token}/buka', [ResidentDirectoryController::class, 'unlock'])->middleware('throttle:5,1')->name('resident-directory.unlock');
+Route::post('/penghuni/{token}/tutup', [ResidentDirectoryController::class, 'close'])->name('resident-directory.close');
+Route::get('/penghuni/{token}/ktp/{lease}', [ResidentDirectoryController::class, 'photo'])->whereNumber('lease')->name('resident-directory.photo');
 
 // DOKU payment notification (webhook) — public, no auth/CSRF
 Route::post('/doku/notification', [DokuWebhookController::class, 'handle'])->name('doku.notification');
@@ -38,6 +45,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/rooms', function () {
         return view('rooms.index');
     })->middleware('can:viewAny,App\Models\Room')->name('rooms.index');
+
+    // Only the managing owner can register/revoke document-opening phones.
+    Route::get('/resident-directory-access', [ResidentDirectoryController::class, 'manage'])->name('resident-directory.manage');
+    Route::post('/resident-directory-access', [ResidentDirectoryController::class, 'save'])->name('resident-directory.save');
 
     // Tenant Management Routes
     Route::get('/tenants', function () {
