@@ -143,7 +143,8 @@
                     <h5 class="font-bold mb-4">Pusat Bantuan</h5>
                     <ul class="text-gray-400 space-y-2 text-sm">
                         <li><a href="#" class="hover:text-white">Syarat & Ketentuan</a></li>
-                        <li><a href="#" class="hover:text-white">Kebijakan Privasi</a></li>
+                        <li><a href="/kebijakan-privasi" class="hover:text-white">Kebijakan Privasi</a></li>
+                    <li><a href="/kebijakan-penghapusan-data" class="hover:text-white">Kebijakan Penghapusan Data Pengguna</a></li>
                         <li><a href="#" class="hover:text-white">Hubungi Kami</a></li>
                     </ul>
                 </div>

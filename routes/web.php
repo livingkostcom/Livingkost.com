@@ -13,6 +13,10 @@ Route::middleware('guest')->group(function () {
     Route::get('/login', Login::class)->name('login');
 });
 
+// Public user policies linked from the website footer.
+Route::view('/kebijakan-privasi', 'legal.privacy')->name('legal.privacy');
+Route::view('/kebijakan-penghapusan-data', 'legal.deletion')->name('legal.deletion');
+
 // Public tenant self-registration form (per-owner token link, no auth)
 Route::get('/daftar/{token}', TenantRegistrationForm::class)->name('tenant.register');
 
