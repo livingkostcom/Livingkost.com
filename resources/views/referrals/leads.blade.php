@@ -17,7 +17,10 @@
     <td>{{ $lead->room_number ?? 'Belum ada kontrak' }}</td>
     <td>
         <span class="ref-badge {{ $lead->earned_at ? 'ref-green' : '' }}">{{ $lead->paid_at ? 'Dibayarkan' : ($lead->earned_at ? 'Reward tercapai' : 'Belum memenuhi syarat') }}</span>
-        <small>{{ $lead->earned_at ? '' : 'Potensi: ' }}Rp {{ number_format($lead->reward_amount ?? $lead->referral_reward_amount, 0, ',', '.') }}</small>
+        @if($lead->reward_id || $lead->referral_reward_rates === null)
+            <small>{{ $lead->earned_at ? '' : 'Potensi: ' }}Rp {{ number_format($lead->reward_amount ?? $lead->referral_reward_amount, 0, ',', '.') }}</small>
+            @if($lead->room_type_name)<small>{{ $lead->room_type_name }}</small>@endif
+        @else<small>Menunggu tipe kamar pada kontrak</small>@endif
         @if($lead->earned_at)<small>Lunas: {{ \Carbon\Carbon::parse($lead->earned_at)->format('d/m/Y') }}</small>@endif
         @if($lead->paid_at)<small>{{ \Carbon\Carbon::parse($lead->paid_at)->format('d/m/Y') }} · {{ $lead->payment_reference }}</small>@endif
     </td>

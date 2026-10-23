@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ReferralController extends Controller
 {
@@ -27,7 +28,9 @@ class ReferralController extends Controller
             ->select('a.*', 'u.name', 'u.email')->orderBy('u.name')->get();
         $token = $agents->isEmpty() ? null : ReferralRewards::registrationToken($ownerId);
         return response()->view('referrals.manage', [
-            'agents' => $agents, 'registrationToken' => $token, 'rate' => ReferralRewards::rate($ownerId),
+            'agents' => $agents, 'registrationToken' => $token,
+            'rates' => ReferralRewards::rates($ownerId),
+            'roomTypes' => DB::table('room_types as rt')->join('properties as p', 'p.id', '=', 'rt.property_id')->where('rt.owner_id', $ownerId)->where('p.owner_id', $ownerId)->orderBy('p.name')->orderBy('rt.name')->get(['rt.id', 'rt.name', 'rt.price', 'p.name as property_name']),
             'leads' => $this->leads($ownerId)->paginate(20), 'summary' => $this->summary($ownerId),
         ])->header('Cache-Control', 'private, no-store');
     }
@@ -35,9 +38,15 @@ class ReferralController extends Controller
     public function rate(Request $r)
     {
         $ownerId = $this->owner($r);
-        $data = $r->validate(['amount' => 'required|integer|min:0|max:10000000']);
-        Setting::updateOrCreate(['owner_id' => $ownerId, 'key' => 'referral_reward_amount'], ['value' => $data['amount'], 'group' => 'referral']);
-        return back()->with('referral_notice', 'Nominal reward disimpan. Perubahan berlaku untuk pendaftaran baru; nominal referral lama tetap.');
+        $data = $r->validate(['rates' => 'required|array', 'rates.*' => 'required|integer|min:0|max:10000000']);
+        $owned = DB::table('room_types')->where('owner_id', $ownerId)->pluck('id')->map(fn ($id) => (string) $id)->all();
+        $submitted = array_map('strval', array_keys($data['rates']));
+        if (array_diff($submitted, $owned) || array_diff($owned, $submitted)) {
+            throw ValidationException::withMessages(['rates' => 'Tipe ruangan berubah atau tidak sesuai owner. Muat ulang halaman lalu simpan kembali.']);
+        }
+        $rates = array_map('intval', $data['rates']);
+        Setting::updateOrCreate(['owner_id' => $ownerId, 'key' => 'referral_reward_rates'], ['value' => json_encode($rates), 'group' => 'referral']);
+        return back()->with('referral_notice', 'Reward per tipe ruangan disimpan untuk pendaftaran baru. Ketentuan referral lama tetap.');
     }
 
     public function createSales(Request $r)
@@ -98,15 +107,17 @@ class ReferralController extends Controller
         ReferralRewards::syncOwner($agent->owner_id, $agent->id);
         $rooms = DB::table('rooms as r')->join('room_types as rt', 'rt.id', '=', 'r.room_type_id')->join('properties as p', 'p.id', '=', 'rt.property_id')
             ->where('r.owner_id', $agent->owner_id)->where('rt.owner_id', $agent->owner_id)->where('p.owner_id', $agent->owner_id)->where('p.status', 'active')
-            ->select('r.room_number', 'r.floor', 'rt.name as type_name', 'rt.price', 'p.name as property_name')
+            ->select('r.room_number', 'r.floor', 'r.room_type_id', 'rt.name as type_name', 'rt.price', 'p.name as property_name')
             ->selectRaw("CASE WHEN EXISTS (SELECT 1 FROM leases l WHERE l.room_id = r.id AND l.status = 'active' AND l.deleted_at IS NULL) THEN 'occupied' WHEN r.status = 'maintenance' THEN 'maintenance' ELSE 'available' END AS availability")
             ->orderBy('p.name')->orderBy('r.floor')->orderBy('r.room_number')->get();
+        $rates = ReferralRewards::rates($agent->owner_id);
+        foreach ($rooms as $room) $room->referral_reward_amount = $rates[$room->room_type_id] ?? 0;
         // Do not send NIK, KTP, emergency contacts, proof images or other sales' leads to this view.
         $leads = $this->leads($agent->owner_id, $agent->id)->paginate(15);
         foreach ($leads as $lead) $lead->phone = '••••' . substr(preg_replace('/\D/', '', $lead->phone), -4);
         return response()->view('referrals.sales', [
             'agent' => $agent, 'rooms' => $rooms, 'leads' => $leads,
-            'summary' => $this->summary($agent->owner_id, $agent->id), 'rate' => ReferralRewards::rate($agent->owner_id),
+            'summary' => $this->summary($agent->owner_id, $agent->id),
             'shareUrl' => route('tenant.register', ReferralRewards::registrationToken($agent->owner_id)) . '?ref=' . $agent->code,
         ])->header('Cache-Control', 'private, no-store');
     }
@@ -122,7 +133,7 @@ class ReferralController extends Controller
         return DB::table('tenant_registrations as tr')->join('sales_agents as a', 'a.id', '=', 'tr.sales_agent_id')->join('users as u', 'u.id', '=', 'a.user_id')
             ->leftJoin('referral_rewards as rw', 'rw.registration_id', '=', 'tr.id')->leftJoin('leases as l', 'l.id', '=', 'rw.lease_id')->leftJoin('rooms as r', 'r.id', '=', 'l.room_id')
             ->where('tr.owner_id', $ownerId)->where('a.owner_id', $ownerId)->when($agentId, fn ($q) => $q->where('a.id', $agentId))
-            ->select('tr.id', 'tr.name', 'tr.phone', 'tr.status', 'tr.dp_method', 'tr.dp_status', 'tr.dp_amount', 'tr.dp_paid_at', 'tr.created_at', 'tr.referral_reward_amount', 'u.name as sales_name', 'rw.id as reward_id', 'rw.earned_at', 'rw.paid_at', 'rw.amount as reward_amount', 'rw.payment_reference', 'r.room_number')
+            ->select('tr.id', 'tr.name', 'tr.phone', 'tr.status', 'tr.dp_method', 'tr.dp_status', 'tr.dp_amount', 'tr.dp_paid_at', 'tr.created_at', 'tr.referral_reward_amount', 'tr.referral_reward_rates', 'rw.room_type_name', 'u.name as sales_name', 'rw.id as reward_id', 'rw.earned_at', 'rw.paid_at', 'rw.amount as reward_amount', 'rw.payment_reference', 'r.room_number')
             ->orderByDesc('tr.id');
     }
 

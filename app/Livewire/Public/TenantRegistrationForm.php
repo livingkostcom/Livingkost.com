@@ -133,6 +133,7 @@ class TenantRegistrationForm extends Component
             'owner_id' => $this->ownerId,
             'sales_agent_id' => $agent?->id,
             'referral_reward_amount' => $agent ? ReferralRewards::rate($this->ownerId) : 0,
+            'referral_reward_rates' => $agent ? ReferralRewards::rates($this->ownerId) : null,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,

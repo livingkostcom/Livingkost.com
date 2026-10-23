@@ -3,7 +3,7 @@
 // Uses only SQLite :memory:, temporary uploads and mocked outbound HTTP.
 $source = dirname(__DIR__, 2); $runtime = $argv[1] ?? $source;
 require $runtime . '/vendor/autoload.php';
-foreach (['app/Services/ReferralRewards.php','app/Models/TenantRegistration.php','app/Observers/LeaseObserver.php','app/Livewire/Public/TenantRegistrationForm.php','app/Http/Controllers/ReferralController.php','app/Http/Middleware/RestrictSalesAccess.php'] as $file) require_once $source . '/' . $file;
+foreach (['app/Services/ReferralRewards.php','app/Models/TenantRegistration.php','app/Observers/LeaseObserver.php','app/Livewire/Public/TenantRegistrationForm.php','app/Http/Controllers/ReferralController.php','app/Http/Middleware/RestrictSalesAccess.php'] as $file) require_once (is_file($source . '/' . $file) ? $source . '/' . $file : $runtime . '/' . $file);
 $app = require $runtime . '/bootstrap/app.php';
 $temp = sys_get_temp_dir() . '/referral-test-' . bin2hex(random_bytes(6));
 mkdir($temp . '/framework/views',0700,true); mkdir($temp . '/app/public',0700,true);
@@ -38,9 +38,10 @@ Artisan::call('migrate',['--path'=>$temp.'/migrations','--realpath'=>true,'--for
 if(!Illuminate\Support\Facades\Schema::hasTable('sales_agents')){
     (require $source.'/database/migrations/2026_10_23_000000_create_sales_referral_tracking.php')->up();
 }
+if(!Illuminate\Support\Facades\Schema::hasColumn('tenant_registrations','referral_reward_rates')) (require $source.'/database/migrations/2026_10_23_000001_add_room_type_referral_rewards.php')->up();
 check(Illuminate\Support\Facades\Schema::hasColumn('tenant_registrations','sales_agent_id'),'migration creates referral schema');
 (new Database\Seeders\RoleAndPermissionSeeder())->run();
-require $source.'/routes/web.php'; $app->make('router')->getRoutes()->refreshNameLookups(); $app->make('url')->setRoutes($app->make('router')->getRoutes());
+require (is_file($source.'/routes/web.php') ? $source.'/routes/web.php' : $runtime.'/routes/web.php'); $app->make('router')->getRoutes()->refreshNameLookups(); $app->make('url')->setRoutes($app->make('router')->getRoutes());
 $app->make('view')->getFinder()->prependLocation($source.'/resources/views');
 Illuminate\Support\Facades\View::share('errors',new Illuminate\Support\ViewErrorBag());
 $session = new Illuminate\Session\Store('ref-test',new Illuminate\Session\ArraySessionHandler(120));$session->start();
@@ -53,7 +54,7 @@ Http::preventStrayRequests();Http::fake(['*'=>Http::response(['status'=>true])])
 $owner=User::create(['name'=>'Owner test','email'=>'owner@example.test','password'=>'Testing-only-password']);$owner->assignRole('owner');
 $otherOwner=User::create(['name'=>'Other owner','email'=>'otherowner@example.test','password'=>'Testing-only-password']);$otherOwner->assignRole('owner');
 $controller=new ReferralController();
-$controller->rate(req(['amount'=>100000],$owner));
+Setting::create(['owner_id'=>$owner->id,'key'=>'referral_reward_amount','value'=>'100000','group'=>'referral']);
 $controller->createSales(req(['name'=>'Sales Satu','email'=>'sales1@example.test','phone'=>'081234567890','password'=>'Testing-sales-pass','password_confirmation'=>'Testing-sales-pass'],$owner));
 $controller->createSales(req(['name'=>'Sales Dua','email'=>'sales2@example.test','phone'=>'081234567891','password'=>'Testing-sales-pass','password_confirmation'=>'Testing-sales-pass'],$owner));
 $controller->createSales(req(['name'=>'Sales Lain','email'=>'sales3@example.test','phone'=>'081234567892','password'=>'Testing-sales-pass','password_confirmation'=>'Testing-sales-pass'],$otherOwner));
@@ -61,6 +62,14 @@ $agent=DB::table('sales_agents')->where('owner_id',$owner->id)->orderBy('id')->f
 $sales=User::findOrFail($agent->user_id);$agent2=DB::table('sales_agents')->where('owner_id',$owner->id)->where('id','!=',$agent->id)->first();
 $foreign=DB::table('sales_agents')->where('owner_id',$otherOwner->id)->first();
 check($sales->hasRole('sales')&&!$sales->can('view-tenants'),'sales account has no tenant permissions');
+$propertyId=DB::table('properties')->insertGetId(['owner_id'=>$owner->id,'name'=>'Kos Referral','address'=>'Test address','status'=>'active','created_at'=>now(),'updated_at'=>now()]);
+$typeId=DB::table('room_types')->insertGetId(['owner_id'=>$owner->id,'property_id'=>$propertyId,'name'=>'Superior','price'=>2000000,'created_at'=>now(),'updated_at'=>now()]);
+$roomId=DB::table('rooms')->insertGetId(['owner_id'=>$owner->id,'room_type_id'=>$typeId,'room_number'=>'18','floor'=>3,'status'=>'available','created_at'=>now(),'updated_at'=>now()]);
+$freeId=DB::table('rooms')->insertGetId(['owner_id'=>$owner->id,'room_type_id'=>$typeId,'room_number'=>'19','floor'=>3,'status'=>'available','created_at'=>now(),'updated_at'=>now()]);
+$deluxeId=DB::table('room_types')->insertGetId(['owner_id'=>$owner->id,'property_id'=>$propertyId,'name'=>'Deluxe','price'=>2200000,'created_at'=>now(),'updated_at'=>now()]);
+$deluxeRoom=DB::table('rooms')->insertGetId(['owner_id'=>$owner->id,'room_type_id'=>$deluxeId,'room_number'=>'20','floor'=>3,'status'=>'available','created_at'=>now(),'updated_at'=>now()]);
+$controller->rate(req(['rates'=>[$typeId=>100000,$deluxeId=>300000]],$owner));
+check(ReferralRewards::rates($owner->id)[$typeId]===100000&&ReferralRewards::rates($owner->id)[$deluxeId]===300000,'owner saves distinct reward for each room type');
 $token=ReferralRewards::registrationToken($owner->id);
 req(['ref'=>$agent->code],null,'tenant.register');
 $form=new TenantRegistrationForm();$form->mount($token);
@@ -70,15 +79,11 @@ $png=$temp.'/fixture.png';file_put_contents($png,base64_decode('iVBORw0KGgoAAAAN
 $form->name='Calon Referral';$form->email='prospect@example.test';$form->phone='081234567899';$form->nik='1234567890123456';$form->ktp_photo=new Illuminate\Http\UploadedFile($png,'ktp.png','image/png',null,true);$form->submit();
 $reg=TenantRegistration::withoutGlobalScopes()->firstOrFail();
 check($reg->sales_agent_id===$agent->id&&(int)$reg->referral_reward_amount===100000,'submitted form persists source and reward snapshot');
-$controller->rate(req(['amount'=>250000],$owner));
-check((int)$reg->fresh()->referral_reward_amount===100000,'new reward rate does not change existing referral');
+$controller->rate(req(['rates'=>[$typeId=>250000,$deluxeId=>400000]],$owner));
+check((int)$reg->fresh()->referral_reward_amount===100000&&$reg->fresh()->referral_reward_rates[$deluxeId]===300000,'new reward rate does not change existing referral');
 req(['ref'=>$foreign->code],null,'tenant.register');rejected(fn()=>(new TenantRegistrationForm())->mount($token),404,'foreign-owner referral rejected');
 req([],null,'tenant.register');$organic=new TenantRegistrationForm();$organic->mount($token);check($organic->referralCode==='','organic registration remains supported');
 Auth::forgetUser();
-$propertyId=DB::table('properties')->insertGetId(['owner_id'=>$owner->id,'name'=>'Kos Referral','address'=>'Test address','status'=>'active','created_at'=>now(),'updated_at'=>now()]);
-$typeId=DB::table('room_types')->insertGetId(['owner_id'=>$owner->id,'property_id'=>$propertyId,'name'=>'Superior','price'=>2000000,'created_at'=>now(),'updated_at'=>now()]);
-$roomId=DB::table('rooms')->insertGetId(['owner_id'=>$owner->id,'room_type_id'=>$typeId,'room_number'=>'18','floor'=>3,'status'=>'available','created_at'=>now(),'updated_at'=>now()]);
-$freeId=DB::table('rooms')->insertGetId(['owner_id'=>$owner->id,'room_type_id'=>$typeId,'room_number'=>'19','floor'=>3,'status'=>'available','created_at'=>now(),'updated_at'=>now()]);
 $tenant=App\Models\Tenant::create(['owner_id'=>$owner->id,'name'=>$reg->name,'email'=>$reg->email,'phone'=>$reg->phone,'nik'=>$reg->nik,'status'=>'active']);
 $reg->update(['status'=>'approved','tenant_id'=>$tenant->id,'dp_method'=>'manual','dp_amount'=>200000,'dp_status'=>'submitted','dp_proof'=>'dp-proof.png']);
 $lease=Lease::create(['owner_id'=>$owner->id,'tenant_id'=>$tenant->id,'room_id'=>$roomId,'start_date'=>today()->toDateString(),'end_date'=>today()->addMonth()->toDateString(),'due_date_per_month'=>1,'deposit_amount'=>200000,'status'=>'active']);
@@ -102,7 +107,7 @@ check(!str_contains($salesHtml,'1234567890123456')&&!str_contains($salesHtml,'08
 check(str_contains($salesHtml,'Terisi')&&str_contains($salesHtml,'Tersedia')&&str_contains($salesHtml,'2.000.000'),'sales inventory includes prices and computed occupied/available status');
 $middleware=new App\Http\Middleware\RestrictSalesAccess();
 rejected(fn()=>$middleware->handle(req([],$sales,'tenants.index'),fn()=>response('BAD')),403,'sales blocked from owner tenant endpoints');
-rejected(fn()=>$controller->rate(req(['amount'=>1],$sales)),403,'sales cannot set reward rate');
+rejected(fn()=>$controller->rate(req(['rates'=>[$typeId=>1]],$sales)),403,'sales cannot set reward rate');
 $livewireRequest=req([],$sales,'referrals.sales');
 $livewireRoute=new Illuminate\Routing\Route('POST','livewire/update',['as'=>'livewire.update']);$livewireRoute->bind($livewireRequest);$livewireRequest->setRouteResolver(fn()=>$livewireRoute);
 rejected(fn()=>$middleware->handle($livewireRequest,fn()=>response('BAD')),403,'sales cannot call owner Livewire actions');
@@ -124,6 +129,22 @@ DB::table('invoices')->where('id',$first->id)->update(['verified_at'=>now(),'amo
 check(DB::table('referral_rewards')->where('tenant_id',$reg2->tenant_id)->value('earned_at')===null,'verified partial amount cannot earn reward');
 DB::table('invoices')->where('id',$first->id)->update(['amount'=>2000000]);ReferralRewards::syncOwner($owner->id);
 check(DB::table('referral_rewards')->where('tenant_id',$reg2->tenant_id)->value('earned_at')!==null,'verified full first invoice earns reward without DP');
+// The same registration-time card selects a different reward for Deluxe.
+req([],$owner);
+$t3=App\Models\Tenant::create(['owner_id'=>$owner->id,'name'=>'Deluxe Referral','nik'=>'3333333333333333','phone'=>'081233333333','status'=>'active']);
+$r3=TenantRegistration::create(['owner_id'=>$owner->id,'sales_agent_id'=>$agent->id,'name'=>'Deluxe Referral','phone'=>'081233333333','status'=>'approved','tenant_id'=>$t3->id,'referral_reward_amount'=>100000,'referral_reward_rates'=>$reg->fresh()->referral_reward_rates]);
+$l3=Lease::create(['owner_id'=>$owner->id,'tenant_id'=>$t3->id,'room_id'=>$deluxeRoom,'start_date'=>today()->toDateString(),'end_date'=>today()->addMonth()->toDateString(),'due_date_per_month'=>1,'deposit_amount'=>0,'status'=>'active']);
+check((int)DB::table('referral_rewards')->where('tenant_id',$t3->id)->value('amount')===300000,'Deluxe uses saved type reward rather than flat or current rate');
+$i3=App\Models\Invoice::create(['owner_id'=>$owner->id,'lease_id'=>$l3->id,'amount'=>2200000,'month_year'=>today()->format('Y-m'),'due_date'=>today(),'status'=>'pending','reference_number'=>'TEST-INV-004']);$i3->update(['status'=>'paid']);ReferralRewards::syncOwner($owner->id);
+check(DB::table('referral_rewards')->where('tenant_id',$t3->id)->value('earned_at')!==null,'type-specific reward still requires verified first rent');
+$controller->rate(req(['rates'=>[$typeId=>0,$deluxeId=>0]],$owner));ReferralRewards::syncOwner($owner->id);
+check((int)DB::table('referral_rewards')->where('tenant_id',$t3->id)->value('amount')===300000,'earned reward unchanged after owner edits type rates');
+check(ReferralRewards::rates($owner->id)[$typeId]===0,'explicit zero reward respected');
+try{$controller->rate(req(['rates'=>[$typeId=>100,$deluxeId=>200,999999=>300]],$owner));throw new RuntimeException('Unknown room type accepted');}catch(Illuminate\Validation\ValidationException $e){check(true,'unknown or foreign room type cannot be configured');}
+// Keep representative current rates in the visual test fixture.
+$controller->rate(req(['rates'=>[$typeId=>250000,$deluxeId=>400000]],$owner));
+$salesHtml=$controller->sales(req([],$sales,'referrals.sales'))->getContent();
+check(str_contains($salesHtml,'Reward referral baru')&&str_contains($salesHtml,'400.000'),'sales room list displays current type-specific reward');
 foreach(glob($source.'/resources/views/referrals/*.blade.php')as$file){token_get_all($app->make('blade.compiler')->compileString(file_get_contents($file)),TOKEN_PARSE);}
 check(true,'all referral Blade templates compile');
 // Render owner page with its normal sidebar and the test sales page as visual fixtures.

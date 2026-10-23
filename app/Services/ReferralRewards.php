@@ -14,6 +14,25 @@ class ReferralRewards
         return max(0, (int) Setting::where('owner_id', $ownerId)->where('key', 'referral_reward_amount')->value('value'));
     }
 
+    public static function rates(int $ownerId): array
+    {
+        $stored = Setting::where('owner_id', $ownerId)->where('key', 'referral_reward_rates')->value('value');
+        $configured = json_decode($stored ?? '{}', true) ?: [];
+        $fallback = self::rate($ownerId);
+        return DB::table('room_types')->where('owner_id', $ownerId)->pluck('id')->mapWithKeys(
+            fn ($id) => [(string) $id => max(0, (int) ($configured[$id] ?? $fallback))]
+        )->all();
+    }
+
+    private static function amountForType(object $registration, int $roomTypeId): int
+    {
+        // Legacy referrals retain their original flat amount; new referrals use
+        // the full rate card snapshotted when they registered, not today's rates.
+        if ($registration->referral_reward_rates === null) return (int) $registration->referral_reward_amount;
+        $rates = json_decode($registration->referral_reward_rates, true) ?: [];
+        return max(0, (int) ($rates[$roomTypeId] ?? 0));
+    }
+
     public static function registrationToken(int $ownerId): string
     {
         return (string) Setting::firstOrCreate(['owner_id' => $ownerId, 'key' => 'tenant_reg_token'], ['value' => Str::random(24), 'group' => 'registration'])->value;
@@ -52,17 +71,18 @@ class ReferralRewards
             $lease = DB::table('leases as l')->join('rooms as r', 'r.id', '=', 'l.room_id')->join('room_types as rt', 'rt.id', '=', 'r.room_type_id')
                 ->where('l.owner_id', $ownerId)->where('r.owner_id', $ownerId)->where('rt.owner_id', $ownerId)
                 ->where('l.tenant_id', $tenantId)->whereNull('l.deleted_at')->where('l.status', '!=', 'cancelled')
-                ->orderBy('l.start_date')->orderBy('l.id')->select('l.*', 'rt.price')->first();
+                ->orderBy('l.start_date')->orderBy('l.id')->select('l.*', 'rt.price', 'rt.id as room_type_id', 'rt.name as room_type_name')->first();
             if (! $lease) return;
             if (! $reward) {
                 DB::table('referral_rewards')->insert([
                     'owner_id' => $ownerId, 'sales_agent_id' => $reg->sales_agent_id, 'registration_id' => $reg->id,
-                    'tenant_id' => $tenantId, 'lease_id' => $lease->id, 'amount' => $reg->referral_reward_amount,
+                    'tenant_id' => $tenantId, 'lease_id' => $lease->id, 'amount' => self::amountForType($reg, $lease->room_type_id),
+                    'room_type_id' => $lease->room_type_id, 'room_type_name' => $lease->room_type_name,
                     'rent_amount' => $lease->price, 'created_at' => now(), 'updated_at' => now(),
                 ]);
                 $reward = DB::table('referral_rewards')->where('tenant_id', $tenantId)->first();
-            } elseif ((int) $reward->lease_id !== (int) $lease->id) {
-                DB::table('referral_rewards')->where('id', $reward->id)->update(['lease_id' => $lease->id, 'rent_amount' => $lease->price, 'updated_at' => now()]);
+            } elseif ((int) $reward->lease_id !== (int) $lease->id || (int) $reward->room_type_id !== (int) $lease->room_type_id) {
+                DB::table('referral_rewards')->where('id', $reward->id)->update(['lease_id' => $lease->id, 'room_type_id' => $lease->room_type_id, 'room_type_name' => $lease->room_type_name, 'amount' => self::amountForType($reg, $lease->room_type_id), 'rent_amount' => $lease->price, 'updated_at' => now()]);
                 $reward = DB::table('referral_rewards')->where('id', $reward->id)->first();
             }
             if (! in_array($lease->status, ['active', 'completed', 'terminated'], true)) return;

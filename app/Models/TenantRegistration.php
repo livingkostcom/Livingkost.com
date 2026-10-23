@@ -12,7 +12,7 @@ class TenantRegistration extends Model
     protected $fillable = [
         'owner_id', 'name', 'email', 'phone', 'nik', 'emergency_contact',
         'ktp_photo', 'note', 'status', 'reviewed_at', 'reviewed_by', 'tenant_id',
-        'sales_agent_id', 'referral_reward_amount',
+        'sales_agent_id', 'referral_reward_amount', 'referral_reward_rates',
         'dp_amount', 'dp_method', 'dp_status', 'dp_reference', 'dp_proof', 'dp_paid_at',
     ];
 
@@ -20,6 +20,7 @@ class TenantRegistration extends Model
         'reviewed_at' => 'datetime',
         'dp_paid_at' => 'datetime',
         'dp_amount' => 'decimal:2',
+        'referral_reward_rates' => 'array',
     ];
 
     public function reviewer(): BelongsTo

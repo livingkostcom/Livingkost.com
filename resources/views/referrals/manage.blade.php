@@ -10,8 +10,15 @@
 @include('referrals.metrics')
 <div class="ref-panels">
     <section class="rd-card"><h2>Pengaturan reward</h2><form method="POST" action="{{ route('referrals.rate') }}">@csrf
-        <label for="reward-amount">Reward per penghuni yang berhasil (Rp)</label><input id="reward-amount" type="number" min="0" max="10000000" step="1" name="amount" value="{{ old('amount', $rate) }}" required>
-        <p class="rd-help">Nominal dikunci saat calon penghuni mendaftar. Perubahan hanya berlaku untuk pendaftaran baru. Angka 0 berarti tanpa reward.</p><button class="rd-button" type="submit">Simpan reward</button>
+        @forelse($roomTypes as $type)
+            <div class="ref-field">
+                <label for="reward-type-{{ $type->id }}">{{ $type->name }} <span class="rd-muted rd-small">· {{ $type->property_name }}</span></label>
+                <p class="rd-help">Sewa Rp {{ number_format($type->price, 0, ',', '.') }}/bulan</p>
+                <input id="reward-type-{{ $type->id }}" type="number" name="rates[{{ $type->id }}]" min="0" max="10000000" step="1" value="{{ old('rates.'.$type->id, $rates[$type->id] ?? 0) }}" aria-label="Reward {{ $type->name }} di {{ $type->property_name }}" required>
+            </div>
+        @empty<p class="rd-muted">Tambahkan tipe ruangan terlebih dahulu untuk mengatur reward.</p>@endforelse
+        <p class="rd-help">Isi reward dalam rupiah untuk setiap tipe kamar. Angka 0 berarti tanpa reward. Daftar nominal disimpan saat calon penghuni mendaftar; reward mengikuti tipe kamar pada kontraknya. Perubahan hanya berlaku untuk pendaftaran baru.</p>
+        @if($roomTypes->isNotEmpty())<button class="rd-button" type="submit">Simpan reward per tipe</button>@endif
     </form><p class="rd-help" style="margin-top:18px!important">Reward tercapai setelah invoice bulan awal kontrak berstatus lunas dan terverifikasi. DP hanya diperhitungkan jika terverifikasi; pembayaran invoice + DP harus menutup harga sewa bulan pertama. Bukti transfer atau DP saja belum menghasilkan reward.</p></section>
     <section class="rd-card"><h2>Tambah akun sales</h2><form method="POST" action="{{ route('referrals.create-sales') }}">@csrf
         <div class="ref-field"><label for="sales-name">Nama sales</label><input id="sales-name" name="name" value="{{ old('name') }}" maxlength="100" required></div>
