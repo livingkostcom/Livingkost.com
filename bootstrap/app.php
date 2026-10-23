@@ -11,6 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [\App\Http\Middleware\RestrictSalesAccess::class]);
         // DOKU posts its payment notification without a CSRF token.
         $middleware->validateCsrfTokens(except: ['doku/notification']);
     })

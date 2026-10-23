@@ -11,6 +11,9 @@ use App\Services\WhatsAppService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
+use Illuminate\Support\Facades\DB;
+use App\Services\ReferralRewards;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -19,15 +22,23 @@ class TenantRegistrationForm extends Component
 {
     use WithFileUploads;
 
+    #[Locked]
     public string $token = '';
+    #[Locked]
     public int $ownerId;
     public string $kosName = '';
+    #[Locked]
+    public string $referralCode = '';
+    #[Locked]
+    public string $salesName = '';
     public bool $submitted = false;
     public bool $paidReturn = false;
     public bool $dpUnavailableNotice = false;
 
     // DP context (derived in mount)
+    #[Locked]
     public float $dpAmount = 0;
+    #[Locked]
     public string $dpMode = 'none'; // none | online | manual
     public string $bankName = '';
     public string $bankNumber = '';
@@ -84,6 +95,11 @@ class TenantRegistrationForm extends Component
         abort_if(! $setting, 404, 'Tautan pendaftaran tidak ditemukan atau sudah tidak berlaku.');
 
         $this->ownerId = (int) $setting->owner_id;
+        $this->referralCode = (string) request('ref', '');
+        if ($this->referralCode !== '') {
+            $agent = $this->referralAgent();
+            $this->salesName = User::find($agent->user_id)?->name ?? '';
+        }
         $this->kosName = Setting::getForOwner('app_name', $this->ownerId, 'Living Kost');
 
         // Payment-return landing (DOKU redirects the customer back here).
@@ -106,6 +122,7 @@ class TenantRegistrationForm extends Component
     public function submit()
     {
         $data = $this->validate();
+        $agent = $this->referralCode !== '' ? $this->referralAgent() : null;
 
         $ktpPath = $this->ktp_photo ? $this->ktp_photo->store('ktp-photos', 'public') : null;
         $dpProofPath = ($this->dpMode === 'manual' && $this->dp_proof)
@@ -114,6 +131,8 @@ class TenantRegistrationForm extends Component
 
         $registration = TenantRegistration::create([
             'owner_id' => $this->ownerId,
+            'sales_agent_id' => $agent?->id,
+            'referral_reward_amount' => $agent ? ReferralRewards::rate($this->ownerId) : 0,
             'name' => $this->name,
             'email' => $this->email,
             'phone' => $this->phone,
@@ -147,6 +166,13 @@ class TenantRegistrationForm extends Component
         $this->submitted = true;
     }
 
+    private function referralAgent(): object
+    {
+        $agent = DB::table('sales_agents')->where('owner_id', $this->ownerId)->where('code', $this->referralCode)->where('active', true)->first();
+        abort_unless($agent, 404, 'Tautan referral sales tidak aktif atau tidak sesuai kos.');
+        return $agent;
+    }
+
     /** Create the DOKU checkout for the DP; returns the hosted payment URL or null. */
     private function startDokuPayment(TenantRegistration $registration): ?string
     {
@@ -157,7 +183,7 @@ class TenantRegistrationForm extends Component
             }
 
             $reference = 'DPREG-' . $registration->id . '-' . Str::upper(Str::random(5));
-            $callback = url('/daftar/' . $this->token . '?status=paid');
+            $callback = url('/daftar/' . $this->token . '?status=paid' . ($this->referralCode !== '' ? '&ref=' . rawurlencode($this->referralCode) : ''));
 
             $res = $doku->createCheckoutPayment(
                 $reference,

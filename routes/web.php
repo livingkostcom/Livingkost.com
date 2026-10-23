@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DokuWebhookController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\ResidentDirectoryController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Public\TenantRegistrationForm;
@@ -32,8 +33,18 @@ Route::post('/doku/notification', [DokuWebhookController::class, 'handle'])->nam
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::get('/dashboard', function () {
+        if (Auth::user()->hasRole('sales')) return redirect()->route('referrals.sales');
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/sales/referrals', [ReferralController::class, 'sales'])->name('referrals.sales');
+    Route::post('/sales/logout', [ReferralController::class, 'logout'])->name('referrals.logout');
+    Route::get('/referrals', [ReferralController::class, 'manage'])->name('referrals.manage');
+    Route::post('/referrals/rate', [ReferralController::class, 'rate'])->name('referrals.rate');
+    Route::post('/referrals/sales', [ReferralController::class, 'createSales'])->name('referrals.create-sales');
+    Route::post('/referrals/sales/{agent}/toggle', [ReferralController::class, 'toggle'])->name('referrals.toggle');
+    Route::post('/referrals/registrations/{registration}/dp', [ReferralController::class, 'verifyDp'])->name('referrals.dp');
+    Route::post('/referrals/rewards/{reward}/paid', [ReferralController::class, 'paid'])->name('referrals.paid');
 
     // Property Management Routes
     Route::get('/properties', function () {

@@ -4,6 +4,9 @@
             <div class="text-2xl font-extrabold text-orange-600">Living<span class="text-gray-900">Kost</span></div>
         </div>
 
+        @if ($salesName)
+            <p class="text-center text-sm text-gray-600 mb-4">Pendaftaran melalui sales: <strong>{{ $salesName }}</strong></p>
+        @endif
         @if ($paidReturn)
             <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 text-center">
                 <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-5">

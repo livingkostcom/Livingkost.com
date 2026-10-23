@@ -36,6 +36,7 @@ class LeaseObserver
         if ($lease->status === 'active') {
             $lease->room->update(['status' => 'occupied']);
         }
+        \App\Services\ReferralRewards::trackLease($lease);
     }
 
     /**

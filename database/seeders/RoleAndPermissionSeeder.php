@@ -130,6 +130,8 @@ class RoleAndPermissionSeeder extends Seeder
         $managerRole = Role::firstOrCreate(['name' => 'manager']);
         $managerRole->syncPermissions($managerPermissions);
 
+        Role::firstOrCreate(['name' => 'sales', 'guard_name' => 'web']);
+
         // Tenant role - Self-service
         $tenantPermissions = [
             'view-invoices',
