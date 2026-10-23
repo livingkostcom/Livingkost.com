@@ -38,7 +38,7 @@ class RoomForm extends Component
             $this->room_type_id = $room->room_type_id;
             $this->room_number = $room->room_number;
             $this->floor = $room->floor;
-            $this->status = $room->status;
+            $this->status = $room->computed_status;
             $this->selectedProperty = $room->roomType->property_id;
             $this->loadRoomTypes($room->roomType->property_id);
         }

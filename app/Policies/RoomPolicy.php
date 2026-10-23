@@ -38,7 +38,7 @@ class RoomPolicy
     public function update(User $user, Room $room): bool
     {
         // Cannot change occupied rooms (must through lease termination)
-        if ($room->status === 'occupied') {
+        if ($room->computed_status === 'occupied') {
             return false;
         }
 
@@ -51,7 +51,7 @@ class RoomPolicy
     public function delete(User $user, Room $room): bool
     {
         // Cannot delete occupied rooms
-        if ($room->status === 'occupied') {
+        if ($room->computed_status === 'occupied') {
             return false;
         }
 

@@ -15,12 +15,17 @@ class Room extends Model
     protected $appends = ['computed_status'];
 
     /**
-     * Computed status: 'occupied' if has active lease, else returns the stored status ('available' or 'maintenance').
+     * Occupancy follows active leases; without one, only a maintenance flag blocks availability.
      * Manual status only allows 'available' or 'maintenance'; 'occupied' is derived from leases.
      */
     public function getComputedStatusAttribute()
     {
-        return $this->activeLease() ? 'occupied' : $this->attributes['status'] ?? 'available';
+        if ($this->activeLease()) {
+            return 'occupied';
+        }
+
+        // Legacy occupied flags must not keep an empty room locked.
+        return ($this->attributes['status'] ?? null) === 'maintenance' ? 'maintenance' : 'available';
     }
 
     public function roomType(): BelongsTo

@@ -32,8 +32,10 @@ class LeaseObserver
      */
     public function created(Lease $lease): void
     {
-        // Update room status to occupied when lease is created
-        $lease->room->update(['status' => 'occupied']);
+        // A pending or completed contract must not mark an empty room occupied.
+        if ($lease->status === 'active') {
+            $lease->room->update(['status' => 'occupied']);
+        }
     }
 
     /**
