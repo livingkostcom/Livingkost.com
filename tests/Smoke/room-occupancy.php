@@ -10,7 +10,20 @@ $app = require $runtime . '/bootstrap/app.php';
 $temp = sys_get_temp_dir() . '/room-occupancy-test-' . bin2hex(random_bytes(6));
 mkdir($temp . '/framework/views', 0700, true);
 $app->useStoragePath($temp);
+// Isolate before providers resolve PermissionRegistrar / cache connections.
+$app->beforeBootstrapping(Illuminate\Foundation\Bootstrap\RegisterProviders::class, function ($app) {
+    $app['config']->set('database.default', 'sqlite');
+    $app['config']->set('database.connections.sqlite.database', ':memory:');
+    $app['config']->set('cache.default', 'array');
+    $app['config']->set('permission.cache.store', 'array');
+    $app['config']->set('permission.cache.key', 'smoke.permission.' . bin2hex(random_bytes(12)));
+    $app['config']->set('session.driver', 'array');
+});
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+if (! app(Spatie\Permission\PermissionRegistrar::class)->getCacheStore() instanceof Illuminate\Cache\ArrayStore) {
+    throw new RuntimeException('Refusing shared permission cache in smoke tests');
+}
+
 config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'cache.default' => 'array', 'session.driver' => 'array']);
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
